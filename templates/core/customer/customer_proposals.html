@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% load humanize %}
+
+{% block title %}My Proposals - Oweru Tech Solutions{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <div class="container">
+        <h1 class="fw-bold mb-1">Proposals</h1>
+        <p class="text-white-50 mb-0">Your quotes for this project</p>
+    </div>
+</section>
+
+<section class="py-3">
+    <div class="container">
+        <div class="d-flex flex-wrap gap-2 mb-4">
+            <a href="{% url 'core:customer_tracking' enquiry.reference %}" class="btn btn-sm btn-outline-primary">My Enquiries</a>
+            <a href="{% url 'core:customer_services' enquiry.reference %}" class="btn btn-sm btn-outline-primary">My Services</a>
+            <a href="{% url 'core:customer_proposals' enquiry.reference %}" class="btn btn-sm btn-primary">Proposals</a>
+            <a href="{% url 'core:customer_payments' enquiry.reference %}" class="btn btn-sm btn-outline-primary">Payments</a>
+            <a href="{% url 'core:customer_support' enquiry.reference %}" class="btn btn-sm btn-outline-primary">Support</a>
+        </div>
+    </div>
+</section>
+
+<section class="py-4">
+    <div class="container">
+        {% for p in proposals %}
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                    <div>
+                        <h5 class="fw-bold mb-0">{{ p.title }}</h5>
+                        <div class="small text-muted">{{ p.reference }} &middot; created {{ p.created_at|date:"d M Y" }}</div>
+                    </div>
+                    <span class="badge {% if p.status == 'accepted' %}bg-success{% elif p.status == 'sent' %}bg-info text-dark{% else %}bg-secondary{% endif %}">
+                        {{ p.get_status_display }}
+                    </span>
+                </div>
+
+                {% if p.description %}
+                <p class="mt-3 small">{{ p.description }}</p>
+                {% endif %}
+
+                <table class="table table-sm mt-3">
+                    <thead class="table-light">
+                        <tr><th>Description</th><th class="text-end">Qty</th><th class="text-end">Unit price</th><th class="text-end">Total</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for item in p.items.all %}
+                        <tr>
+                            <td>{{ item.description }}</td>
+                            <td class="text-end">{{ item.quantity }}</td>
+                            <td class="text-end">{{ p.currency }} {{ item.unit_price|floatformat:0|intcomma }}</td>
+                            <td class="text-end">{{ p.currency }} {{ item.total|floatformat:0|intcomma }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="4" class="text-muted text-center">No line items</td></tr>
+                        {% endfor %}
+                        <tr class="table-light fw-bold">
+                            <td colspan="3">Total</td>
+                            <td class="text-end">{{ p.currency }} {{ p.total_amount|floatformat:0|intcomma }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                {% if p.status != 'accepted' %}
+                <div class="d-flex justify-content-end">
+                    <a href="{% url 'core:customer_pay' enquiry.reference %}" class="btn btn-primary">
+                        <i class="bi bi-credit-card me-2"></i>Pay the {{ p.deposit_percent }}% deposit
+                    </a>
+                </div>
+                {% else %}
+                <div class="alert alert-success mb-0">This proposal was accepted. Work will begin once the deposit is confirmed.</div>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center text-muted py-5">
+                <i class="bi bi-file-earmark-text fs-1 d-block mb-2"></i>
+                No proposals yet. Our team prepares your quote after reviewing your enquiry.
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

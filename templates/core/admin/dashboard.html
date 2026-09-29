@@ -1,0 +1,412 @@
+{% extends 'base.html' %}
+{% load core_filters %}
+
+{% block title %}Dashboard - Oweru Admin{% endblock %}
+
+{% block content %}
+
+<section class="soft-bg">
+    <div class="container py-4">
+
+        <!-- Hero -->
+        <div class="admin-hero d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+            <div>
+                <div class="text-white-50" style="font-size:.78rem; letter-spacing:.12em; text-transform:uppercase;">Oweru control center</div>
+                <h1 class="fw-bold mb-1 mt-1">Karibu, {{ user.first_name|default:user.username }}</h1>
+                <p class="mb-0 text-white-50 small">Here's what's happening today across your business.</p>
+            </div>
+            <div class="d-flex gap-2" style="position:relative; z-index:2;">
+                <button type="button" class="btn btn-outline-light" data-bs-toggle="offcanvas" data-bs-target="#adminPanel" aria-controls="adminPanel">
+                    <i class="bi bi-grid me-1"></i>Control Center
+                </button>
+                <a href="{% url 'core:admin_enquiries' %}" class="btn btn-light">Enquiries</a>
+                <a href="{% url 'core:admin_scan_batch' %}" class="btn btn-light">New Batch Scan</a>
+                <a href="{% url 'core:staff_logout' %}" class="btn btn-outline-light"><i class="bi bi-box-arrow-right me-1"></i>Sign out</a>
+            </div>
+        </div>
+
+        <!-- KPI cards -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-6 col-lg-4 col-xl-2">
+                <div class="card kpi-card kpi-navy">
+                    <div class="card-body d-flex align-items-center gap-3">
+                        <span class="kpi-icon"><i class="bi bi-inbox-fill"></i></span>
+                        <div>
+                            <div class="kpi-num" style="color:#1f2750;">{{ total_enquiries }}</div>
+                            <div class="small text-muted">Total Enquiries</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 col-xl-2">
+                <div class="card kpi-card kpi-orange">
+                    <div class="card-body d-flex align-items-center gap-3">
+                        <span class="kpi-icon"><i class="bi bi-bell-fill"></i></span>
+                        <div>
+                            <div class="kpi-num" style="color:#C87828;">{{ stage_counts|get_item:'new' }}</div>
+                            <div class="small text-muted">New to Review</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 col-xl-2">
+                <div class="card kpi-card kpi-green">
+                    <div class="card-body d-flex align-items-center gap-3">
+                        <span class="kpi-icon"><i class="bi bi-clipboard2-check-fill"></i></span>
+                        <div>
+                            <div class="kpi-num" style="color:#2e7d4f;">{{ qualified_count }}</div>
+                            <div class="small text-muted">Qualified</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 col-xl-2">
+                <div class="card kpi-card kpi-navy">
+                    <div class="card-body d-flex align-items-center gap-3">
+                        <span class="kpi-icon"><i class="bi bi-file-earmark-text-fill"></i></span>
+                        <div>
+                            <div class="kpi-num" style="color:#1f2750;">{{ proposals_sent }}</div>
+                            <div class="small text-muted">Proposals Sent</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 col-xl-2">
+                <div class="card kpi-card kpi-gold">
+                    <div class="card-body d-flex align-items-center gap-3">
+                        <span class="kpi-icon"><i class="bi bi-cash-coin"></i></span>
+                        <div>
+                            <div class="kpi-num" style="color:#C8A028;">{{ payments_pending }}</div>
+                            <div class="small text-muted">Payments Awaiting</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 col-xl-2">
+                <div class="card kpi-card kpi-green">
+                    <div class="card-body d-flex align-items-center gap-3">
+                        <span class="kpi-icon"><i class="bi bi-trophy-fill"></i></span>
+                        <div>
+                            <div class="kpi-num" style="color:#2e7d4f;">{{ won_count }}</div>
+                            <div class="small text-muted">Won Jobs</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Attention needed -->
+        {% if pending_reports or open_signals or stuck_enquiries or stage_counts|get_item:'new' %}
+        <div class="card border-0 rounded-4 overflow-hidden mb-4" style="box-shadow:0 4px 14px rgba(31,39,80,.08);">
+            <div class="px-4 py-3 bg-white d-flex align-items-center justify-content-between">
+                <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-exclamation-diamond-fill me-2" style="color:#C87828;"></i>Needs your attention</h5>
+            </div>
+            <div class="p-3 pt-0">
+                <div class="row g-2">
+                    {% if stage_counts|get_item:'new' %}
+                    <div class="col-sm-6 col-lg-3">
+                        <a href="{% url 'core:admin_enquiries' %}?stage=new" class="d-flex align-items-center gap-3 text-decoration-none h-100" style="background:#fdeee0;border:1px solid #f3d3b0;border-radius:14px;padding:12px 14px;">
+                            <span class="kpi-icon" style="width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:#fce4cc;color:#C87828;"><i class="bi bi-inbox-fill"></i></span>
+                            <div class="lh-sm">
+                                <div class="fw-bold text-dark">{{ stage_counts|get_item:'new' }} new enquiries</div>
+                                <div class="small text-muted">Awaiting your review</div>
+                            </div>
+                        </a>
+                    </div>
+                    {% endif %}
+                    {% if pending_reports %}
+                    <div class="col-sm-6 col-lg-3">
+                        <a href="{% url 'core:admin_report_requests' %}?status=pending" class="d-flex align-items-center gap-3 text-decoration-none h-100" style="background:#faf3dd;border:1px solid #ecd9a1;border-radius:14px;padding:12px 14px;">
+                            <span class="kpi-icon" style="width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:#f7e8bd;color:#C8A028;"><i class="bi bi-envelope-check"></i></span>
+                            <div class="lh-sm">
+                                <div class="fw-bold text-dark">{{ pending_reports }} report{{ pending_reports|pluralize }} to approve</div>
+                                <div class="small text-muted">Confirm before PDF is sent</div>
+                            </div>
+                        </a>
+                    </div>
+                    {% endif %}
+                    {% if open_signals %}
+                    <div class="col-sm-6 col-lg-3">
+                        <a href="{% url 'core:admin_signals' %}?status=new" class="d-flex align-items-center gap-3 text-decoration-none h-100" style="background:#e7f4ec;border:1px solid #c7e3d2;border-radius:14px;padding:12px 14px;">
+                            <span class="kpi-icon" style="width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:#d5ecdd;color:#2e7d4f;"><i class="bi bi-radar"></i></span>
+                            <div class="lh-sm">
+                                <div class="fw-bold text-dark">{{ open_signals }} open signal{{ open_signals|pluralize }}</div>
+                                <div class="small text-muted">Job posts, tenders & funding</div>
+                            </div>
+                        </a>
+                    </div>
+                    {% endif %}
+                    {% if stuck_enquiries %}
+                    <div class="col-sm-6 col-lg-3">
+                        <a href="{% url 'core:admin_enquiries' %}" class="d-flex align-items-center gap-3 text-decoration-none h-100" style="background:#fbe9ec;border:1px solid #f0ccd3;border-radius:14px;padding:12px 14px;">
+                            <span class="kpi-icon" style="width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:#f5d5dc;color:#b23b6a;"><i class="bi bi-hourglass-split"></i></span>
+                            <div class="lh-sm">
+                                <div class="fw-bold text-dark">{{ stuck_enquiries }} stuck in a stage</div>
+                                <div class="small text-muted">Follow-up reminder due</div>
+                            </div>
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- New requests awaiting review -->
+        {% if new_enquiries %}
+        <div class="card border-0 rounded-4 overflow-hidden mb-4" style="box-shadow:0 4px 14px rgba(31,39,80,.08); border-left:5px solid #C87828 !important;">
+            <div class="px-4 py-3 d-flex justify-content-between align-items-center bg-white">
+                <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-bell-fill me-2" style="color:#C87828;"></i>New requests awaiting your review</h5>
+                <a href="{% url 'core:admin_enquiries' %}?stage=new" class="btn btn-sm btn-primary">Review all new</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Business</th>
+                            <th>Contact</th>
+                            <th>Package</th>
+                            <th>Date</th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody data-showmore="5" data-key="dash-new-enquiries">
+                        {% for enquiry in new_enquiries %}
+                        <tr>
+                            <td class="fw-semibold">{{ enquiry.business_name }}</td>
+                            <td>{{ enquiry.name }}<br><small class="text-muted">{{ enquiry.phone }}</small></td>
+                            <td>{{ enquiry.package_name|default:'Not sure' }}</td>
+                            <td class="small text-muted">{{ enquiry.date_created|date:'d M Y' }}</td>
+                            <td class="text-end">
+                                <a href="{% url 'core:admin_enquiry_detail' enquiry.id %}" class="btn btn-sm btn-outline-primary">Review & approve</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Activity modules -->
+        <h5 class="fw-bold mb-3 text-dark">Jump into an area</h5>
+        <div class="row g-3 mb-4">
+            <div class="col-sm-6 col-lg-4 col-xl-3">
+                <a class="module-card card text-decoration-none" href="{% url 'core:admin_enquiries' %}">
+                    <div class="card-body d-flex align-items-start gap-3">
+                        <span class="module-icon" style="background:#fdeee0;color:#C87828;"><i class="bi bi-inbox-fill"></i></span>
+                        <div class="flex-grow-1">
+                            <div class="fw-bold text-dark d-flex justify-content-between align-items-center">
+                                Enquiries <span class="module-count">{{ total_enquiries }}</span>
+                            </div>
+                            <div class="small text-muted">Requests, pipeline & follow-ups</div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-sm-6 col-lg-4 col-xl-3">
+                <a class="module-card card text-decoration-none" href="{% url 'core:admin_customers' %}">
+                    <div class="card-body d-flex align-items-start gap-3">
+                        <span class="module-icon" style="background:#eef0f9;color:#1f2750;"><i class="bi bi-people-fill"></i></span>
+                        <div class="flex-grow-1">
+                            <div class="fw-bold text-dark d-flex justify-content-between align-items-center">
+                                Customers <span class="module-count">{{ total_customers }}</span>
+                            </div>
+                            <div class="small text-muted">Your client base & contacts</div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-sm-6 col-lg-4 col-xl-3">
+                <a class="module-card card text-decoration-none" href="{% url 'core:admin_proposals' %}">
+                    <div class="card-body d-flex align-items-start gap-3">
+                        <span class="module-icon" style="background:#faf3dd;color:#C8A028;"><i class="bi bi-file-earmark-text-fill"></i></span>
+                        <div class="flex-grow-1">
+                            <div class="fw-bold text-dark d-flex justify-content-between align-items-center">
+                                Proposals <span class="module-count">{{ total_proposals }}</span>
+                            </div>
+                            <div class="small text-muted">Quotes, line items & revisions</div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-sm-6 col-lg-4 col-xl-3">
+                <a class="module-card card text-decoration-none" href="{% url 'core:admin_payments' %}">
+                    <div class="card-body d-flex align-items-start gap-3">
+                        <span class="module-icon" style="background:#e7f4ec;color:#2e7d4f;"><i class="bi bi-cash-coin"></i></span>
+                        <div class="flex-grow-1">
+                            <div class="fw-bold text-dark d-flex justify-content-between align-items-center">
+                                Payments <span class="module-count">{{ payments_pending }}</span>
+                            </div>
+                            <div class="small text-muted">Deposits & confirmations</div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-sm-6 col-lg-4 col-xl-3">
+                <a class="module-card card text-decoration-none" href="{% url 'core:admin_deliveries' %}">
+                    <div class="card-body d-flex align-items-start gap-3">
+                        <span class="module-icon" style="background:#e4f4f5;color:#13808a;"><i class="bi bi-truck"></i></span>
+                        <div class="flex-grow-1">
+                            <div class="fw-bold text-dark d-flex justify-content-between align-items-center">
+                                Service Delivery <span class="module-count">{{ deliveries_total }}</span>
+                            </div>
+                            <div class="small text-muted">Jobs in progress</div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-sm-6 col-lg-4 col-xl-3">
+                <a class="module-card card text-decoration-none" href="{% url 'core:admin_packages' %}">
+                    <div class="card-body d-flex align-items-start gap-3">
+                        <span class="module-icon" style="background:#fbe9ec;color:#b23b6a;"><i class="bi bi-box-seam-fill"></i></span>
+                        <div class="flex-grow-1">
+                            <div class="fw-bold text-dark d-flex justify-content-between align-items-center">
+                                Packages <span class="module-count">{{ packages_total }}</span>
+                            </div>
+                            <div class="small text-muted">Services on offer</div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-sm-6 col-lg-4 col-xl-3">
+                <a class="module-card card text-decoration-none" href="{% url 'core:admin_scans' %}">
+                    <div class="card-body d-flex align-items-start gap-3">
+                        <span class="module-icon" style="background:#eef0f9;color:#1f2750;"><i class="bi bi-search-heart-fill"></i></span>
+                        <div class="flex-grow-1">
+                            <div class="fw-bold text-dark d-flex justify-content-between align-items-center">
+                                Scanner <span class="module-count">{{ total_scans }}</span>
+                            </div>
+                            <div class="small text-muted">Site health checks run</div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-sm-6 col-lg-4 col-xl-3">
+                <a class="module-card card text-decoration-none" href="{% url 'core:admin_scan_batch' %}">
+                    <div class="card-body d-flex align-items-start gap-3">
+                        <span class="module-icon" style="background:#e7f4ec;color:#2e7d4f;"><i class="bi bi-stack"></i></span>
+                        <div class="flex-grow-1">
+                            <div class="fw-bold text-dark d-flex justify-content-between align-items-center">
+                                Batch Scan <span class="module-count">{{ prospects }}</span>
+                            </div>
+                            <div class="small text-muted">Prospects awaiting contact</div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Pipeline -->
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <div class="card border-0 rounded-4" style="box-shadow:0 4px 14px rgba(31,39,80,.08);">
+                    <div class="card-body">
+                        <h6 class="fw-bold text-dark mb-3"><i class="bi bi-diagram-3-fill me-2" style="color:#C87828;"></i>Enquiries by stage</h6>
+                        {% for code, label in stage_choices %}
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="small fw-semibold text-dark">{{ label }}</span>
+                                <span class="small fw-bold" style="color:#1f2750;">{{ stage_counts|get_item:code }}</span>
+                            </div>
+                            <div class="progress progress-tiny" style="background:#f0ede6;">
+                                <div class="progress-bar" role="progressbar"
+                                     style="width:{% if total_enquiries %}{% widthratio stage_counts|get_item:code total_enquiries 100 %}{% else %}0{% endif %}%;"
+                                     aria-valuenow="{{ stage_counts|get_item:code }}" aria-valuemin="0"
+                                     aria-valuemax="{% if total_enquiries %}{{ total_enquiries }}{% else %}1{% endif %}"></div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="card border-0 rounded-4" style="box-shadow:0 4px 14px rgba(31,39,80,.08);">
+                    <div class="card-body">
+                        <h6 class="fw-bold text-dark mb-3"><i class="bi bi-pie-chart-fill me-2" style="color:#C8A028;"></i>Scans by band</h6>
+                        {% for code, label in band_choices %}
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="small fw-semibold text-dark">{{ label }}</span>
+                                <span class="small fw-bold" style="color:#1f2750;">{{ band_counts|get_item:code }}</span>
+                            </div>
+                            <div class="progress progress-tiny" style="background:#f0ede6;">
+                                <div class="progress-bar" role="progressbar"
+                                     style="background:#2e7d4f;width:{% if total_scans %}{% widthratio band_counts|get_item:code total_scans 100 %}{% else %}0{% endif %}%;"
+                                     aria-valuenow="{{ band_counts|get_item:code }}" aria-valuemin="0"
+                                     aria-valuemax="{% if total_scans %}{{ total_scans }}{% else %}1{% endif %}"></div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mt-1">
+            <div class="col-lg-7">
+                <div class="card border-0 rounded-4" style="box-shadow:0 4px 14px rgba(31,39,80,.08);">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="fw-bold text-dark mb-0"><i class="bi bi-clock-history me-2" style="color:#C87828;"></i>Recent enquiries</h6>
+                            <a href="{% url 'core:admin_enquiries' %}" class="btn btn-sm btn-outline-primary">View all</a>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Business</th>
+                                        <th>Package</th>
+                                        <th>Stage</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody data-showmore="8" data-key="dash-recent-enquiries">
+                                    {% for enquiry in recent_enquiries %}
+                                    <tr>
+                                        <td class="fw-semibold">
+                                            <a class="text-decoration-none" style="color:#1f2750;" href="{% url 'core:admin_enquiry_detail' enquiry.id %}">{{ enquiry.business_name }}</a>
+                                        </td>
+                                        <td class="small">{{ enquiry.package_name|default:'Not sure' }}</td>
+                                        <td>
+                                            <span class="stage-badge text-white" style="{{ enquiry.stage|stage_badge }}">{{ enquiry.get_stage_display }}</span>
+                                        </td>
+                                        <td class="small text-muted">{{ enquiry.date_created|date:'d M Y' }}</td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr><td colspan="4" class="text-center text-muted py-4">No enquiries yet</td></tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <div class="card border-0 rounded-4" style="box-shadow:0 4px 14px rgba(31,39,80,.08);">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="fw-bold text-dark mb-0"><i class="bi bi-activity me-2" style="color:#2e7d4f;"></i>Recent scans</h6>
+                            <a href="{% url 'core:admin_scans' %}" class="btn btn-sm btn-outline-primary">View all</a>
+                        </div>
+                        <ul class="list-unstyled mb-0" data-showmore="8" data-key="dash-recent-scans">
+                            {% for scan in recent_scans %}
+                            <li class="d-flex align-items-center justify-content-between py-2 border-bottom border-light">
+                                <div class="fw-semibold small text-dark text-truncate" style="max-width:190px;">{{ scan.business_name }}</div>
+                                <span class="badge rounded-pill"
+                                      style="{% if scan.score >= 70 %}background:#e7f4ec;color:#2e7d4f;{% elif scan.score >= 40 %}background:#fdeee0;color:#C87828;{% else %}background:#fbe9ec;color:#b23b6a;{% endif %}">
+                                    {{ scan.score }} pts
+                                </span>
+                            </li>
+                            {% empty %}
+                            <li class="text-center text-muted py-4">No scans yet</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

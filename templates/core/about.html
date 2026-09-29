@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}About Us - Oweru Tech Solutions{% endblock %}
+{% block meta_description %}Oweru is a Tanzanian software house building mobile apps, web platforms, CRM systems and networks for growing businesses - fixed prices and on-time delivery.{% endblock %}
+
+{% block content %}
+
+<section class="hero" style="padding:96px 0;background:linear-gradient(90deg, rgba(8,12,32,.86) 0%, rgba(20,27,52,.58) 42%, rgba(20,27,52,.14) 100%),url('{% static "images/hero-team.jpg" %}') center 40% cover no-repeat;">
+    <div class="aurora" style="width:500px;height:500px;background:radial-gradient(circle,rgba(240,191,77,.18),transparent 65%);top:-160px;right:-80px;"></div>
+    <div class="container position-relative" style="z-index:2;">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <span class="eyebrow mb-3"><span class="d-inline-block me-2" style="width:30px;height:2px;border-radius:99px;background:#e6b44a;"></span>About us</span>
+                <h1 class="fw-bold text-white mb-3">We build what small businesses actually need</h1>
+                <p class="text-white-50 mb-0" style="max-width:600px;">
+                    Oweru is a Tanzanian software house. We build the systems your business runs
+                    on — a fixed price before we start, and delivery on the day we promise.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-5" style="background:var(--cream);">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-md-4 reveal">
+                <div class="card-lift h-100">
+                    <div class="card-body p-4">
+                        <span class="icon-chip mb-3"><i class="bi bi-bullseye"></i></span>
+                        <h5 class="fw-bold">Our purpose</h5>
+                        <p class="text-muted small mb-0">
+                            Most Tanzanian businesses still run on manual, outdated ways of working.
+                            We build reliable systems that remove wasted time and win back lost
+                            revenue — at prices local businesses can afford.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 reveal">
+                <div class="card-lift h-100">
+                    <div class="card-body p-4">
+                        <span class="icon-chip mb-3"><i class="bi bi-people"></i></span>
+                        <h5 class="fw-bold">Who we serve</h5>
+                        <p class="text-muted small mb-0">
+                            Restaurants, retail shops, schools, clinics, transport firms and growing
+                            service businesses that want their sales and records handled properly.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 reveal">
+                <div class="card-lift h-100">
+                    <div class="card-body p-4">
+                        <span class="icon-chip mb-3"><i class="bi bi-clipboard-check"></i></span>
+                        <h5 class="fw-bold">How we work</h5>
+                        <p class="text-muted small mb-0">
+                            Fixed-price proposals, written progress every week and milestone
+                            sign-off. You always know where your project stands.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="text-center mt-5 reveal">
+            <a href="{% url 'core:services' %}" class="btn btn-champagne btn-sheen btn-lg px-5">View Our Packages</a>
+        </div>
+    </div>
+</section>
+
+<section class="py-5" style="background:#fff;">
+    <div class="container">
+        <div class="row mb-5 reveal">
+            <div class="col-lg-6">
+                <span class="eyebrow mb-2"><span class="d-inline-block me-2" style="width:30px;height:2px;border-radius:99px;background:#e6b44a;"></span>Meet the team</span>
+                <h2 class="fw-bold mb-2">The people behind your project</h2>
+                <p class="text-muted mb-0">A small, senior team. You work with the same people from quote to delivery.</p>
+            </div>
+        </div>
+        <div class="row g-4">
+            {% for member in team %}
+            <div class="col-md-6 col-lg-3 reveal">
+                <div class="card-lift h-100 text-center">
+                    <div class="card-body p-4">
+                        <div class="mx-auto mb-3 d-flex align-items-center justify-content-center fw-bold"
+                             style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#1c2547,#26315e);color:#ffd471;font-size:1.2rem;">
+                            {{ member.initials }}
+                        </div>
+                        <h5 class="fw-bold mb-0">{{ member.name }}</h5>
+                        <div class="small fw-semibold mb-2" style="color:#c08a1f;">{{ member.role }}</div>
+                        <p class="text-muted small mb-0">{{ member.bio }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<section class="py-0">
+    <div class="position-relative reveal" style="background:linear-gradient(120deg, rgba(10,15,38,.88) 0%, rgba(20,27,52,.66) 55%, rgba(20,27,52,.20) 100%),url('{% static "images/hero-dashboard.jpg" %}') center 45% cover no-repeat; padding:88px 0;">
+        <div class="container position-relative" style="z-index:2;">
+            <div class="row justify-content-center text-center">
+                <div class="col-lg-8">
+                    <span class="eyebrow mb-2 justify-content-center"><i class="bi bi-cup-hot me-1"></i>Our promise</span>
+                    <h2 class="fw-bold text-white mb-3">No hidden fees. No missed deadlines.</h2>
+                    <p class="text-white-50 mb-4" style="max-width:620px;margin:0 auto;">
+                        Every Oweru project comes with a fixed price agreed before we start, a written
+                        progress update every week, and delivery on the day we promise. That is how we
+                        built the projects we are proud of today.
+                    </p>
+                    <div class="d-flex justify-content-center"><span class="accent-bar"></span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

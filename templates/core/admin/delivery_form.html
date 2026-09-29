@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block title %}New Delivery - Oweru Admin{% endblock %}
+
+{% block content %}
+<section class="bg-light py-4">
+    <div class="container d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="fw-bold mb-0">New Service Delivery</h1>
+            <p class="text-muted mb-0">Record a delivered / in-progress system</p>
+        </div>
+        <a href="{% url 'core:admin_deliveries' %}" class="btn btn-outline-secondary">Back</a>
+    </div>
+</section>
+
+<section class="py-4">
+    <div class="container">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Customer</label>
+                            <select name="customer" class="form-select" required>
+                                <option value="">— select customer —</option>
+                                {% for c in customers %}
+                                <option value="{{ c.id }}">{{ c.business_name }} ({{ c.name }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Service name</label>
+                            <input name="service_name" class="form-control" required placeholder="e.g. Booking website, CRM, Network setup">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold">Status</label>
+                            <select name="status" class="form-select">
+                                <option value="in_progress">In Progress</option>
+                                <option value="delivered">Delivered</option>
+                                <option value="active">Active (care plan)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold">Delivery date</label>
+                            <input name="delivery_date" type="date" class="form-control">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold">Care plan</label>
+                            <select name="care_plan" class="form-select">
+                                <option value="">None</option>
+                                {% for cp in care_plans %}
+                                <option value="{{ cp.id }}">{{ cp.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold">Assigned to</label>
+                            <select name="assigned_to" class="form-select">
+                                <option value="">Unassigned</option>
+                                {% for u in staff_users %}
+                                <option value="{{ u.id }}">{{ u.get_full_name|default:u.username }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-semibold">Description</label>
+                            <textarea name="description" rows="3" class="form-control"></textarea>
+                        </div>
+                        <div class="col-12">
+                            <button class="btn btn-primary">Create Delivery</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

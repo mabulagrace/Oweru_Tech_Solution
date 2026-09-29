@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}Get Your Full Report - Oweru Tech Solutions{% endblock %}
+
+{% block content %}
+
+<section style="background:var(--cream);padding:60px 0;">
+    <div class="container">
+        <span class="eyebrow mb-2"><i class="bi bi-file-earmark-pdf me-1"></i>Full report</span>
+        <h1 class="fw-bold mb-2">Get Your Full Report</h1>
+        <p class="text-muted mb-0">
+            {% if website %}We scanned <strong>{{ website }}</strong>.{% endif %}
+            Enter your details and we will send you the full one-page report with all 22 checks,
+            what each issue costs your business, and how to fix it. Free.
+        </p>
+    </div>
+</section>
+
+<section class="py-5" style="background:var(--cream);">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-7">
+                <div class="card-lift">
+                    <div class="card-body p-4">
+                        <form method="post" novalidate>
+                            {% csrf_token %}
+                            {{ form.website }}
+
+                            {% if form.non_field_errors %}
+                            <div class="alert alert-danger">{% for err in form.non_field_errors %}{{ err }}{% endfor %}</div>
+                            {% endif %}
+
+                            {% if website %}
+                            <div class="alert small" style="border:1px solid var(--line);background:#fbf7ee;border-radius:12px;">
+                                <i class="bi bi-globe me-1"></i> Report for: <strong>{{ website }}</strong>
+                            </div>
+                            {% endif %}
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">{{ form.name.label }} *</label>
+                                    {{ form.name }}
+                                    {{ form.name.errors }}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">{{ form.business_name.label }} *</label>
+                                    {{ form.business_name }}
+                                    {{ form.business_name.errors }}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">{{ form.email.label }} *</label>
+                                    {{ form.email }}
+                                    {{ form.email.errors }}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">{{ form.phone.label }} *</label>
+                                    {{ form.phone }}
+                                    {{ form.phone.errors }}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">{{ form.country.label }} *</label>
+                                    {{ form.country }}
+                                    {{ form.country.errors }}
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label fw-semibold">{{ form.notes.label }}</label>
+                                    {{ form.notes }}
+                                    {{ form.notes.errors }}
+                                </div>
+                                <div class="col-12">
+                                    <div class="form-check">
+                                        {{ form.consent }}
+                                        <label class="form-check-label small" for="{{ form.consent.id_for_label }}">
+                                            {{ form.consent.label }}
+                                        </label>
+                                    </div>
+                                    {{ form.consent.errors }}
+                                    <div class="small text-muted mt-1">
+                                        We only collect business-level information. Your details are used
+                                        to send the report and follow up with you.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mt-4">
+                                <button type="submit" class="btn btn-champagne btn-sheen btn-lg w-100">
+                                    Send Me My Full Report
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

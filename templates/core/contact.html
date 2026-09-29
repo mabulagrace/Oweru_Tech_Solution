@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% load core_filters %}
+
+{% block title %}Contact Us - Oweru Tech Solutions{% endblock %}
+{% block meta_description %}Talk to Oweru about your project. We reply within one working day with a free consultation and a fixed quote.{% endblock %}
+
+{% block content %}
+
+<section class="hero" style="padding:80px 0;">
+    <div class="aurora" style="width:500px;height:500px;background:radial-gradient(circle,rgba(240,191,77,.16),transparent 65%);top:-150px;right:-40px;"></div>
+    <div class="container position-relative" style="z-index:2;">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <span class="eyebrow mb-3"><span class="d-inline-block me-2" style="width:30px;height:2px;border-radius:99px;background:#e6b44a;"></span>Contact us</span>
+                <h1 class="fw-bold text-white mb-3">Let's talk about your project</h1>
+                <p class="text-white-50 mb-0" style="max-width:620px;">
+                    Tell us what you need — we reply within one working day with a free
+                    consultation and a fixed quote.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-5" style="background:var(--cream);">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-lg-5 reveal">
+                <div class="card-lift h-100">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold mb-4">Get in touch</h5>
+                        <ul class="list-unstyled mb-4">
+                            <li class="mb-3 d-flex align-items-center gap-3">
+                                <span class="icon-chip" style="width:46px;height:46px;"><i class="bi bi-envelope"></i></span>
+                                <span>hello@oweru.tech</span>
+                            </li>
+                            <li class="mb-3 d-flex align-items-center gap-3">
+                                <span class="icon-chip" style="width:46px;height:46px;"><i class="bi bi-telephone"></i></span>
+                                <span>+255 123 456 789</span>
+                            </li>
+                            <li class="mb-3 d-flex align-items-center gap-3">
+                                <span class="icon-chip" style="width:46px;height:46px;background:rgba(37,211,102,.12);color:#1da851;"><i class="bi bi-whatsapp"></i></span>
+                                <a href="{% wa_chat_link 'Hello Oweru! I have a question about your services.' %}" class="text-decoration-none" style="color:var(--ink);"><strong>Chat on WhatsApp</strong> ({{ wa_number }})</a>
+                            </li>
+                            <li class="mb-4 d-flex align-items-center gap-3">
+                                <span class="icon-chip" style="width:46px;height:46px;"><i class="bi bi-geo-alt"></i></span>
+                                <span>Dar es Salaam, Tanzania</span>
+                            </li>
+                        </ul>
+                        <h6 class="fw-bold mb-3">Popular solutions</h6>
+                        <div class="d-flex flex-column gap-2">
+                            {% for p in packages %}
+                            <a href="{% url 'core:enquiry_new' %}?package={{ p.slug }}" class="btn btn-outline-primary btn-sm text-start">
+                                <i class="bi bi-arrow-right me-2" style="color:#e6b44a;"></i>{{ p.name }}
+                            </a>
+                            {% endfor %}
+                            <a href="{% url 'core:enquiry_new' %}" class="btn btn-primary btn-sm text-start">Something else / not sure yet</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-7 reveal">
+                <div class="card-lift h-100">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold mb-3">Request a solution</h5>
+                        <p class="text-muted small mb-4">
+                            Fill in this short form and one of our team will call you within one working
+                            day to understand your needs and prepare a fixed quote. You'll receive a
+                            personal link to follow your project and payments.
+                        </p>
+                        <a href="{% url 'core:enquiry_new' %}" class="btn btn-champagne btn-sheen btn-lg w-100 mb-4">Start Your Enquiry Form</a>
+                        <a href="{% wa_chat_link 'Hello Oweru! I have a question about your services.' %}" class="btn btn-lg w-100 mb-4" style="background:#25d366;border-color:#25d366;color:#fff;">
+                            <i class="bi bi-whatsapp me-2"></i>Chat with us on WhatsApp
+                        </a>
+                        <div class="d-flex align-items-center gap-2 small text-muted">
+                            <i class="bi bi-broadcast"></i>
+                            <span>Prefer to talk now? Call us: <a href="tel:+255123456789" class="text-decoration-none" style="color:#c08a1f;">+255 123 456 789</a></span>
+                        </div>
+                        <hr style="border-color:var(--line);">
+                        <div class="small text-muted">
+                            <i class="bi bi-shield-check me-1" style="color:#e6b44a;"></i>
+                            We reply within one working day. Your details stay private.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

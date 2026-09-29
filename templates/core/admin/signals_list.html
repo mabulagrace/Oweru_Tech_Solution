@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block title %}Signals - Oweru Admin{% endblock %}
+
+{% block content %}
+
+{% include 'core/admin/_admin_header.html' with title='Signal Monitoring' subtitle='Job posts, tenders and expansion announcements that hint at a new lead' %}
+
+<section class="py-4">
+    <div class="container">
+        <div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
+            <a href="{% url 'core:admin_signals' %}"
+               class="btn btn-sm {% if not current_type %}pill-gold{% else %}pill-line{% endif %}">All types</a>
+            {% for code, label in type_choices %}
+            <a href="{% url 'core:admin_signals' %}?type={{ code }}"
+               class="btn btn-sm {% if current_type == code %}pill-gold{% else %}pill-line{% endif %}">
+                {{ label }}
+            </a>
+            {% endfor %}
+            <a href="{% url 'core:admin_signals' %}?status=converted"
+               class="btn btn-sm {% if current_status == 'converted' %}pill-gold{% else %}pill-line{% endif %}">Converted</a>
+            <a href="{% url 'core:admin_signal_new' %}" class="btn btn-sm btn-outline-primary ms-auto">+ New Signal</a>
+        </div>
+
+        <form method="get" class="row g-2 mb-3">
+            {% if current_type %}<input type="hidden" name="type" value="{{ current_type }}">{% endif %}
+            <div class="col-md-4">
+                <input type="text" name="q" value="{{ current_search }}" class="form-control"
+                       placeholder="Search title, business or source...">
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-outline-primary w-100" type="submit">Filter</button>
+            </div>
+        </form>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="thead-navy">
+                    <tr>
+                        <th>Signal</th>
+                        <th>Type</th>
+                        <th>Business</th>
+                        <th>Source</th>
+                        <th>Status</th>
+                        <th>Assigned</th>
+                        <th>Found</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for signal in signals %}
+                    <tr style="cursor:pointer;" onclick="document.location='{% url 'core:admin_signal_detail' signal.id %}'">
+                        <td>
+                            <div class="fw-semibold">{{ signal.title }}</div>
+                            {% if signal.source_url %}
+                            <a href="{{ signal.source_url }}" target="_blank" class="small text-muted"
+                               onclick="event.stopPropagation();">{{ signal.source_url|truncatechars:45 }}</a>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if signal.type == 'job_posting' %}
+                            <span class="badge" style="background:#1f2750;color:#fff;">Job posting</span>
+                            {% elif signal.type == 'tender' %}
+                            <span class="badge" style="background:#C87828;color:#fff;">Tender / RFP</span>
+                            {% else %}
+                            <span class="badge" style="background:#2e7d5b;color:#fff;">Funding / Expansion</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ signal.business_name|default:'-' }}</td>
+                        <td class="small">{{ signal.source|default:'-' }}</td>
+                        <td>
+                            {% if signal.status == 'converted' %}
+                            <span class="badge bg-success">Converted</span>
+                            {% elif signal.status == 'in_progress' %}
+                            <span class="badge bg-primary">In progress</span>
+                            {% elif signal.status == 'dismissed' %}
+                            <span class="badge bg-light text-muted border">Dismissed</span>
+                            {% else %}
+                            <span class="badge" style="background:#C87828;color:#fff;">New</span>
+                            {% endif %}
+                        </td>
+                        <td class="small">{{ signal.assigned_to|default:'Unassigned' }}</td>
+                        <td class="small text-muted">{{ signal.found_date|date:'d M Y' }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="7" class="text-center text-muted py-5">No signals yet. Add your first one.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

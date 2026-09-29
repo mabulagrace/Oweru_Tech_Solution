@@ -1,0 +1,862 @@
+{% load core_filters %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Oweru Tech Solutions{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}We build mobile and web systems, CRM platforms and network infrastructure for Tanzanian businesses. Fixed prices, on-time delivery.{% endblock %}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet">
+    {% load static %}
+    {% block extra_css %}{% endblock %}
+    <style>
+        :root {
+            --ink: #141b34;            /* deep ink navy - primary brand */
+            --ink-2: #1c2547;
+            --ink-3: #26315e;
+            --navy-deep: #0c1230;
+            --champagne: #e6b44a;      /* luxury gold - accents only */
+            --champagne-2: #ffd471;
+            --champagne-soft: #fceec9;
+            --blush: #ffd471;          /* warm gold - brand accent */
+            --cream: #fbfaf6;          /* soft off-white page background */
+            --card: #ffffff;
+            --line: #e9e3d4;           /* hairline borders */
+            --text: #2c3350;
+            --muted: #7b8398;
+            --tint-navy: #eef1fa;
+            --tint-gold: #f7efdd;
+            --tint-green: #e9f4ee;
+            --tint-rose: #f9ecef;
+        }
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            color: var(--text);
+            background: #ffffff;
+        }
+        h1, h2, h3, h4, h5, .heading {
+            font-family: 'Sora', 'Segoe UI', sans-serif;
+            color: var(--ink);
+            letter-spacing: -0.015em;
+        }
+        h1 { font-size: clamp(1.6rem, 2.9vw, 2.2rem); }
+        h2 { font-size: clamp(1.3rem, 2.3vw, 1.7rem); }
+        .display-4 { font-size: clamp(1.9rem, 3.6vw, 2.6rem) !important; }
+        .display-6 { font-size: 1.6rem !important; }
+        .text-muted { color: var(--muted) !important; }
+
+        .btn {
+            border-radius: 999px !important;
+            font-weight: 600;
+            padding: .58rem 1.35rem;
+            transition: transform .22s cubic-bezier(.3,.7,.3,1), box-shadow .22s ease, background .22s ease, color .22s ease;
+        }
+        .btn-primary, .btn.btn-primary {
+            background: linear-gradient(135deg, #ffd471, #e6b44a);
+            border: 1px solid #b8933f;
+            color: #221d10;
+            box-shadow: 0 6px 18px rgba(240,191,77,.30);
+        }
+        .btn-primary:hover {
+            filter: brightness(1.05);
+            transform: translateY(-2px);
+            box-shadow: 0 14px 30px rgba(240,191,77,.40);
+            color: #221d10;
+        }
+        .btn-outline-primary {
+            background: transparent;
+            color: var(--ink);
+            border: 1px solid rgba(20,27,52,.30);
+        }
+        .btn-outline-primary:hover {
+            background: var(--ink);
+            color: #fff;
+            transform: translateY(-2px);
+        }
+        .btn-champagne {
+            background: linear-gradient(135deg, #ffd471, #e6b44a);
+            color: #221d10;
+            border: none;
+            box-shadow: 0 8px 22px rgba(240,191,77,.30);
+        }
+        .btn-champagne:hover {
+            filter: brightness(1.05);
+            transform: translateY(-2px);
+            box-shadow: 0 14px 32px rgba(240,191,77,.40);
+            color: #221d10;
+        }
+        .btn-sheen { position: relative; overflow: hidden; }
+        .btn-sheen::after {
+            content: "";
+            position: absolute; top: 0; left: -130%;
+            width: 55%; height: 100%;
+            background: linear-gradient(120deg, transparent, rgba(255,255,255,.45), transparent);
+            transform: skewX(-20deg);
+            animation: sheen 3.6s infinite;
+        }
+        @keyframes sheen { 0% { left: -130%; } 55% { left: 135%; } 100% { left: 135%; } }
+
+        .gold-text {
+            background: linear-gradient(100deg, #ffe9a8 0%, #f4c24d 42%, #ffd471 68%, #f7c448 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            filter: drop-shadow(0 0 12px rgba(255,212,113,.45));
+        }
+        .btn-primary, .btn.btn-primary, .btn-champagne, .pill-gold {
+            box-shadow: 0 8px 24px rgba(240,191,77,.42), 0 2px 12px rgba(255,214,113,.35);
+        }
+        .btn-primary:hover, .btn.btn-primary:hover, .btn-champagne:hover, .pill-gold:hover {
+            box-shadow: 0 14px 36px rgba(240,191,77,.58), 0 3px 16px rgba(255,214,113,.45);
+        }
+
+        .text-primary { color: var(--champagne) !important; }
+        .bg-primary { background-color: var(--ink) !important; }
+
+        /* Page hero used across public pages */
+        .hero {
+            background: linear-gradient(150deg, #0e142e 0%, var(--ink-2) 55%, #27315f 100%);
+            color: #fff;
+            padding: 84px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero .btn-light { background: linear-gradient(135deg,#ffd471,#e6b44a); color: #221d10; border: none; font-weight: 600; }
+        .hero .btn-light:hover { transform: translateY(-2px); }
+        .hero .btn-outline-light { border-color: rgba(255,255,255,.40); color: #fff; }
+        .hero .btn-outline-light:hover { background: rgba(255,255,255,.14); }
+
+        .eyebrow {
+            display: inline-flex; align-items: center; gap: 8px;
+            font-size: .74rem; font-weight: 700;
+            letter-spacing: .14em; text-transform: uppercase;
+            color: var(--champagne);
+        }
+        .accent-bar { width: 52px; height: 4px; border-radius: 99px; background: linear-gradient(90deg, #e6b44a, #ffd471); }
+
+        .brand-logo { height: 56px; width: auto; object-fit: contain; border-radius: 8px; background: #fff; padding: 6px; box-shadow: 0 2px 8px rgba(20,27,52,.12); }
+        .footer-logo { height: 60px; width: auto; object-fit: contain; border-radius: 8px; background: #fff; padding: 6px; }
+
+        /* Navbar: clean, minimized glass */
+        .navbar {
+            background: rgba(255,255,255,.92) !important;
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border-bottom: 1px solid var(--line);
+            padding-top: .4rem !important;
+            padding-bottom: .4rem !important;
+        }
+        .navbar .nav-link { color: var(--text); font-weight: 500; font-size: .9rem; padding: .38rem .8rem !important; border-radius: 999px; }
+        .navbar .nav-link:hover { color: var(--ink); background: #f2ecde; }
+        .navbar .btn { font-size: .84rem; padding: .4rem 1rem; }
+        .navbar-brand-logo { height: 38px; width: auto; object-fit: contain; border-radius: 8px; background: #fff; padding: 3px; box-shadow: 0 2px 10px rgba(20,27,52,.12); }
+        .dropdown-menu-rich { min-width: 300px; border: none; border-radius: 14px; box-shadow: 0 12px 40px rgba(20,27,52,.18); padding: .5rem; overflow: hidden; }
+        .dropdown-menu-rich .dropdown-item { border-radius: 10px; padding: .6rem .75rem; transition: background .12s ease; }
+        .dropdown-menu-rich .dropdown-item:hover { background: #f4eddf; }
+        .dropdown-menu-rich .dropdown-item .dd-title { display: block; font-weight: 600; color: var(--navy,#1f2750); font-size: .88rem; }
+        .dropdown-menu-rich .dropdown-item .dd-desc { display: block; color: #6b624a; font-size: .76rem; margin-top: 2px; }
+
+        .card-hover { transition: transform .26s ease, box-shadow .26s ease; }
+        .card-hover:hover { transform: translateY(-5px); box-shadow: 0 1.1rem 2rem rgba(20,27,52,.13); }
+        .card-lift {
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            box-shadow: 0 6px 18px rgba(20,27,52,.08);
+            transition: transform .25s ease, box-shadow .25s ease;
+        }
+        .card-lift:hover { transform: translateY(-4px); box-shadow: 0 14px 30px rgba(20,27,52,.14); }
+        .card-lift .card-body { border-radius: 16px; }
+        .pkg-img-wrap { height: 175px; overflow: hidden; border-radius: 16px 16px 0 0; background: #eef0f6; }
+        .pkg-img-wrap img { width: 100%; height: 100%; object-fit: cover; transition: transform .5s ease; }
+        .card-lift:hover .pkg-img-wrap img { transform: scale(1.06); }
+        .band-badge { min-width: 90px; }
+        .score-circle {
+            width: 120px; height: 120px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2rem; font-weight: bold; color: white;
+        }
+        .form-control, .form-select {
+            border-radius: 12px;
+            border-color: #ddd5c2;
+            padding: .6rem .9rem;
+        }
+        .form-control:focus, .form-select:focus { border-color: var(--champagne); box-shadow: 0 0 0 .2rem rgba(240,191,77,.20); }
+        .step-number {
+            width: 60px; height: 60px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--ink-2), var(--ink));
+            border: 2px solid var(--champagne);
+            color: #ffe9a8;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; font-weight: bold; margin: 0 auto;
+        }
+        .icon-chip {
+            width: 54px; height: 54px; border-radius: 16px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.3rem;
+            background: var(--champagne-soft);
+            color: var(--ink);
+        }
+        footer.bg-dark { background: #0e152f !important; }
+        footer h6 { color: #e2d3a3; }
+        .text-white-75 { color: rgba(255,255,255,.78) !important; }
+        .hover-underline { transition: color .15s ease; }
+        .hover-underline:hover { color: #e6b44a !important; }
+        .btn-tile-footer {
+            display: flex; align-items: center; gap: .6rem;
+            min-width: 0; padding: .5rem .6rem;
+            border: 1px solid rgba(255,255,255,.10);
+            border-radius: 10px;
+            background: rgba(255,255,255,.04);
+            color: rgba(255,255,255,.85);
+            text-decoration: none;
+            transition: border-color .15s ease, background .15s ease, color .15s ease;
+        }
+        .btn-tile-footer:hover {
+            border-color: rgba(240,191,77,.5);
+            background: rgba(240,191,77,.10);
+            color: #fff;
+        }
+        .btn-tile-icon {
+            width: 30px; height: 30px; border-radius: 8px;
+            display: inline-flex; align-items: center; justify-content: center;
+            flex-shrink: 0; font-size: .95rem;
+            background: rgba(240,191,77,.14); color: #e6b44a;
+        }
+        .btn-tile-label { min-width: 0; font-size: .78rem; line-height: 1.15; }
+        .btn-tile-label strong, .btn-tile-label small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+
+        .reveal { opacity: 0; transform: translateY(22px); transition: opacity .7s ease, transform .7s ease; }
+        .reveal.visible { opacity: 1; transform: none; }
+        @media (prefers-reduced-motion: reduce) {
+            .reveal { opacity: 1; transform: none; transition: none; }
+            .btn-sheen::after { animation: none; }
+        }
+
+        /* Home-specific: aurora, glass art, floating, marquee */
+        .aurora { position: absolute; border-radius: 50%; filter: blur(70px); opacity: .5; pointer-events: none; }
+        .float-slow { animation: floaty 7s infinite ease-in-out; }
+        .float-slower { animation: floaty 9s infinite ease-in-out; }
+        @keyframes floaty { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-14px); } }
+        .glass {
+            background: rgba(255,255,255,.08);
+            border: 1px solid rgba(255,255,255,.16);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 18px;
+            box-shadow: 0 24px 60px rgba(0,0,0,.28);
+        }
+        .marquee { overflow: hidden; white-space: nowrap; user-select: none; }
+        .marquee-track { display: inline-flex; gap: 2.4rem; padding-right: 2.4rem; animation: marquee 26s linear infinite; }
+        .marquee:hover .marquee-track { animation-play-state: paused; }
+        @keyframes marquee { to { transform: translateX(-50%); } }
+
+        /* ---------- Admin design system ---------- */
+        .admin-hero {
+            background: linear-gradient(135deg, var(--ink) 0%, var(--ink-2) 55%, #3a2f4d 130%);
+            color: #fff;
+            border-radius: 18px;
+            padding: 28px 30px;
+            position: relative;
+            overflow: hidden;
+        }
+        .admin-hero::after {
+            content: "";
+            position: absolute;
+            right: -40px; top: -40px;
+            width: 200px; height: 200px;
+            border-radius: 50%;
+            background: rgba(240,191,77,.25);
+            pointer-events: none;
+        }
+        .admin-hero::before {
+            content: "";
+            position: absolute;
+            right: 70px; bottom: -60px;
+            width: 150px; height: 150px;
+            border-radius: 50%;
+            background: rgba(223,192,121,.18);
+            pointer-events: none;
+        }
+        .kpi-card {
+            border: 0;
+            border-radius: 16px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 4px 14px rgba(20,27,52,.08);
+        }
+        .kpi-card .kpi-icon {
+            width: 52px; height: 52px;
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem;
+        }
+        .kpi-card .kpi-num { font-size: 1.9rem; font-weight: 700; line-height: 1.05; }
+        .kpi-navy .kpi-icon { background: #eef0f6; color: var(--ink); }
+        .kpi-orange .kpi-icon { background: #fceec9; color: #e6b44a; }
+        .kpi-green .kpi-icon { background: #e7f4ec; color: #3f7d5c; }
+        .kpi-gold .kpi-icon { background: #fceec9; color: #e6b44a; }
+        .kpi-rose .kpi-icon { background: #f9ebeE; color: #b47286; }
+        .kpi-teal .kpi-icon { background: #e4f2f3; color: #3d7d85; }
+
+        .module-card {
+            border: 0;
+            border-radius: 16px;
+            background: #fff;
+            box-shadow: 0 3px 10px rgba(20,27,52,.06);
+            transition: transform .18s ease, box-shadow .18s ease;
+            height: 100%;
+        }
+        .module-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(20,27,52,.14); }
+        .module-card .module-icon {
+            width: 46px; height: 46px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+        .module-card .module-count { background: var(--champagne-soft); color: #c08a1f; font-size: .75rem; font-weight: 700; padding: 2px 9px; border-radius: 999px; }
+        .section-title { font-size: .78rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #8a8f9e; margin: 18px 8px 10px; }
+        .offcanvas-admin { width: 340px !important; }
+        .admin-menu-link {
+            display: flex; align-items: center; gap: 12px;
+            text-decoration: none; color: #33405e;
+            border-radius: 12px; padding: 10px 12px;
+            transition: background .15s ease;
+            border-left: 3px solid transparent;
+        }
+        .admin-menu-link:hover { background: #f6f1e6; border-left-color: var(--champagne); color: #c08a1f; }
+        .admin-menu-link .mi {
+            width: 38px; height: 38px;
+            border-radius: 10px;
+            background: #f4efdd; color: var(--ink);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+        .soft-bg { background: var(--cream); }
+        .stage-badge { border-radius: 999px; padding: 4px 12px; font-size: .74rem; font-weight: 600; }
+        .progress-tiny { height: 6px; border-radius: 999px; background: #efead9 !important; }
+        .pill-gold { background: linear-gradient(135deg, #ffd471, #e6b44a) !important; color: #221d10 !important; border: 1px solid #e6b44a !important; }
+        .pill-gold:hover { filter: brightness(1.05); transform: translateY(-1px); }
+        .pill-line { color: var(--ink) !important; border: 1px solid rgba(20,27,52,.25) !important; background: #fff !important; }
+        .pill-line:hover { background: #f2ecde !important; }
+        .thead-navy th { background: var(--ink) !important; color: #fff !important; }
+        .stat-box { border-radius: 14px; padding: 14px 16px; border: 1px solid var(--line); }
+        .stat-navy { background: var(--tint-navy); }
+        .stat-gold { background: var(--tint-gold); }
+        .stat-green { background: var(--tint-green); }
+        .stat-flat { background: #fff; }
+        .admin-band {
+            background: linear-gradient(120deg, var(--navy-deep) 0%, var(--ink-2) 48%, #7a3f52 135%);
+            border-radius: 18px;
+            padding: 22px 26px;
+            position: relative;
+            overflow: hidden;
+        }
+        .admin-band::after {
+            content: "";
+            position: absolute; right: -50px; top: -50px;
+            width: 190px; height: 190px; border-radius: 50%;
+            background: rgba(240,191,77,.25);
+            pointer-events: none;
+        }
+        .admin-band::before {
+            content: "";
+            position: absolute; right: 60px; bottom: -70px;
+            width: 150px; height: 150px; border-radius: 50%;
+            background: rgba(217,165,176,.20);
+            pointer-events: none;
+        }
+        .admin-band > * { position: relative; z-index: 1; }
+        .enquiry-card { border: 0; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 14px rgba(20,27,52,.08); }
+        .enquiry-card .card-header { border-bottom: 1px solid var(--line); background: #fff; padding: .9rem 1.1rem; }
+        .stage-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+        .table thead th { font-size: .74rem; text-transform: uppercase; letter-spacing: .05em; color: #7d8297; border-bottom: 0; font-weight: 700; }
+    </style>
+<link rel="canonical" href="{{ request.build_absolute_uri }}">
+    <meta name="author" content="Oweru Tech Solutions">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": ["Organization", "LocalBusiness"],
+        "@id": "https://www.oweru.tech/#organization",
+        "name": "Oweru Tech Solutions",
+        "legalName": "Oweru International Ltd",
+        "alternateName": ["Oweru", "Oweru Tech"],
+        "url": "https://www.oweru.tech",
+        "logo": "https://www.oweru.tech/static/images/oweru-logo.jpg",
+        "description": "Tanzanian software house building mobile apps, web platforms, CRM systems and network infrastructure for growing businesses. Fixed prices and on-time delivery.",
+        "foundingDate": "2024",
+        "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Dar es Salaam",
+            "addressCountry": "TZ"
+        },
+        "telephone": "+255 123 456 789",
+        "email": "hello@oweru.tech",
+        "areaServed": { "@type": "Country", "name": "Tanzania" },
+        "knowsAbout": [
+            "Mobile application development",
+            "Web development",
+            "CRM systems",
+            "E-commerce platforms",
+            "Network design and maintenance",
+            "ERP systems"
+        ],
+        "sameAs": [
+            "https://www.facebook.com/",
+            "https://www.instagram.com/",
+            "https://www.linkedin.com/",
+            "https://wa.me/255123456789"
+        ]
+    }
+    </script>
+</head>
+<body>
+    {% block nav %}
+    {% if not request.admin_area %}
+    <nav class="navbar navbar-expand-lg bg-white shadow-sm sticky-top">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="{% url 'core:home' %}">
+                <img src="{% static 'images/oweru-logo.jpg' %}" alt="Oweru Tech Solutions"
+                     class="navbar-brand-logo">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu" aria-controls="navMenu" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navMenu">
+                <ul class="navbar-nav ms-auto align-items-lg-center">
+                    <li class="nav-item"><a class="nav-link" href="{% url 'core:home' %}">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'core:about' %}">About Us</a></li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="{% url 'core:services' %}" data-bs-toggle="dropdown" role="button" aria-expanded="false">Solutions</a>
+                        <ul class="dropdown-menu dropdown-menu-rich">
+                            <li><a class="dropdown-item" href="{% url 'core:services' %}">
+                                <span class="dd-title">All Packages</span>
+                                <span class="dd-desc">Fixed prices &amp; timelines for everything</span>
+                            </a></li>
+                            <li><a class="dropdown-item" href="{% url 'core:services' %}">
+                                <span class="dd-title">Mobile &amp; Web Systems</span>
+                                <span class="dd-desc">Apps, e-commerce, booking platforms &amp; portals</span>
+                            </a></li>
+                            <li><a class="dropdown-item" href="{% url 'core:services' %}">
+                                <span class="dd-title">CRM Systems</span>
+                                <span class="dd-desc">Customer records, sales pipelines, auto follow-ups</span>
+                            </a></li>
+                            <li><a class="dropdown-item" href="{% url 'core:services' %}">
+                                <span class="dd-title">Networks &amp; Connectivity</span>
+                                <span class="dd-desc">Office networks, Wi-Fi, VPN, proactive maintenance</span>
+                            </a></li>
+                            <li><a class="dropdown-item" href="{% url 'core:services' %}">
+                                <span class="dd-title">Care Plans</span>
+                                <span class="dd-desc">Monthly support to keep your systems healthy</span>
+                            </a></li>
+                        </ul>
+                    </li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'core:scanner_home' %}">Website Scanner</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'core:contact' %}">Contact</a></li>
+
+                    {% if request.session.enquiry_ref %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" role="button">My Project</a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'core:customer_tracking' request.session.enquiry_ref %}">My Enquiries</a></li>
+                            <li><a class="dropdown-item" href="{% url 'core:customer_services' request.session.enquiry_ref %}">My Services</a></li>
+                            <li><a class="dropdown-item" href="{% url 'core:customer_proposals' request.session.enquiry_ref %}">Proposals</a></li>
+                            <li><a class="dropdown-item" href="{% url 'core:customer_payments' request.session.enquiry_ref %}">Payments</a></li>
+                            <li><a class="dropdown-item" href="{% url 'core:customer_support' request.session.enquiry_ref %}">Support</a></li>
+                        </ul>
+                    </li>
+                    {% endif %}
+
+                    <li class="nav-item ms-lg-2">
+                        <a class="btn btn-primary" href="{% url 'core:enquiry_new' %}">Get a Quote</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    {% endif %}
+    {% endblock %}
+
+    {% if messages %}
+    <div class="container mt-3">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% block content %}{% endblock %}
+
+    {% block delivery_band %}
+    {% if not request.admin_area %}
+    <section class="py-4" style="background:linear-gradient(120deg,#ffd471,#e6b44a 55%,#b8933f);color:#221d10;">
+        <div class="container">
+            <div class="row text-center g-3">
+                <div class="col-6 col-md-3">
+                    <i class="bi bi-clock fs-2"></i>
+                    <p class="mb-0 mt-1 fw-semibold">Reply within 1 working day</p>
+                </div>
+                <div class="col-6 col-md-3">
+                    <i class="bi bi-journal-text fs-2"></i>
+                    <p class="mb-0 mt-1 fw-semibold">Written progress every week</p>
+                </div>
+                <div class="col-6 col-md-3">
+                    <i class="bi bi-check2-circle fs-2"></i>
+                    <p class="mb-0 mt-1 fw-semibold">Milestone sign-off</p>
+                </div>
+                <div class="col-6 col-md-3">
+                    <i class="bi bi-truck fs-2"></i>
+                    <p class="mb-0 mt-1 fw-semibold">On-time or final payment reduces</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    {% endif %}
+    {% endblock %}
+
+    {% block footer %}
+    {% if not request.admin_area %}
+    <footer id="contact" class="bg-dark text-white pt-5 pb-4">
+        <div class="container">
+            <div class="row g-4 g-lg-5">
+                <div class="col-lg-3">
+                    <div class="mb-3">
+                        <img src="{% static 'images/oweru-logo.jpg' %}" alt="Oweru Tech Solutions"
+                             class="footer-logo">
+                    </div>
+                    <p class="fw-semibold text-white-75 small mb-1">Established 2024 · Dar es Salaam, Tanzania</p>
+                    <p class="text-white-50 small mb-2">
+                        We build systems that grow your business. Fixed prices, on-time delivery,
+                        local support across Tanzania.
+                    </p>
+                    <div class="d-inline-block" style="width:24px;height:2px;background:#e6b44a;"></div>
+                </div>
+                <div class="col-6 col-md-4 col-lg-2">
+                    <h6 class="fw-bold" style="color:#e2d3a3;">Navigate</h6>
+                    <ul class="list-unstyled small">
+                        <li class="mb-2"><a class="link-light text-decoration-none hover-underline" href="{% url 'core:home' %}">Home</a></li>
+                        <li class="mb-2"><a class="link-light text-decoration-none hover-underline" href="{% url 'core:about' %}">About Us</a></li>
+                        <li class="mb-2"><a class="link-light text-decoration-none hover-underline" href="{% url 'core:services' %}">Packages</a></li>
+                        <li class="mb-2"><a class="link-light text-decoration-none hover-underline" href="{% url 'core:how_it_works' %}">How It Works</a></li>
+                        <li class="mb-2"><a class="link-light text-decoration-none hover-underline" href="{% url 'core:contact' %}">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="col-6 col-md-4 col-lg-2">
+                    <h6 class="fw-bold" style="color:#e2d3a3;">Services</h6>
+                    <ul class="list-unstyled small">
+                        <li class="mb-2"><a class="link-light text-decoration-none hover-underline" href="{% url 'core:services' %}">Mobile & Web Systems</a></li>
+                        <li class="mb-2"><a class="link-light text-decoration-none hover-underline" href="{% url 'core:services' %}">CRM Systems</a></li>
+                        <li class="mb-2"><a class="link-light text-decoration-none hover-underline" href="{% url 'core:services' %}">Network Design & Maintenance</a></li>
+                        <li class="mb-2"><a class="link-light text-decoration-none hover-underline" href="{% url 'core:scanner_home' %}">Free Site Health Check</a></li>
+                    </ul>
+                </div>
+                <div class="col-6 col-md-4 col-lg-2">
+                    <h6 class="fw-bold" style="color:#e2d3a3;">Contact</h6>
+                    <ul class="list-unstyled text-white-50 small">
+                        <li class="mb-2"><a class="link-light text-decoration-none hover-underline" href="mailto:hello@oweru.tech"><i class="bi bi-envelope me-2"></i>hello@oweru.tech</a></li>
+                        <li class="mb-2"><a class="link-light text-decoration-none hover-underline" href="tel:+255123456789"><i class="bi bi-telephone me-2"></i>+255 123 456 789</a></li>
+                        <li class="mb-2"><i class="bi bi-geo-alt me-2"></i>Dar es Salaam, Tanzania</li>
+                        <li class="mb-2"><a class="link-light text-decoration-none hover-underline" href="{% url 'core:contact' %}">Send a message <i class="bi bi-arrow-right"></i></a></li>
+                    </ul>
+                </div>
+                <div class="col-6 col-md-4 col-lg-3">
+                    <h6 class="fw-bold" style="color:#e2d3a3;">Follow us</h6>
+                    <div class="d-grid gap-2" style="grid-template-columns:1fr 1fr;">
+                        <a href="https://www.facebook.com/" target="_blank" rel="noopener noreferrer" class="btn-tile-footer">
+                            <span class="btn-tile-icon"><i class="bi bi-facebook"></i></span>
+                            <span class="btn-tile-label">
+                                <strong class="d-block">Facebook</strong>
+                                <small class="fw-normal text-white-50">&commat;oweru.tech</small>
+                            </span>
+                        </a>
+                        <a href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer" class="btn-tile-footer">
+                            <span class="btn-tile-icon"><i class="bi bi-instagram"></i></span>
+                            <span class="btn-tile-label">
+                                <strong class="d-block">Instagram</strong>
+                                <small class="fw-normal text-white-50">&commat;oweru.tech</small>
+                            </span>
+                        </a>
+                        <a href="https://www.linkedin.com/" target="_blank" rel="noopener noreferrer" class="btn-tile-footer">
+                            <span class="btn-tile-icon"><i class="bi bi-linkedin"></i></span>
+                            <span class="btn-tile-label">
+                                <strong class="d-block">LinkedIn</strong>
+                                <small class="fw-normal text-white-50">Oweru Tech</small>
+                            </span>
+                        </a>
+                        <a href="https://wa.me/255123456789" target="_blank" rel="noopener noreferrer" class="btn-tile-footer">
+                            <span class="btn-tile-icon"><i class="bi bi-whatsapp"></i></span>
+                            <span class="btn-tile-label">
+                                <strong class="d-block">WhatsApp</strong>
+                                <small class="fw-normal text-white-50">Chat with us</small>
+                            </span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <hr class="border-secondary">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-2 small">
+                <div class="fw-semibold text-white-75">Fixed prices. On-time delivery. <span style="color:#e6b44a;">Local support.</span></div>
+                <div class="text-white-50">
+                    <span class="d-inline-block me-3">&copy; {% now "Y" %} Oweru International Ltd. All rights reserved.</span>
+                    <a class="link-light text-decoration-none hover-underline" href="{% url 'core:privacy' %}">Privacy Policy</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+    {% endif %}
+    {% endblock %}
+
+    <div class="offcanvas offcanvas-end offcanvas-admin" tabindex="-1" id="adminPanel" aria-labelledby="adminPanelLabel">
+        <div class="offcanvas-header" style="background:linear-gradient(135deg,#1f2750 0%,#2b3568 55%,#b07285 140%);">
+            <div>
+                <div class="text-white-50" style="font-size:.72rem; letter-spacing:.1em; text-transform:uppercase;">OWERU</div>
+                <h5 class="offcanvas-title text-white fw-bold mt-1" id="adminPanelLabel">Control Center</h5>
+            </div>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body p-3 soft-bg">
+            <div class="d-flex align-items-center gap-3 mb-3 p-3 rounded-4" style="background:#fff;">
+                <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:46px;height:46px;background:linear-gradient(135deg,#C87828,#C8A028);color:#fff;font-weight:700;">
+                    {{ user.first_name|default:user.username|slice:":1"|upper }}
+                </div>
+                <div class="lh-sm">
+                    <div class="fw-bold" style="color:#1f2750;">{{ user.first_name|default:user.username }}</div>
+                    <div class="small text-muted">Hello & welcome back</div>
+                </div>
+            </div>
+            {% if user.is_authenticated and user.role == 'admin' or user.is_superuser %}
+            <div class="section-title">Overview</div>
+            <a class="admin-menu-link" href="{% url 'core:admin_dashboard' %}">
+                <span class="mi"><i class="bi bi-grid-1x2-fill"></i></span>
+                <div class="lh-sm">
+                    <div class="fw-semibold">Dashboard</div>
+                    <div class="small text-muted">At-a-glance overview</div>
+                </div>
+            </a>
+            <div class="section-title">Leads & sales</div>
+            <a class="admin-menu-link" href="{% url 'core:admin_enquiries' %}">
+                <span class="mi"><i class="bi bi-inbox-fill"></i></span>
+                <div class="lh-sm">
+                    <div class="fw-semibold">Enquiries</div>
+                    <div class="small text-muted">Requests & pipeline</div>
+                </div>
+            </a>
+            <a class="admin-menu-link" href="{% url 'core:admin_customers' %}">
+                <span class="mi"><i class="bi bi-people-fill"></i></span>
+                <div class="lh-sm">
+                    <div class="fw-semibold">Customers</div>
+                    <div class="small text-muted">Your client base</div>
+                </div>
+            </a>
+            <a class="admin-menu-link" href="{% url 'core:admin_proposals' %}">
+                <span class="mi"><i class="bi bi-file-earmark-text-fill"></i></span>
+                <div class="lh-sm">
+                    <div class="fw-semibold">Proposals</div>
+                    <div class="small text-muted">Quotes & price lists</div>
+                </div>
+            </a>
+            <a class="admin-menu-link" href="{% url 'core:admin_payments' %}">
+                <span class="mi"><i class="bi bi-cash-coin"></i></span>
+                <div class="lh-sm">
+                    <div class="fw-semibold">Payments</div>
+                    <div class="small text-muted">Deposits & confirmations</div>
+                </div>
+            </a>
+            <a class="admin-menu-link" href="{% url 'core:admin_signals' %}">
+                <span class="mi"><i class="bi bi-radar"></i></span>
+                <div class="lh-sm">
+                    <div class="fw-semibold">Signals</div>
+                    <div class="small text-muted">Job posts, tenders & funding</div>
+                </div>
+            </a>
+            <div class="section-title">Operations</div>
+            <a class="admin-menu-link" href="{% url 'core:admin_packages' %}">
+                <span class="mi"><i class="bi bi-box-seam-fill"></i></span>
+                <div class="lh-sm">
+                    <div class="fw-semibold">Packages</div>
+                    <div class="small text-muted">Services on offer</div>
+                </div>
+            </a>
+            <a class="admin-menu-link" href="{% url 'core:admin_deliveries' %}">
+                <span class="mi"><i class="bi bi-truck"></i></span>
+                <div class="lh-sm">
+                    <div class="fw-semibold">Service Delivery</div>
+                    <div class="small text-muted">Jobs in progress</div>
+                </div>
+            </a>
+            <div class="section-title">Tools</div>
+            <a class="admin-menu-link" href="{% url 'core:admin_scans' %}">
+                <span class="mi"><i class="bi bi-search-heart-fill"></i></span>
+                <div class="lh-sm">
+                    <div class="fw-semibold">Scanner Logs</div>
+                    <div class="small text-muted">Website health checks</div>
+                </div>
+            </a>
+            <a class="admin-menu-link" href="{% url 'core:admin_scan_batch' %}">
+                <span class="mi"><i class="bi bi-stack"></i></span>
+                <div class="lh-sm">
+                    <div class="fw-semibold">Batch Scan</div>
+                    <div class="small text-muted">Scan many sites at once</div>
+                </div>
+            </a>
+            <a class="admin-menu-link" href="{% url 'core:admin_report_requests' %}">
+                <span class="mi"><i class="bi bi-envelope-check"></i></span>
+                <div class="lh-sm">
+                    <div class="fw-semibold">Report Requests</div>
+                    <div class="small text-muted">Approve before sending PDFs</div>
+                </div>
+            </a>
+            <hr class="my-2">
+            <a class="admin-menu-link" href="{% url 'core:staff_logout' %}">
+                <span class="mi"><i class="bi bi-box-arrow-right"></i></span>
+                <div class="lh-sm">
+                    <div class="fw-semibold">Sign out</div>
+                    <div class="small text-muted">Back to the public site</div>
+                </div>
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        // Global scroll-reveal
+        document.addEventListener('DOMContentLoaded', function(){
+            var els = document.querySelectorAll('.reveal');
+            if ('IntersectionObserver' in window) {
+                var io = new IntersectionObserver(function(entries){
+                    entries.forEach(function(e){
+                        if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); }
+                    });
+                }, { threshold: .12, rootMargin: '0px 0px -40px 0px' });
+                els.forEach(function(el){ io.observe(el); });
+            } else {
+                els.forEach(function(el){ el.classList.add('visible'); });
+            }
+        });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    // ---------------------------------------------------------------------
+    // Show more / show less for long lists.
+    //
+    // Add data-showmore="5" to any container. Children past the 5th are
+    // hidden behind a "Show more" button. Add data-key="..." to keep the
+    // expanded state between page visits; without it the state is not stored,
+    // so that list always starts collapsed.
+    // ---------------------------------------------------------------------
+    (function () {
+        var STORE = 'oweru.showmore';
+
+        function readStore(key) {
+            try { return JSON.parse(window.localStorage.getItem(STORE) || '{}'); }
+            catch (e) { return {}; }
+        }
+        function writeStore(key, value, state) {
+            try {
+                var all = readStore(key);
+                all[value] = state;
+                window.localStorage.setItem(STORE, JSON.stringify(all));
+            } catch (e) { /* private mode: collapse-only behaviour is fine */ }
+        }
+
+        function build(container) {
+            var limit = parseInt(container.getAttribute('data-showmore'), 10);
+            if (!limit || limit < 1) { return; }
+
+            var items = Array.prototype.filter.call(container.children, function (el) {
+                return !el.hasAttribute('data-sm-button') &&
+                       el.nodeType === 1 &&
+                       el.tagName !== 'TEMPLATE';
+            });
+            if (items.length <= limit) { return; }
+
+            var hiddenCount = items.length - limit;
+            var storeKey = container.getAttribute('data-key');
+            var expanded = false;
+
+            // Restore a previously expanded list when it has a stable key.
+            if (storeKey && readStore(storeKey)[container.id || storeKey] === true) {
+                expanded = true;
+            }
+
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'btn btn-sm btn-outline-secondary mt-2';
+            btn.setAttribute('data-sm-button', '1');
+
+            function apply() {
+                for (var i = 0; i < items.length; i++) {
+                    if (i < limit) {
+                        items[i].style.display = '';
+                    } else {
+                        items[i].style.display = expanded ? '' : 'none';
+                    }
+                }
+                btn.textContent = expanded
+                    ? 'Show less'
+                    : 'Show ' + hiddenCount + ' more';
+                btn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+            }
+
+            btn.addEventListener('click', function () {
+                expanded = !expanded;
+                apply();
+                if (storeKey) {
+                    writeStore(storeKey, container.id || storeKey, expanded);
+                }
+            });
+
+            // Place the button AFTER the list, never inside it. A <button> is
+            // not valid inside <tbody>/<table>, and browsers silently move it
+            // out, which breaks the layout.
+            var anchor = container;
+            if (container.tagName === 'TBODY' || container.tagName === 'THEAD') {
+                anchor = container.closest('table') || container;
+            }
+            if (anchor.parentNode) {
+                anchor.parentNode.insertBefore(btn, anchor.nextSibling);
+            }
+
+            apply();
+        }
+
+        function init() {
+            var containers = document.querySelectorAll('[data-showmore]');
+            for (var i = 0; i < containers.length; i++) { build(containers[i]); }
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    })();
+    </script>
+    {% block extra_js %}{% endblock %}
+    {% if not request.admin_area %}
+    <a href="{% wa_chat_link 'Hello Oweru! I would like to talk about a project.' %}" target="_blank" rel="noopener"
+       class="wa-float" aria-label="Chat with us on WhatsApp" title="Chat with us on WhatsApp">
+        <i class="bi bi-whatsapp"></i>
+    </a>
+    {% endif %}
+    <style>
+        .wa-float{position:fixed;right:20px;bottom:20px;z-index:1080;width:56px;height:56px;border-radius:50%;
+            background:#25d366;color:#fff;display:flex;align-items:center;justify-content:center;
+            font-size:30px;box-shadow:0 6px 20px rgba(37,211,102,.45);transition:transform .2s;}
+        .wa-float:hover{transform:scale(1.08);color:#fff;}
+        .wa-float::before{content:'';position:absolute;inset:-6px;border-radius:50%;background:rgba(37,211,102,.35);
+            animation:wa-pulse 2.2s ease-out infinite;z-index:-1;}
+        @keyframes wa-pulse{0%{transform:scale(.7);opacity:.9}100%{transform:scale(1.35);opacity:0}}
+    </style>
+</body>
+</html>

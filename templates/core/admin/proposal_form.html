@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block title %}New Proposal - Oweru Admin{% endblock %}
+
+{% block content %}
+<section class="bg-light py-4">
+    <div class="container d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="fw-bold mb-0">New Proposal</h1>
+            <p class="text-muted mb-0">
+                {% if enquiry %}For enquiry: {{ enquiry.business_name }} ({{ enquiry.reference }}){% else %}Blank proposal{% endif %}
+            </p>
+        </div>
+        <a href="{% url 'core:admin_proposals' %}" class="btn btn-outline-secondary">Back</a>
+    </div>
+</section>
+
+<section class="py-4">
+    <div class="container">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white fw-bold">Proposal details</div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Title</label>
+                            <input name="title" class="form-control" required placeholder="e.g. Custom booking website for XYZ"/>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold">Currency</label>
+                            <select name="currency" class="form-select">
+                                <option value="TZS" selected>TZS</option>
+                                <option value="USD">USD</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold">Deposit percent</label>
+                            <input name="deposit_percent" type="number" value="50" class="form-control"/>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Valid until</label>
+                            <input name="valid_until" type="date" class="form-control"/>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Status</label>
+                            <select name="status" class="form-select">
+                                <option value="draft">Draft</option>
+                                <option value="sent">Sent (email customer immediately)</option>
+                                <option value="accepted">Accepted</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-semibold">Scope description</label>
+                            <textarea name="description" rows="3" class="form-control" placeholder="What is included, expectations, assumptions..."></textarea>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-semibold">Notes (internal)</label>
+                            <textarea name="notes" rows="2" class="form-control"></textarea>
+                        </div>
+                    </div>
+
+                    <hr>
+                    <h6 class="fw-bold">Line items</h6>
+                    <div id="items">
+                        <div class="row g-2 mb-2 item-row">
+                            <div class="col-md-6">
+                                <input name="item_description" class="form-control" placeholder="Description (e.g. Website design & development)">
+                            </div>
+                            <div class="col-md-2">
+                                <input name="item_quantity" type="number" value="1" min="1" class="form-control">
+                            </div>
+                            <div class="col-md-3">
+                                <input name="item_price" type="number" step="any" min="0" class="form-control" placeholder="Unit price">
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-primary mb-3" onclick="addItem()">+ Add line item</button>
+
+                    <div class="text-end">
+                        <button class="btn btn-primary">Create proposal</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+function addItem() {
+    const row = document.querySelector('.item-row').cloneNode(true);
+    row.querySelectorAll('input').forEach(i => i.value = '');
+    row.querySelector('input[name="item_quantity"]').value = 1;
+    document.getElementById('items').appendChild(row);
+}
+</script>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% load core_filters %}
+<div class="dropdown-menu dropdown-menu-end shadow border-0 p-2 bell-dropdown" aria-labelledby="alertBell">
+    <div class="px-2 py-1 d-flex justify-content-between align-items-center">
+        <span class="fw-semibold small">Notifications</span>
+        <span class="badge" style="background:#c87828;color:#fff;">{{ unread }} new</span>
+    </div>
+    <div class="dropdown-divider"></div>
+    {% for a in alerts %}
+    <a class="dropdown-item bell-item d-flex flex-column align-items-start py-2 rounded-2"
+       href="{% if a.url %}{{ a.url }}{% else %}{% url 'core:admin_alerts' %}{% endif %}">
+        <div class="d-flex w-100 justify-content-between">
+            <span class="fw-semibold small">{{ a.title }}</span>
+            <span class="small text-muted" style="font-size:.72rem;">{{ a.created_at|date:'d M H:i' }}</span>
+        </div>
+        {% if a.body %}<span class="small text-muted">{{ a.body|truncatechars:70 }}</span>{% endif %}
+    </a>
+    {% empty %}
+    <div class="px-3 py-3 text-center text-muted small">
+        <i class="bi bi-bell-slash d-block mb-1" style="font-size:1.4rem;"></i>
+        You're all caught up
+    </div>
+    {% endfor %}
+    <div class="dropdown-divider"></div>
+    <a class="dropdown-item small fw-semibold text-center py-1" href="{% url 'core:admin_alerts' %}">
+        View all alerts
+    </a>
+</div>

@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% load static %}
+
+{% block title %}Solutions & Packages - Oweru Tech Solutions{% endblock %}
+{% block meta_description %}Explore Oweru's solutions: mobile & web systems, CRM platforms and network design. Clear prices, timelines and what's included - final quotes confirmed in a free consultation.{% endblock %}
+
+{% block content %}
+
+<section class="hero" style="padding:84px 0;background:linear-gradient(90deg, rgba(8,12,32,.92) 0%, rgba(20,27,52,.72) 52%, rgba(20,27,52,.28) 100%),url('{% static "images/hero-dashboard.jpg" %}') center 40% cover no-repeat;">
+    <div class="aurora" style="width:500px;height:500px;background:radial-gradient(circle,rgba(240,191,77,.16),transparent 65%);top:-150px;right:-60px;"></div>
+    <div class="container position-relative" style="z-index:2;">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <span class="eyebrow mb-3"><span class="d-inline-block me-2" style="width:30px;height:2px;border-radius:99px;background:#e6b44a;"></span>Our solutions</span>
+                <h1 class="fw-bold text-white mb-3">Fixed prices, clear timelines</h1>
+                <p class="text-white-50 mb-0" style="max-width:640px;">
+                    Three practice areas. The final quote depends on your exact scope of work,
+                    which we confirm together in a free consultation.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="py-3" style="background:#fff;border-bottom:1px solid var(--line);">
+    <div class="container d-flex align-items-center gap-2 flex-wrap">
+        <span class="small text-muted me-1">Show prices in:</span>
+        <div class="btn-group btn-group-sm" role="group" aria-label="Display currency">
+            <a href="?currency=TZS" class="btn {% if display_currency == 'TZS' %}btn-primary{% else %}btn-outline-primary{% endif %}">TZS</a>
+            <a href="?currency=USD" class="btn {% if display_currency == 'USD' %}btn-primary{% else %}btn-outline-primary{% endif %}">USD</a>
+        </div>
+    </div>
+</div>
+
+{% for group in groups %}
+<section id="group-{{ group.slug }}" class="py-5" style="background:{% if forloop.counter|divisibleby:2 %}var(--cream){% else %}#fff{% endif %};">
+    <div class="container">
+        <div class="mb-4 reveal">
+            <span class="eyebrow mb-2"><i class="bi bi-gem me-1"></i>{{ group.label }}</span>
+            <h2 class="fw-bold mb-0">{{ group.label }}</h2>
+        </div>
+        <div class="row g-4">
+            {% for pkg in group.packages %}
+            <div class="col-md-6 reveal">
+                <div class="card-lift h-100">
+                    {% if 'website' in pkg.slug %}{% static 'images/hero-slide-web.jpg' as pkg_img %}
+                    {% elif 'application' in pkg.slug %}{% static 'images/hero-slide-mobile.jpg' as pkg_img %}
+                    {% elif 'crm' in pkg.slug %}{% static 'images/hero-slide-crm.jpg' as pkg_img %}
+                    {% elif 'network' in pkg.slug %}{% static 'images/hero-slide-network.jpg' as pkg_img %}
+                    {% else %}{% static 'images/hero-slide-ecommerce.jpg' as pkg_img %}{% endif %}
+                    <div class="pkg-img-wrap d-none d-md-block">
+                        <img src="{{ pkg_img }}" alt="{{ pkg.name }}" loading="lazy">
+                    </div>
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold mb-2">{{ pkg.name }}</h5>
+                        <p class="text-muted small mb-3">{{ pkg.description }}</p>
+                        <ul class="list-unstyled mb-4">
+                            {% for item in pkg.included %}
+                            <li class="py-1 small"><i class="bi bi-check-circle-fill me-2" style="color:#e6b44a;"></i>{{ item }}</li>
+                            {% endfor %}
+                        </ul>
+                        <div class="d-flex justify-content-between align-items-center border-top pt-3" style="border-color:var(--line) !important;">
+                            <div>
+                                <div class="small text-muted">Starting price</div>
+                                <div class="fw-bold mb-1">
+                                    {% if display_currency == 'USD' and pkg.price_usd_min %}
+                                        USD {{ pkg.price_usd_min }}
+                                        {% if pkg.price_usd_max %} - {{ pkg.price_usd_max }}{% endif %}
+                                        <span class="small text-muted fw-normal">(TZS {{ pkg.price_tzs_min|floatformat:0|intcomma }}{% if pkg.price_tzs_max %} - {{ pkg.price_tzs_max|floatformat:0|intcomma }}{% endif %})</span>
+                                    {% elif pkg.price_tzs_min %}
+                                        TZS {{ pkg.price_tzs_min|floatformat:0|intcomma }}
+                                        {% if pkg.price_tzs_max %} - {{ pkg.price_tzs_max|floatformat:0|intcomma }}{% endif %}
+                                        <span class="small text-muted fw-normal">(USD {{ pkg.price_usd_min }}{% if pkg.price_usd_max %} - {{ pkg.price_usd_max }}{% endif %})</span>
+                                    {% elif pkg.price_usd_min %}
+                                        USD {{ pkg.price_usd_min }}
+                                        {% if pkg.price_usd_max %} - {{ pkg.price_usd_max }}{% endif %}
+                                    {% else %}
+                                        Custom quote
+                                    {% endif %}
+                                </div>
+                                <div class="small text-muted"><i class="bi bi-clock me-1"></i>{{ pkg.timeline }}</div>
+                            </div>
+                            <a href="{% url 'core:package_detail' pkg.slug %}" class="btn btn-primary">Details &amp; Price</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endfor %}
+
+<!-- Care plans -->
+<section class="py-5" style="background:var(--cream);">
+    <div class="container">
+        <div class="text-center reveal">
+            <span class="eyebrow mb-2"><span class="d-inline-block me-2" style="width:30px;height:2px;border-radius:99px;background:#e6b44a;"></span>Care plans</span>
+            <h2 class="fw-bold mb-2">Monthly care plans</h2>
+            <p class="text-muted mb-5">One-off projects end. Good companies don't. Keep your systems healthy.</p>
+        </div>
+        <div class="row g-4">
+            {% for plan in care_plans %}
+            <div class="col-md-4 reveal">
+                <div class="card-lift h-100">
+                    <div class="card-body text-center p-4">
+                        <span class="icon-chip mx-auto mb-3"><i class="bi bi-shield-plus"></i></span>
+                        <h5 class="fw-bold">{{ plan.name }}</h5>
+                        <p class="text-muted small">{{ plan.description }}</p>
+                        <ul class="list-unstyled text-start my-4">
+                            {% for item in plan.included %}
+                            <li class="py-1 small"><i class="bi bi-check-circle-fill me-2" style="color:#e6b44a;"></i>{{ item }}</li>
+                            {% endfor %}
+                        </ul>
+                        {% if display_currency == 'USD' %}
+                            <div class="fw-bold mb-1" style="font-size:1.4rem;">USD {{ plan.monthly_usd }}/mo</div>
+                            <div class="small text-muted mb-3">TZS {{ plan.monthly_tzs|floatformat:0|intcomma }}/mo for local clients</div>
+                        {% else %}
+                            <div class="fw-bold mb-1" style="font-size:1.4rem;">TZS {{ plan.monthly_tzs|floatformat:0|intcomma }}/mo</div>
+                            <div class="small text-muted mb-3">USD {{ plan.monthly_usd }}/mo for international clients</div>
+                        {% endif %}
+                        <a href="{% url 'core:enquiry_new' %}" class="btn btn-outline-primary w-100">Enquire Now</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Exclusions -->
+<section class="py-5" style="background:#fff;">
+    <div class="container">
+        <div class="reveal">
+            <span class="eyebrow mb-2">What's excluded</span>
+            <h2 class="fw-bold mb-3">Clear about what is included</h2>
+            <p class="text-muted mb-4">So you always know exactly what you are buying.</p>
+        </div>
+        <div class="row g-3 reveal">
+            {% for exclusion in exclusions %}
+            <div class="col-md-6">
+                <div class="d-flex align-items-start">
+                    <i class="bi bi-x-circle me-2 mt-1 text-muted"></i>
+                    <span class="small">{{ exclusion.description }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="mt-5 reveal">
+            <div class="text-center">
+                <a href="{% url 'core:enquiry_new' %}" class="btn btn-champagne btn-sheen btn-lg px-5">Get a Free Quote</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

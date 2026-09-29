@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% load humanize %}
+
+{% block title %}Packages - Oweru Admin{% endblock %}
+
+{% block content %}
+{% include 'core/admin/_admin_header.html' with title='Packages' subtitle='Manage services shown on the public site' %}
+
+<section class="py-4">
+    <div class="container">
+        <button class="btn btn-primary mb-3" data-bs-toggle="collapse" data-bs-target="#newPkg">+ New Package</button>
+        <div class="card border-0 rounded-4 overflow-hidden mb-4 collapse" id="newPkg" style="box-shadow:0 4px 14px rgba(31,39,80,.08);">
+            <div class="card-header bg-white fw-bold">Create package</div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="create">
+                    <div class="row g-2">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Name</label>
+                            <input name="name" class="form-control" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold">Group</label>
+                            <select name="group" class="form-select">
+                                <option value="mobile-web">Mobile &amp; Web Systems</option>
+                                <option value="crm">CRM Systems</option>
+                                <option value="network">Network Design &amp; Maintenance</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold">Timeline</label>
+                            <input name="timeline" class="form-control" placeholder="e.g. 2-3 weeks">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold">Price min (TZS)</label>
+                            <input name="price_tzs_min" class="form-control">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold">Price max (TZS)</label>
+                            <input name="price_tzs_max" class="form-control">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-semibold">Description</label>
+                            <textarea name="description" rows="2" class="form-control"></textarea>
+                        </div>
+                        <div class="col-12"><button class="btn btn-primary">Create package</button></div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {% for group in groups %}
+        <h5 class="fw-bold mt-4">{{ group.label }}</h5>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr><th>Package</th><th>Price (TZS)</th><th>Timeline</th><th>Active</th><th>Sort</th></tr>
+                </thead>
+                <tbody>
+                    {% for p in group.packages %}
+                    <tr style="cursor:pointer;" onclick="document.location='{% url 'core:admin_package_edit' p.id %}'">
+                        <td class="fw-semibold">{{ p.name }}</td>
+                        <td>{% if p.price_tzs_min %}{{ p.price_tzs_min|floatformat:0|intcomma }} - {{ p.price_tzs_max|floatformat:0|intcomma }}{% else %}—{% endif %}</td>
+                        <td>{{ p.timeline|default:'—' }}</td>
+                        <td>
+                            <form method="post" onclick="event.stopPropagation();">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="toggle">
+                                <input type="hidden" name="package_id" value="{{ p.id }}">
+                                <button class="btn btn-sm {% if p.is_active %}btn-success{% else %}btn-outline-secondary{% endif %}">
+                                    {{ p.is_active|yesno:'Active,Inactive' }}
+                                </button>
+                            </form>
+                        </td>
+                        <td>{{ p.sort_order }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" class="text-muted">No packages in this group</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

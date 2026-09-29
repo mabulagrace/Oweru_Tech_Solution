@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+
+{% block title %}Batch Scan - Oweru Admin{% endblock %}
+
+{% block content %}
+
+<section class="bg-light py-4">
+    <div class="container">
+        <h1 class="fw-bold mb-0">Run a Batch Scan</h1>
+        <p class="text-muted mb-0">
+            Manual list (up to 50 sites) or automatic daily discovery. We scan public pages only,
+            at a safe rate, and never slow the site down. Government websites are never scanned.
+        </p>
+    </div>
+</section>
+
+<section class="py-4">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-lg-7">
+                <form method="post" class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Batch name (optional)</label>
+                            <input type="text" name="batch_name" class="form-control"
+                                   placeholder="e.g. Dar es Salaam hotels - September 2026">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Website addresses (one per line)</label>
+                            <textarea name="urls" rows="10" class="form-control font-monospace"
+                                      placeholder="https://example.com&#10;https://another.com&#10;https://third.com"></textarea>
+                            <div class="form-text">
+                                We respect robots.txt, keep to 1 request per 2 seconds per site,
+                                and only store business-level results - never personal data.
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-search me-1"></i> Start Scanning
+                        </button>
+                    </div>
+                </form>
+
+                <div class="card border-0 shadow-sm mt-4">
+                    <div class="card-body">
+                        <h6 class="fw-bold mb-3">Automatic Daily Scan</h6>
+                        <p class="text-muted small mb-3">
+                            Each day the system discovers up to 50 sites (seed list + directories)
+                            and scans them in the background. Government websites are automatically
+                            excluded.
+                        </p>
+                        <form method="post" action="{% url 'core:admin_scan_daily' %}" class="d-flex gap-2 align-items-center">
+                            {% csrf_token %}
+                            <button class="btn btn-outline-primary">
+                                <i class="bi bi-lightning-charge me-1"></i> Run Today's Auto-Scan
+                            </button>
+                            <span class="small text-muted">
+                                Cron command: python manage.py daily_scan
+                            </span>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-5">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white fw-bold">Recent Batches</div>
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush" id="batchList">
+                            {% for batch in recent_batches %}
+                            <a class="list-group-item list-group-item-action" data-batch-id="{{ batch.id }}"
+                               href="{% url 'core:admin_batch_detail' batch.id %}">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="fw-semibold small">
+                                            {{ batch.name }}
+                                            {% if batch.auto %}<span class="badge bg-info text-dark ms-1">Auto</span>{% endif %}
+                                        </div>
+                                        <div class="text-muted" style="font-size: .8rem;">
+                                            {{ batch.date_created|date:"d M Y H:i" }} &middot;
+                                            <span class="batch-status">{{ batch.get_status_display }}</span>
+                                            &middot; <span class="batch-count">{{ batch.completed_count }}/{{ batch.total_count }}</span>
+                                        </div>
+                                        <div class="text-muted small mt-1" style="font-size:.78rem;">
+                                            <i class="bi bi-list-ul me-1"></i>View sites &amp; problems
+                                        </div>
+                                        {% if batch.last_processed_url %}
+                                        <div class="text-muted small mt-1 batch-url">
+                                            <i class="bi bi-link-45deg"></i> {{ batch.last_processed_url }}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    <span class="badge status-badge"
+                                          style="background: {% if batch.status == 'completed' %}#2e7d4f{% elif batch.status == 'running' %}#C87828{% elif batch.status == 'failed' %}#c0392b{% else %}#6c757d{% endif %};">
+                                        {{ batch.completed_count|add:batch.failed_count }}%
+                                    </span>
+                                </div>
+                                <div class="progress mt-2" style="height: 5px;">
+                                    <div class="progress-bar batch-progress"
+                                         style="width: {% widthratio batch.completed_count|add:batch.failed_count batch.total_count 100 %}%;"></div>
+                                </div>
+                            </a>
+                            {% empty %}
+                            <div class="list-group-item text-muted small">
+                                No batches yet. Start your first scan above.
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    function refreshProgress() {
+        document.querySelectorAll('[data-batch-id]').forEach(function (el) {
+            var id = el.getAttribute('data-batch-id');
+            fetch('/admin-app/scans/batch/' + id + '/progress/')
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    var pct = data.percent;
+                    el.querySelector('.batch-status').textContent =
+                        data.status.charAt(0).toUpperCase() + data.status.slice(1);
+                    el.querySelector('.batch-count').textContent =
+                        data.completed + '/' + data.total;
+                    el.querySelector('.batch-progress').style.width = pct + '%';
+                    el.querySelector('.status-badge').textContent = pct + '%';
+                    if (data.last_processed_url) {
+                        var urlEl = el.querySelector('.batch-url');
+                        if (urlEl) { urlEl.textContent = 'link ' + data.last_processed_url; }
+                        else {
+                            var div = document.createElement('div');
+                            div.className = 'text-muted small mt-1 batch-url';
+                            div.innerHTML = '<i class="bi bi-link-45deg"></i> ' + data.last_processed_url;
+                            el.querySelector('.batch-status').parentElement.appendChild(div);
+                        }
+                    }
+                });
+        });
+    }
+    setInterval(refreshProgress, 4000);
+</script>
+
+{% endblock %}

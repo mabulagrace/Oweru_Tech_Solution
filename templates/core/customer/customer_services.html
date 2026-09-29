@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% load humanize %}
+
+{% block title %}My Services - Oweru Tech Solutions{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <div class="container">
+        <h1 class="fw-bold mb-1">My Services</h1>
+        <p class="text-white-50 mb-0">Systems being delivered or already running for you</p>
+    </div>
+</section>
+
+<section class="py-3">
+    <div class="container">
+        <div class="d-flex flex-wrap gap-2 mb-4">
+            <a href="{% url 'core:customer_tracking' enquiry.reference %}" class="btn btn-sm btn-outline-primary">My Enquiries</a>
+            <a href="{% url 'core:customer_services' enquiry.reference %}" class="btn btn-sm btn-primary">My Services</a>
+            <a href="{% url 'core:customer_proposals' enquiry.reference %}" class="btn btn-sm btn-outline-primary">Proposals</a>
+            <a href="{% url 'core:customer_payments' enquiry.reference %}" class="btn btn-sm btn-outline-primary">Payments</a>
+            <a href="{% url 'core:customer_support' enquiry.reference %}" class="btn btn-sm btn-outline-primary">Support</a>
+        </div>
+    </div>
+</section>
+
+<section class="py-4">
+    <div class="container">
+        <div data-showmore="5" data-key="portal-deliveries">
+        {% for d in deliveries %}
+        <div class="card border-0 shadow-sm mb-3">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                    <div>
+                        <h5 class="fw-bold mb-1">{{ d.service_name }}</h5>
+                        <div class="text-muted small">
+                            {{ d.reference }} &middot;
+                            {% if d.delivery_date %}Delivered {{ d.delivery_date|date:"d M Y" }}{% endif %}
+                        </div>
+                    </div>
+                    <span class="badge {% if d.status == 'active' %}bg-success{% elif d.status == 'delivered' %}bg-info text-dark{% else %}bg-warning text-dark{% endif %}">
+                        {{ d.status }}
+                    </span>
+                </div>
+                {% if d.description %}<p class="mb-2 mt-2 small">{{ d.description }}</p>{% endif %}
+                {% if d.care_plan %}
+                <div class="small text-muted mb-2">
+                    <i class="bi bi-shield-check me-1"></i><strong>Care plan:</strong> {{ d.care_plan.name }}
+                </div>
+                {% endif %}
+                <a href="{% url 'core:customer_support' enquiry.reference %}" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-life-preserver me-1"></i>Get support for this system
+                </a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center text-muted py-5">
+                <i class="bi bi-box2 fs-1 d-block mb-2"></i>
+                No delivered services yet. Your project progresses through the
+                <a href="{% url 'core:customer_tracking' enquiry.reference %}">enquiry tracker</a>.
+            </div>
+        </div>
+        {% endfor %}
+        </div>
+
+        <div class="d-flex justify-content-end mt-4">
+            <a href="{% url 'core:customer_pay' enquiry.reference %}" class="btn btn-primary">
+                <i class="bi bi-credit-card me-2"></i>Make a payment
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}

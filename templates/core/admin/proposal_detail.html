@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+
+{% load humanize %}
+
+{% block title %}{{ proposal.reference }} - Oweru Admin{% endblock %}
+
+{% block content %}
+<section class="bg-light py-4">
+    <div class="container d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div>
+            <h1 class="fw-bold mb-0">{{ proposal.title }}</h1>
+            <p class="text-muted mb-0">
+                {{ proposal.reference }} &middot; {{ proposal.customer.business_name|default:'No customer' }}
+                &middot; <span class="badge bg-secondary">{{ proposal.status }}</span>
+            </p>
+        </div>
+        <a href="{% url 'core:admin_proposals' %}" class="btn btn-outline-secondary">Back to Proposals</a>
+    </div>
+</section>
+
+<section class="py-4">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white fw-bold">Proposal Items</div>
+                    <div class="card-body p-0">
+                        <table class="table mb-0">
+                            <thead class="table-light"><tr><th>Description</th><th class="text-end">Qty</th><th class="text-end">Unit</th><th class="text-end">Total</th><th></th></tr></thead>
+                            <tbody>
+                                {% for item in proposal.items.all %}
+                                <tr>
+                                    <td>{{ item.description }}</td>
+                                    <td class="text-end">{{ item.quantity }}</td>
+                                    <td class="text-end">{{ proposal.currency }} {{ item.unit_price|floatformat:0|intcomma }}</td>
+                                    <td class="text-end">{{ proposal.currency }} {{ item.total|floatformat:0|intcomma }}</td>
+                                    <td class="text-end">
+                                        <form method="post">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="action" value="remove_item">
+                                            <input type="hidden" name="item_id" value="{{ item.id }}">
+                                            <button class="btn btn-sm btn-link text-danger">remove</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="5" class="text-muted text-center py-3">No items</td></tr>
+                                {% endfor %}
+                                <tr class="table-light fw-bold">
+                                    <td colspan="3">Total</td>
+                                    <td class="text-end">{{ proposal.currency }} {{ total|floatformat:0|intcomma }}</td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="3" class="small text-muted">Deposit to start ({{ proposal.deposit_percent }}%)</td>
+                                    <td class="text-end small fw-bold">{{ proposal.currency }} {{ proposal.deposit_amount|floatformat:0|intcomma }}</td>
+                                    <td></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white fw-bold">Add line item</div>
+                    <div class="card-body">
+                        <form method="post" class="row g-2">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="add_item">
+                            <div class="col-md-6">
+                                <input name="description" class="form-control" placeholder="Description" required>
+                            </div>
+                            <div class="col-md-2">
+                                <input name="quantity" type="number" value="1" min="1" class="form-control">
+                            </div>
+                            <div class="col-md-2">
+                                <input name="unit_price" type="number" step="any" min="0" class="form-control" placeholder="Unit price" required>
+                            </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-primary w-100">Add</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white fw-bold">Notes</div>
+                    <div class="card-body">
+                        <form method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="save_notes">
+                            <textarea name="notes" rows="4" class="form-control mb-2">{{ proposal.notes }}</textarea>
+                            <button class="btn btn-outline-primary">Save Notes</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white fw-bold">Actions</div>
+                    <div class="card-body">
+                        <form method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="change_status">
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold">Status</label>
+                                <select name="status" class="form-select">
+                                    {% for code, label in proposal.STATUS_CHOICES %}
+                                    <option value="{{ code }}" {% if proposal.status == code %}selected{% endif %}>{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <button class="btn btn-primary w-100">Update Status</button>
+                        </form>
+                        <hr>
+                        <form method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="accept">
+                            <p class="small text-muted">Accepting:
+                                moves the enquiry to <strong>Won</strong>, saves the total as the agreed
+                                amount, and makes the deposit live for the customer.
+                            </p>
+                            <button class="btn btn-success w-100">Accept Proposal</button>
+                        </form>
+                    </div>
+                </div>
+
+                {% if proposal.enquiry %}
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white fw-bold">Linked Enquiry</div>
+                    <div class="card-body">
+                        <a href="{% url 'core:admin_enquiry_detail' proposal.enquiry.id %}" class="btn btn-outline-primary w-100">
+                            {{ proposal.enquiry.business_name }}
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

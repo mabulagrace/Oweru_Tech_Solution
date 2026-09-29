@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% load core_filters %}
+
+{% block title %}Report Requested - Oweru Tech Solutions{% endblock %}
+
+{% block content %}
+<section class="py-5" style="background:var(--cream);">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+
+                <div class="text-center mb-4">
+                    <span class="icon-chip mx-auto mb-3" style="width:76px;height:76px;font-size:2rem;"><i class="bi bi-envelope-check"></i></span>
+                    <h1 class="fw-bold mb-2">Your Website Health Report</h1>
+                    <p class="lead mb-0" style="color:var(--muted);">
+                        We scanned <strong style="color:var(--ink);">{{ scan.business_name|default:scan.website_url }}</strong>
+                        <span style="color:var(--muted);">({{ scan.website_url }})</span> and here is what we found.
+                    </p>
+                </div>
+
+                {% if scan.report_status == 'pending' %}
+                <div class="alert alert-warning small" style="border-radius:14px;">
+                    <i class="bi bi-hourglass-split me-2"></i>
+                    <strong>Scraping incomplete for {{ scan.website_url }}.</strong>
+                    We could not fully crawl this site, but your enquiry is saved — our team will follow up
+                    and manually complete your report. The PDF below reflects the checks that did complete.
+                </div>
+                {% endif %}
+
+                <div class="card-lift mb-4">
+                    <div class="card-body text-center py-4">
+                        <div class="h2 fw-bold mb-1" style="color:var(--ink);">{{ scan.score }}<span class="fs-6 fw-normal" style="color:var(--muted);">/100</span></div>
+                        {% if scan.band == 'strong' %}<span class="badge" style="background:#2e7d4f;">Strong Site</span>
+                        {% elif scan.band == 'adequate' %}<span class="badge" style="background:#1f2750;">Adequate – Room to Improve</span>
+                        {% elif scan.band == 'weak' %}<span class="badge" style="background:#C87828;">Weak – Needs Improvement</span>
+                        {% elif scan.band == 'critical' %}<span class="badge" style="background:#c0392b;">Critical – Act Soon</span>
+                        {% else %}<span class="badge" style="background:var(--accent);">{{ scan.get_band_display }}</span>{% endif %}
+                    </div>
+                </div>
+
+                {% if scan.findings %}
+                <div class="card-lift mb-4">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-3"><i class="bi bi-exclamation-triangle me-2" style="color:var(--accent);"></i>{% if scan.findings|length > 1 %}Problems We Found{% else %}Problem We Found{% endif %}</h5>
+                        {% for f in scan.findings %}
+                        <div class="d-flex mb-3" style="gap:12px;">
+                            <div class="flex-shrink-0" style="width:26px;height:26px;border-radius:8px;background:#fdecea;color:#c0392b;display:flex;align-items:center;justify-content:center;">
+                                <i class="bi bi-x-lg" style="font-size:.8rem;"></i>
+                            </div>
+                            <div>
+                                <div class="fw-bold small">{{ f.description }}</div>
+                                <div class="small" style="color:var(--muted);margin-top:2px;">
+                                    <span style="color:#c0392b;"><i class="bi bi-currency-dollar me-1"></i>{{ f.cost_to_business }}</span>
+                                </div>
+                                <div class="small" style="margin-top:2px;">
+                                    <i class="bi bi-tools me-1" style="color:#198754;"></i>{{ f.fix_involved }}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if grouped_checks %}
+                <div class="card-lift mb-4">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="fw-bold mb-0">Full Check Results</h6>
+                            <span class="badge bg-light text-dark border">{{ passed_checks }} of {{ total_checks }} checks passed</span>
+                        </div>
+                        {% for area, group in grouped_checks.items %}
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="fw-semibold small text-uppercase" style="letter-spacing:.04em;color:var(--ink);">{{ area|area_title }}</span>
+                                <span class="badge bg-light text-dark border">{{ group.passed }}/{{ group.total }}</span>
+                            </div>
+                            {% for label, ok in group.items %}
+                            <div class="d-flex justify-content-between small py-1" style="border-bottom:1px solid var(--line);">
+                                <span>{{ label }}</span>
+                                {% if ok %}<span class="text-success text-nowrap"><i class="bi bi-check-circle me-1"></i>Passed</span>
+                                {% else %}<span class="text-danger text-nowrap"><i class="bi bi-x-circle me-1"></i>Needs fixing</span>{% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="d-flex justify-content-center gap-2 flex-wrap mb-4">
+                    <a href="{% url 'core:api_report_download' scan.id %}" class="btn btn-primary btn-lg">
+                        <i class="bi bi-file-pdf me-2"></i>Download My PDF Report
+                    </a>
+
+                    {% with site=scan.business_name|default:scan.website_url %}
+                    {% with score=scan.score|stringformat:"s" %}
+                    {% with msg="Hello Oweru! I just ran a free website health check for "|add:site|add:" and scored "|add:score|add:"/100. Can you share the full report and next steps?" %}
+                    <a href="{% wa_chat_link msg %}" class="btn" style="background:#25d366;border-color:#25d366;color:#fff;">
+                        <i class="bi bi-whatsapp me-2"></i>Discuss my report on WhatsApp
+                    </a>
+                    {% endwith %}
+                    {% endwith %}
+                    {% endwith %}
+                </div>
+
+                <div class="card-lift">
+                    <div class="card-body small">
+                        <h6 class="fw-bold">What happens next:</h6>
+                        <ol class="mb-0" style="padding-left:1.25rem;">
+                            <li style="margin-bottom:4px;">Download and read your report above — it is ready now.</li>
+                            <li style="margin-bottom:4px;">Our team reviews your report and emails the full one-page PDF to you as well.</li>
+                            <li style="margin-bottom:4px;">Our team may call to explain the results and next steps.</li>
+                            <li>Reports are free — there is no obligation to buy anything.</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="text-center mt-4">
+                    <a href="{% url 'core:home' %}" class="btn btn-outline-dark">Back to Home</a>
+                </div>
+
+                <p class="text-center mt-3 mb-0 small" style="color:var(--muted);">
+                    Don't want your website scanned?
+                    <button type="button" class="btn btn-link btn-sm p-0 align-baseline"
+                            style="font-size:inherit;vertical-align:baseline;"
+                            data-bs-toggle="collapse" data-bs-target="#optOutBox"
+                            aria-expanded="false" aria-controls="optOutBox">
+                        Remove {{ scan.website_url }} from our list
+                    </button>
+                </p>
+                <div class="collapse" id="optOutBox">
+                    <div class="card-lift mt-2">
+                        <div class="card-body small">
+                            <p class="mb-2">
+                                We respect site owners' wishes. Submitting this form adds
+                                <strong>{{ scan.website_url }}</strong> to our exclusion list and we
+                                will not scan it again.
+                            </p>
+                            <form method="post" action="{% url 'core:handle_exclusion' %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="url" value="{{ scan.website_url }}">
+                                <button type="submit" class="btn btn-outline-danger btn-sm">
+                                    <i class="bi bi-shield-x me-1"></i>Yes, stop scanning this site
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

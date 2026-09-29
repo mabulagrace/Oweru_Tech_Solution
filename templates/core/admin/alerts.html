@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block title %}Alerts &amp; Notifications - Oweru Admin{% endblock %}
+
+{% block content %}
+
+{% include 'core/admin/_admin_header.html' with title='Alerts &amp; Notifications' subtitle="Everything that needs your attention, in one place" %}
+
+<section class="py-4">
+    <div class="container">
+        <div class="d-flex flex-wrap gap-3 mb-4">
+            <div class="card border-0 shadow-sm p-4 flex-fill text-center">
+                <div class="display-5 fw-bold" style="color:#1f2750;">{{ unread }}</div>
+                <div class="small text-muted fw-semibold text-uppercase">Unread</div>
+            </div>
+            <div class="card border-0 shadow-sm p-4 flex-fill text-center">
+                <div class="display-5 fw-bold" style="color:#c87828;">{{ alerts|length }}</div>
+                <div class="small text-muted fw-semibold text-uppercase">Total</div>
+            </div>
+        </div>
+
+        <form method="post" action="{% url 'core:admin_alerts' %}">
+            {% csrf_token %}
+            <button type="submit" name="action" value="mark_all"
+                    class="btn btn-sm btn-outline-secondary mb-3">
+                <i class="bi bi-check2-all me-1"></i>Mark all as read
+            </button>
+        </form>
+
+        <div data-showmore="5" data-key="alerts-list">
+        {% for a in alerts %}
+        <div class="card {% if not a.is_read %}border-start{% endif %} shadow-sm mb-2 p-3"
+             {% if not a.is_read %}style="border-left:4px solid #c87828;"{% endif %}>
+            <div class="d-flex justify-content-between align-items-start gap-3">
+                <div>
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <span class="badge text-uppercase"
+                              style="{% if a.kind == 'report_request' %}background:#fceec9;color:#8a5a00;{% elif a.kind == 'payment' %}background:#e7f4ec;color:#3f7d5c;{% elif a.kind == 'support' %}background:#ffe0e6;color:#b47286;{% else %}background:#eef0f6;color:#1f2750;{% endif %}">
+                            {{ a.get_kind_display }}
+                        </span>
+                        {% if not a.is_read %}<span class="small text-warning fw-semibold">New</span>{% endif %}
+                    </div>
+                    <h6 class="fw-bold mt-2 mb-1">{{ a.title }}</h6>
+                    {% if a.body %}<p class="text-muted small mb-1">{{ a.body }}</p>{% endif %}
+                    <div class="small text-muted"><i class="bi bi-clock me-1"></i>{{ a.created_at|date:'d M Y H:i' }}</div>
+                </div>
+                <div class="text-end flex-shrink-0">
+                    {% if a.url %}<a href="{{ a.url }}" class="btn btn-sm btn-outline-primary mb-1">Open</a>{% endif %}
+                    <a class="btn btn-sm btn-light"
+                       href="{% url 'core:admin_alert_read' a.id %}">
+                        <i class="bi bi-check2 me-1"></i>Mark read
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="text-center py-5">
+            <i class="bi bi-bell text-muted" style="font-size:2.5rem;"></i>
+            <p class="text-muted mt-3 mb-0">No alerts yet. New enquiries, report requests, payments and
+                support tickets will appear here automatically.</p>
+        </div>
+        {% endfor %}
+        </div>
+    </div>
+</section>
+
+{% endblock %}

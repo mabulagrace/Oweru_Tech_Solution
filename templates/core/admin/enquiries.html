@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% load core_filters %}
+
+{% block title %}Enquiries - Oweru Admin{% endblock %}
+
+{% block content %}
+
+{% include 'core/admin/_admin_header.html' with title='Enquiry Pipeline' subtitle='New requests need your review and approval before moving on' %}
+
+<section class="py-4">
+    <div class="container">
+        <div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
+            <a href="{% url 'core:admin_enquiries' %}"
+               class="btn btn-sm {% if not current_stage %}pill-gold{% else %}pill-line{% endif %}">All</a>
+            {% for code, label in stage_choices %}
+            <a href="{% url 'core:admin_enquiries' %}?stage={{ code }}"
+               class="btn btn-sm {% if current_stage == code %}pill-gold{% else %}pill-line{% endif %}">
+                {{ label }}
+            </a>
+            {% endfor %}
+            <a href="{% url 'core:enquiry_new' %}" class="btn btn-sm btn-outline-primary ms-auto">+ New Enquiry</a>
+            <span class="small text-muted" title="This page refreshes automatically every 30 seconds">
+                <span class="live-dot me-1"></span> Live
+            </span>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="thead-navy">
+                    <tr>
+                        <th>Business</th>
+                        <th>Contact</th>
+                        <th>Package</th>
+                        <th>Stage</th>
+                        <th>Payment</th>
+                        <th>Source</th>
+                        <th>Owner</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                    <tbody data-showmore="10" data-key="enquiries-rows">
+                    {% for enquiry in enquiries %}
+                    <tr style="cursor:pointer;" onclick="document.location='{% url 'core:admin_enquiry_detail' enquiry.id %}'">
+                        <td class="fw-semibold">{{ enquiry.business_name }}</td>
+                        <td>{{ enquiry.name }}<br><small class="text-muted">{{ enquiry.email }}</small></td>
+                        <td>{{ enquiry.package_name|default:'Not sure' }}</td>
+                        <td>
+                            {% if enquiry.stage == 'new' %}
+                            <span class="stage-badge text-white" style="{{ enquiry.stage|stage_badge }}">New - review now</span>
+                            {% else %}
+                            <span class="stage-badge text-white" style="{{ enquiry.stage|stage_badge }}">{{ enquiry.get_stage_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if enquiry.payment_status == 'paid_in_full' %}
+                            <span class="badge bg-success">Paid in full</span>
+                            {% elif enquiry.payment_status == 'none' %}
+                            <span class="badge bg-light text-muted border">No payment</span>
+                            {% elif enquiry.payment_status == 'deposit_pending' %}
+                            <span class="badge" style="background:#C87828;color:#fff;">Deposit due</span>
+                            {% elif enquiry.payment_status == 'deposit_paid' %}
+                            <span class="badge bg-info text-dark">Deposit paid</span>
+                            {% else %}
+                            <span class="badge bg-primary">In progress</span>
+                            {% endif %}
+                        </td>
+                        <td><span class="badge bg-light text-dark border">{{ enquiry.source }}</span></td>
+                        <td class="small">{{ enquiry.owner|default:'Unassigned' }}</td>
+                        <td class="small text-muted">{{ enquiry.date_created|date:'d M Y' }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="9" class="text-center text-muted py-5">No enquiries in this view</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+    var REFRESH_MS = 30000;
+    setInterval(function(){
+        var ae = document.activeElement;
+        var tag = ae ? ae.tagName : '';
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+        location.reload();
+    }, REFRESH_MS);
+});
+</script>
+<style>
+.live-dot { display:inline-block; width:8px; height:8px; border-radius:50%; background:#2e7d5b; animation: livePulse 1.5s infinite; }
+@keyframes livePulse { 0%,100% { opacity:1; } 50% { opacity:.3; } }
+</style>
+
+{% endblock %}

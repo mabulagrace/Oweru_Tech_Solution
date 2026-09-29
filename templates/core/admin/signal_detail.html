@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+
+{% block title %}Signal - {{ signal.title }} - Oweru Admin{% endblock %}
+
+{% block content %}
+
+<section class="bg-light py-4">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+                <h1 class="fw-bold mb-0">{{ signal.title }}</h1>
+                <p class="text-muted mb-0">
+                    {% if signal.type == 'job_posting' %}
+                    <span class="badge" style="background:#1f2750;color:#fff;">Job posting</span>
+                    {% elif signal.type == 'tender' %}
+                    <span class="badge" style="background:#C87828;color:#fff;">Tender / RFP</span>
+                    {% else %}
+                    <span class="badge" style="background:#2e7d5b;color:#fff;">Funding / Expansion</span>
+                    {% endif %}
+                    {% if signal.status == 'converted' %}
+                    <span class="badge bg-success">Converted</span>
+                    {% elif signal.status == 'in_progress' %}
+                    <span class="badge bg-primary">In progress</span>
+                    {% elif signal.status == 'dismissed' %}
+                    <span class="badge bg-light text-muted border">Dismissed</span>
+                    {% else %}
+                    <span class="badge" style="background:#C87828;color:#fff;">New</span>
+                    {% endif %}
+                    <span class="text-muted">{{ signal.business_name|default:'Unknown company' }} &middot; found {{ signal.found_date|date:'d M Y' }}</span>
+                </p>
+                {% if signal.source_url %}
+                <p class="mb-0 mt-1"><a href="{{ signal.source_url }}" target="_blank">{{ signal.source_url }}</a></p>
+                {% endif %}
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{% url 'core:admin_signals' %}" class="btn btn-outline-secondary">Back</a>
+                {% if signal.linked_enquiry %}
+                <a href="{% url 'core:admin_enquiry_detail' signal.linked_enquiry.id %}" class="btn btn-outline-success">
+                    <i class="bi bi-box-arrow-up-right me-1"></i> Linked enquiry {{ signal.linked_enquiry.reference }}
+                </a>
+                {% else %}
+                <form method="post" onsubmit="return confirm('Convert this signal into an enquiry and add it to the pipeline?');">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="convert">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-arrow-repeat me-1"></i> Convert to enquiry
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-4">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <form method="post" class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="save">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Type</label>
+                                <select name="type" class="form-select">
+                                    {% for code, label in type_choices %}
+                                    <option value="{{ code }}" {% if signal.type == code %}selected{% endif %}>{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Status</label>
+                                <select name="status" class="form-select">
+                                    {% for code, label in status_choices %}
+                                    <option value="{{ code }}" {% if signal.status == code %}selected{% endif %}>{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-8">
+                                <label class="form-label fw-semibold">Title</label>
+                                <input type="text" name="title" class="form-control" value="{{ signal.title }}">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">Business</label>
+                                <input type="text" name="business_name" class="form-control" value="{{ signal.business_name }}">
+                            </div>
+                            <div class="col-md-8">
+                                <label class="form-label fw-semibold">Source URL</label>
+                                <input type="url" name="source_url" class="form-control" value="{{ signal.source_url }}">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">Source name</label>
+                                <input type="text" name="source" class="form-control" value="{{ signal.source }}">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-semibold">Description</label>
+                                <textarea name="description" rows="4" class="form-control">{{ signal.description }}</textarea>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-semibold">Notes</label>
+                                <textarea name="notes" rows="3" class="form-control">{{ signal.notes }}</textarea>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check2 me-1"></i> Save changes
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body">
+                        <h6 class="fw-bold mb-3">Assign to staff</h6>
+                        <form method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="assign">
+                            <select name="owner_id" class="form-select mb-2">
+                                <option value="">Unassigned</option>
+                                {% for u in staff_users %}
+                                <option value="{{ u.id }}" {% if signal.assigned_to_id == u.id %}selected{% endif %}>{{ u.username }}</option>
+                                {% endfor %}
+                            </select>
+                            <button class="btn btn-outline-primary w-100">Assign</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body small text-muted">
+                        <div class="mb-1"><strong class="text-dark">Log:</strong></div>
+                        <div>Created {{ signal.created_at|date:'d M Y H:i' }}</div>
+                        <div>Last updated {{ signal.updated_at|date:'d M Y H:i' }}</div>
+                        <div class="text-muted">
+                            Added manually. Signals automate discovery of job posts,
+                            tenders and funding announcements later.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

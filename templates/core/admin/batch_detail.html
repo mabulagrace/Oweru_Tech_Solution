@@ -1,0 +1,173 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ batch.name }} - Batch Results - Oweru Admin{% endblock %}
+
+{% block content %}
+
+<section class="bg-light py-4">
+    <div class="container">
+        <a href="{% url 'core:admin_scan_batch' %}" class="small text-muted text-decoration-none d-inline-block mb-2">
+            <i class="bi bi-arrow-left me-1"></i>All batches
+        </a>
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+            <div>
+                <h1 class="fw-bold mb-1">{{ batch.name }}</h1>
+                <p class="text-muted mb-0">
+                    {% if batch.auto %}<span class="badge bg-info text-dark me-1">Automatic</span>{% endif %}
+                    Created {{ batch.date_created|date:"d M Y, H:i" }} &middot;
+                    <span class="badge status-badge"
+                          style="background: {% if batch.status == 'completed' %}#2e7d4f{% elif batch.status == 'running' %}#C87828{% elif batch.status == 'failed' %}#c0392b{% else %}#6c757d{% endif %};color:#fff;">
+                        {{ batch.get_status_display }}
+                    </span>
+                </p>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{% url 'core:admin_scan_batch' %}" class="btn btn-outline-secondary">Back</a>
+                <a href="{% url 'core:admin_scans' %}" class="btn btn-outline-primary">All scans</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-4">
+    <div class="container">
+
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-lg-2">
+                <div class="card border-0 shadow-sm h-100 text-center">
+                    <div class="card-body py-3">
+                        <div class="h4 fw-bold mb-0">{{ summary.scanned }}/{{ summary.total }}</div>
+                        <div class="small text-muted">Scanned</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-2">
+                <div class="card border-0 shadow-sm h-100 text-center">
+                    <div class="card-body py-3">
+                        <div class="h4 fw-bold mb-0">{{ summary.avg }}</div>
+                        <div class="small text-muted">Average score</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-2">
+                <div class="card border-0 shadow-sm h-100 text-center">
+                    <div class="card-body py-3">
+                        <div class="h4 fw-bold mb-0" style="color:#2e7d4f;">{{ summary.strong }}</div>
+                        <div class="small text-muted">Strong</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-2">
+                <div class="card border-0 shadow-sm h-100 text-center">
+                    <div class="card-body py-3">
+                        <div class="h4 fw-bold mb-0" style="color:#1f2750;">{{ summary.adequate }}</div>
+                        <div class="small text-muted">Adequate</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-2">
+                <div class="card border-0 shadow-sm h-100 text-center">
+                    <div class="card-body py-3">
+                        <div class="h4 fw-bold mb-0" style="color:#C87828;">{{ summary.weak }}</div>
+                        <div class="small text-muted">Weak</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-2">
+                <div class="card border-0 shadow-sm h-100 text-center">
+                    <div class="card-body py-3">
+                        <div class="h4 fw-bold mb-0" style="color:#c0392b;">{{ summary.critical }}</div>
+                        <div class="small text-muted">Critical</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+            <h2 class="h5 fw-bold mb-0">Websites in this batch</h2>
+            <div class="btn-group btn-group-sm">
+                <a href="{% url 'core:admin_batch_detail' batch.id %}"
+                   class="btn btn-outline-secondary {% if not sort %}active{% endif %}">Batch order</a>
+                <a href="{% url 'core:admin_batch_detail' batch.id %}?sort=score"
+                   class="btn btn-outline-secondary {% if sort == 'score' %}active{% endif %}">Lowest score</a>
+                <a href="{% url 'core:admin_batch_detail' batch.id %}?sort=issues"
+                   class="btn btn-outline-secondary {% if sort == 'issues' %}active{% endif %}">Most issues</a>
+            </div>
+        </div>
+        <p class="small text-muted mb-3">
+            {{ summary.issues }} issue{{ summary.issues|pluralize }} found in total.
+            {% if summary.pending %}{{ summary.pending }} site{{ summary.pending|pluralize }} not yet scanned.{% endif %}
+        </p>
+
+        <div class="card border-0 shadow-sm">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width:52px;">Score</th>
+                            <th>Website</th>
+                            <th>Status</th>
+                            <th>Top issue</th>
+                            <th style="width:150px;">Scanned</th>
+                        </tr>
+                    </thead>
+                    <tbody id="batch-rows" data-showmore="10" data-key="batch-rows">
+                        {% for row in rows %}
+                        {% if row.scanned %}
+                        <tr style="cursor:pointer;" onclick="document.location='{% url 'core:admin_scan_detail' row.scan.id %}'">
+                            <td>
+                                <span class="badge" style="background:{% if row.band == 'strong' %}#2e7d4f{% elif row.band == 'adequate' %}#1f2750{% elif row.band == 'weak' %}#C87828{% else %}#c0392b{% endif %};color:#fff;font-size:.85rem;">
+                                    {{ row.score }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="fw-semibold small">{{ row.name }}</div>
+                                <div class="text-muted" style="font-size:.8rem;">{{ row.host }}</div>
+                            </td>
+                            <td>
+                                <span class="badge" style="background:{% if row.band == 'strong' %}#e6f4ea;color:#2e7d4f{% elif row.band == 'adequate' %}#e8ecf5;color:#1f2750{% elif row.band == 'weak' %}#fdf0e2;color:#C87828{% else %}#fdecea;color:#c0392b{% endif %}">
+                                    {{ row.band|title }}
+                                </span>
+                                <span class="small text-muted ms-1">{{ row.issue_count }} issue{{ row.issue_count|pluralize }}</span>
+                            </td>
+                            <td class="small">
+                                {% if row.top_issue %}
+                                    {{ row.top_issue|truncatechars:70 }}
+                                    {% if row.issue_count > 1 %}
+                                        <span class="text-muted">+{{ row.issue_count|add:"-1" }} more</span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="text-success"><i class="bi bi-check-circle me-1"></i>No issues found</span>
+                                {% endif %}
+                            </td>
+                            <td class="small text-muted">{{ row.date_scanned|date:"d M Y" }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td><span class="badge bg-secondary" style="font-size:.85rem;">-</span></td>
+                            <td>
+                                <div class="fw-semibold small">{{ row.host }}</div>
+                                <div class="text-muted" style="font-size:.8rem;">{{ row.url }}</div>
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-dark border">Not scanned</span>
+                                {% if row.scan %}
+                                <div class="small text-muted mt-1">Scan failed or has no results</div>
+                                {% endif %}
+                            </td>
+                            <td class="small text-muted">-</td>
+                            <td class="small text-muted">-</td>
+                        </tr>
+                        {% endif %}
+                        {% empty %}
+                        <tr><td colspan="5" class="text-muted text-center py-4">This batch has no websites.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+{% endblock %}

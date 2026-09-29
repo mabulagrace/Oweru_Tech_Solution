@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% block title %}Scans - Oweru Admin{% endblock %}
+
+{% block content %}
+
+{% include 'core/admin/_admin_header.html' with title='Website Scans' subtitle='Health checks run across businesses' %}
+
+<section class="py-4">
+    <div class="container">
+        <div class="d-flex justify-content-end mb-3">
+            <a href="{% url 'core:admin_scan_batch' %}" class="btn btn-primary">New Batch Scan</a>
+        </div>
+        <form method="get" class="row g-2 mb-3">
+            <div class="col-md-2">
+                <select name="band" class="form-select">
+                    <option value="">All bands</option>
+                    <option value="critical" {% if current_band == 'critical' %}selected{% endif %}>Critical (&lt;40)</option>
+                    <option value="weak" {% if current_band == 'weak' %}selected{% endif %}>Weak (40-59)</option>
+                    <option value="adequate" {% if current_band == 'adequate' %}selected{% endif %}>Adequate (60-79)</option>
+                    <option value="strong" {% if current_band == 'strong' %}selected{% endif %}>Strong (80+)</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="contact_status" class="form-select">
+                    <option value="">All contact status</option>
+                    <option value="none" {% if current_status == 'none' %}selected{% endif %}>Not contacted</option>
+                    <option value="contacted" {% if current_status == 'contacted' %}selected{% endif %}>Contacted</option>
+                    <option value="qualified" {% if current_status == 'qualified' %}selected{% endif %}>Qualified</option>
+                    <option value="lost" {% if current_status == 'lost' %}selected{% endif %}>Lost</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="scan_type" class="form-select">
+                    <option value="">All sources</option>
+                    {% for value, label in scan_type_choices %}
+                    <option value="{{ value }}" {% if current_scan_type == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <input type="text" name="q" value="{{ current_search }}" class="form-control"
+                       placeholder="Search by business or website...">
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-outline-primary w-100" type="submit">Filter</button>
+            </div>
+        </form>
+
+        <p class="small" style="color:var(--muted);">
+            Showing {{ scans|length }} scan{{ scans|length|pluralize }}
+            {% if total_scans > 100 %}(of {{ total_scans }} matching &mdash; newest 100 shown){% endif %}
+        </p>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Website</th>
+                        <th>Business</th>
+                        <th>Score</th>
+                        <th>Band</th>
+                        <th>Change</th>
+                        <th>Contact</th>
+                        <th>Owner</th>
+                        <th>Scanned</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                    <tbody data-showmore="10" data-key="scans-list-rows">
+                    {% for scan in scans %}
+                    <tr style="cursor:pointer;" onclick="document.location='{% url 'core:admin_scan_detail' scan.id %}'">
+                        <td class="small">{{ scan.website_url|truncatechars:40 }}</td>
+                        <td>{{ scan.business_name|default:'-' }}</td>
+                        <td class="fw-bold">{{ scan.score }}</td>
+                        <td>
+                            {% if scan.band == 'critical' %}<span class="badge bg-danger">Critical</span>
+                            {% elif scan.band == 'weak' %}<span class="badge bg-warning text-dark">Weak</span>
+                            {% elif scan.band == 'adequate' %}<span class="badge bg-primary">Adequate</span>
+                            {% else %}<span class="badge bg-success">Strong</span>{% endif %}
+                        </td>
+                        <td>
+                            {% if scan.score_change %}
+                                <span class="small {% if scan.score_change > 0 %}text-success{% else %}text-danger{% endif %}">
+                                    {{ scan.score_change|default:0 }} pts
+                                </span>
+                            {% else %}
+                                <span class="text-muted small">-</span>
+                            {% endif %}
+                        </td>
+                        <td><span class="badge bg-light text-dark border">{{ scan.contact_status }}</span></td>
+                        <td class="small">{{ scan.owner|default:'Unassigned' }}</td>
+                        <td class="small text-muted">{{ scan.date_scanned|date:'d M Y' }}</td>
+                        <td class="text-end">
+                            <form method="post" action="{% url 'core:admin_scan_rescan' scan.id %}" onclick="event.stopPropagation();"
+                                  onsubmit="return confirm('Re-scan {{ scan.business_name|default:scan.website_url }} now?');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-primary" title="Re-scan">
+                                    <i class="bi bi-arrow-repeat"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="8" class="text-center text-muted py-5">No scans found. Run a batch scan to get started.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

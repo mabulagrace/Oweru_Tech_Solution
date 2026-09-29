@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% load humanize %}
+
+{% block title %}Proposals - Oweru Admin{% endblock %}
+
+{% block content %}
+{% include 'core/admin/_admin_header.html' with title='Proposals' subtitle='Fixed quotes sent to customers' %}
+
+<section class="py-4">
+    <div class="container">
+        <div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
+            <a href="{% url 'core:admin_proposals' %}" class="btn btn-sm {% if not current_status %}btn-primary{% else %}btn-outline-primary{% endif %}">All</a>
+            {% for code, label in status_choices %}
+            <a href="{% url 'core:admin_proposals' %}?status={{ code }}"
+               class="btn btn-sm {% if current_status == code %}btn-primary{% else %}btn-outline-primary{% endif %}">{{ label }}</a>
+            {% endfor %}
+            <a href="{% url 'core:admin_proposal_new' %}" class="btn btn-sm btn-outline-primary ms-auto">+ New Proposal</a>
+        </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr><th>Ref</th><th>Title</th><th>Customer</th><th>Amount</th><th>Status</th><th>Created</th></tr>
+                </thead>
+                    <tbody data-showmore="10" data-key="proposals-rows">
+                    {% for p in proposals %}
+                    <tr style="cursor:pointer;" onclick="document.location='{% url 'core:admin_proposal_detail' p.id %}'">
+                        <td class="fw-semibold">{{ p.reference }}</td>
+                        <td>{{ p.title }}</td>
+                        <td>{{ p.customer.business_name|default:'—' }}</td>
+                        <td>{{ p.currency }} {{ p.total_amount|floatformat:0|intcomma }}</td>
+                        <td>
+                            <span class="badge {% if p.status == 'accepted' %}bg-success{% elif p.status == 'sent' %}bg-info text-dark{% elif p.status == 'draft' %}bg-light text-dark border{% elif p.status == 'rejected' %}bg-danger{% else %}bg-secondary{% endif %}">{{ p.status }}</span>
+                        </td>
+                        <td class="small text-muted">{{ p.created_at|date:'d M Y' }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6" class="text-center text-muted py-5">No proposals yet</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+{% endblock %}

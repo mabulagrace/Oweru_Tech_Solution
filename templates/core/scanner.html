@@ -1,0 +1,173 @@
+{% extends 'base.html' %}
+
+{% block title %}Free Website Health Check - Oweru Tech Solutions{% endblock %}
+
+{% block content %}
+
+<section style="background:var(--cream);padding:64px 0;">
+    <div class="container">
+        <div class="text-center">
+            <span class="eyebrow mb-3 justify-content-center"><i class="bi bi-search-heart me-1"></i>Free tool</span>
+            <h1 class="fw-bold mb-2">Free Website Health Check</h1>
+            <p class="text-muted mb-0" style="max-width:560px;margin:0 auto;">
+                Enter your website address and get an instant score. We measure speed, mobile,
+                security, trust and more — no sign-up needed.
+            </p>
+        </div>
+        <div class="row justify-content-center mt-5">
+            <div class="col-lg-8">
+                <div class="card-lift">
+                    <div class="card-body p-4 p-lg-5">
+                        <form id="scanner-form" novalidate>
+                            {% csrf_token %}
+                            <div class="input-group input-group-lg mb-3">
+                                {{ form.url }}
+                                <button type="submit" class="btn btn-champagne btn-sheen px-4" id="scan-btn">
+                                    Check Now
+                                </button>
+                            </div>
+                            <div id="scan-error" class="alert alert-danger d-none" role="alert"></div>
+                            <div class="small text-muted">
+                                <i class="bi bi-info-circle me-1"></i>
+                                We only scan public pages. We never log in to anything, we respect each
+                                site's robots file, and no personal data is stored.
+                            </div>
+                        </form>
+
+                        <div id="scan-result" class="mt-4 d-none">
+                            <div class="text-center">
+                                <div class="score-circle mx-auto mb-3" id="score-badge">-</div>
+                                <h4 class="fw-bold" id="score-title">-</h4>
+                            </div>
+                            <hr>
+                            <h6 class="fw-bold mb-3">Your top areas to improve:</h6>
+                            <div id="issues-list"></div>
+                            <div class="alert" style="border:1px solid var(--line);background:#fbf7ee; border-radius:14px;" role="alert">
+                                <h6 class="fw-bold"><i class="bi bi-file-earmark-pdf me-1" style="color:#e6b44a;"></i> Want the full report?</h6>
+                                <p class="small mb-2">
+                                    Get the complete one-page report with all 22 checks, what each
+                                    issue costs your business, and how to fix it. Free.
+                                </p>
+                                <a href="{% url 'core:scanner_full_report' %}" class="btn btn-primary btn-sm" id="full-report-link">
+                                    Get Full Report
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-5" style="background:#fff;">
+    <div class="container">
+        <div class="row g-4 text-center">
+            <div class="col-md-3">
+                <span class="icon-chip mx-auto"><i class="bi bi-shield-check"></i></span>
+                <h6 class="fw-bold mt-3">Security</h6>
+                <p class="small text-muted mb-0">HTTPS, certificate, mixed content</p>
+            </div>
+            <div class="col-md-3">
+                <span class="icon-chip mx-auto"><i class="bi bi-phone"></i></span>
+                <h6 class="fw-bold mt-3">Mobile</h6>
+                <p class="small text-muted mb-0">Layout, readability, tap targets</p>
+            </div>
+            <div class="col-md-3">
+                <span class="icon-chip mx-auto"><i class="bi bi-speedometer2"></i></span>
+                <h6 class="fw-bold mt-3">Speed</h6>
+                <p class="small text-muted mb-0">Load time, page size, images</p>
+            </div>
+            <div class="col-md-3">
+                <span class="icon-chip mx-auto"><i class="bi bi-search"></i></span>
+                <h6 class="fw-bold mt-3">Findability</h6>
+                <p class="small text-muted mb-0">Titles, descriptions, Google</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('scanner-form');
+    const resultDiv = document.getElementById('scan-result');
+    const errorDiv = document.getElementById('scan-error');
+    const btn = document.getElementById('scan-btn');
+    const csrf = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Scanning...';
+        errorDiv.classList.add('d-none');
+
+        const url = document.querySelector('#id_url').value;
+
+        fetch('{% url "core:scanner_check" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrf,
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: 'url=' + encodeURIComponent(url),
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.error) {
+                errorDiv.textContent = data.error;
+                errorDiv.classList.remove('d-none');
+                return;
+            }
+            renderResult(data);
+        })
+        .catch(() => {
+            errorDiv.textContent = 'Something went wrong. Please try again.';
+            errorDiv.classList.remove('d-none');
+        })
+        .finally(() => {
+            btn.disabled = false;
+            btn.innerHTML = 'Check Now';
+        });
+    });
+
+    function renderResult(data) {
+        // Score badge color by band
+        const badge = document.getElementById('score-badge');
+        badge.textContent = data.score + '/100';
+
+        const bandColors = {
+            'Critical': '#dc3545',
+            'Weak': '#fd7e14',
+            'Adequate': '#ffc107',
+            'Strong': '#198754',
+        };
+        badge.style.background = bandColors[data.band] || '#6c757d';
+
+        document.getElementById('score-title').textContent =
+            'Score: ' + data.score + '/100 - ' + data.band;
+
+        const issuesList = document.getElementById('issues-list');
+        issuesList.innerHTML = '';
+        data.top_issues.forEach(issue => {
+            const item = document.createElement('div');
+            item.className = 'list-group-item border-start-0 border-end-0';
+            item.innerHTML = '<i class="bi bi-exclamation-triangle text-warning me-2"></i>' +
+                '<strong class="text-capitalize">' + issue.area + ':</strong> ' +
+                issue.description;
+            issuesList.appendChild(item);
+        });
+
+        // Carry URL to full report form
+        const reportLink = document.getElementById('full-report-link');
+        const input = document.querySelector('#id_url');
+        reportLink.href = '{% url "core:scanner_full_report" %}?url=' + encodeURIComponent(input.value);
+
+        resultDiv.classList.remove('d-none');
+        resultDiv.scrollIntoView({ behavior: 'smooth' });
+    }
+});
+</script>
+{% endblock %}

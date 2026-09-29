@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+{% block title %}Report Requests - Oweru Admin{% endblock %}
+
+{% block content %}
+
+{% include 'core/admin/_admin_header.html' with title='Report Requests' subtitle='Client audits awaiting your confirmation before the PDF is emailed' %}
+
+<section class="py-4">
+    <div class="container">
+        <div class="d-flex flex-wrap gap-2 mb-3">
+            <a href="{% url 'core:admin_report_requests' %}"
+               class="btn btn-sm {% if not current_status %}pill-gold{% else %}pill-line{% endif %}">All</a>
+            <a href="{% url 'core:admin_report_requests' %}?status=pending"
+               class="btn btn-sm {% if current_status == 'pending' %}pill-gold{% else %}pill-line{% endif %}">Pending approval</a>
+            <a href="{% url 'core:admin_report_requests' %}?status=sent"
+               class="btn btn-sm {% if current_status == 'sent' %}pill-gold{% else %}pill-line{% endif %}">Sent</a>
+            <a href="{% url 'core:admin_report_requests' %}?status=rejected"
+               class="btn btn-sm {% if current_status == 'rejected' %}pill-gold{% else %}pill-line{% endif %}">Rejected</a>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="thead-navy">
+                    <tr>
+                        <th>Website</th>
+                        <th>Client</th>
+                        <th class="text-center">Score</th>
+                        <th>Status</th>
+                        <th>Requested</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for report in reports %}
+                    <tr>
+                        <td>
+                            <a href="{{ report.website_url }}" target="_blank" class="fw-semibold text-decoration-none">
+                                {{ report.website_url }}
+                            </a>
+                        </td>
+                        <td>
+                            {% if report.enquiry %}
+                            <span class="fw-semibold">{{ report.enquiry.business_name|default:report.enquiry.name }}</span>
+                            <div class="small text-muted">{{ report.enquiry.email|default:'no email' }}</div>
+                            {% else %}
+                            <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            <span class="badge {% if report.score >= 80 %}bg-success{% elif report.score >= 50 %}bg-warning text-dark{% else %}bg-danger{% endif %}">
+                                {{ report.score }}/100
+                            </span>
+                        </td>
+                        <td>
+                            {% if report.report_status == 'pending' %}
+                            <span class="badge" style="background:#C87828;color:#fff;">Pending approval</span>
+                            {% elif report.report_status == 'sent' %}
+                            <span class="badge bg-success">Sent</span>
+                            {% else %}
+                            <span class="badge bg-light text-muted border">Rejected</span>
+                            {% endif %}
+                        </td>
+                        <td class="small text-muted">{{ report.created_at|date:'d M Y H:i' }}</td>
+                        <td class="text-end">
+                            <div class="d-inline-flex gap-2">
+                                <a href="{% url 'core:admin_scan_detail' report.id %}" class="btn btn-sm btn-outline-primary">Details</a>
+                                <a href="{% url 'core:admin_scan_pdf' report.id %}" target="_blank" class="btn btn-sm btn-outline-secondary">PDF</a>
+                                {% if report.report_status == 'pending' %}
+                                <form method="post" onsubmit="return confirm('Email the PDF report to the client now?');">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="scan_id" value="{{ report.id }}">
+                                    <input type="hidden" name="action" value="approve">
+                                    <button type="submit" class="btn btn-sm btn-success btn-sm">Approve & send</button>
+                                </form>
+                                <form method="post" onsubmit="return confirm('Reject this report (PDF will not be sent)?');">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="scan_id" value="{{ report.id }}">
+                                    <input type="hidden" name="action" value="reject">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Reject</button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6" class="text-center text-muted py-5">No report requests found.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

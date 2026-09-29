@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}New Signal - Oweru Admin{% endblock %}
+
+{% block content %}
+
+{% include 'core/admin/_admin_header.html' with title='Add a Signal' subtitle='Log a job posting, tender, or funding announcement you want to follow up on' %}
+
+<section class="py-4">
+    <div class="container" style="max-width:820px;">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Signal type</label>
+                            <select name="type" class="form-select" required>
+                                <option value="">Choose type...</option>
+                                {% for code, label in type_choices %}
+                                <option value="{{ code }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Company / business</label>
+                            <input type="text" name="business_name" class="form-control"
+                                   placeholder="e.g. Example Corp">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Signal title</label>
+                            <input type="text" name="title" class="form-control" required
+                                   placeholder="e.g. Systems Developer - open for 60+ days">
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label fw-semibold">Source URL</label>
+                            <input type="url" name="source_url" class="form-control"
+                                   placeholder="https://linkedin.com/jobs/...">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Source name</label>
+                            <input type="text" name="source" class="form-control"
+                                   placeholder="e.g. LinkedIn Jobs">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Description</label>
+                            <textarea name="description" rows="4" class="form-control"
+                                      placeholder="What did you notice? Open role, tender ICT line items, funding raise, new branch..."></textarea>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Notes</label>
+                            <textarea name="notes" rows="3" class="form-control"
+                                      placeholder="Follow-up context, who to contact, next steps..."></textarea>
+                        </div>
+                    </div>
+                    <div class="mt-4 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-plus-circle me-1"></i> Save signal
+                        </button>
+                        <a href="{% url 'core:admin_signals' %}" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

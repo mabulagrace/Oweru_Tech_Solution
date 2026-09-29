@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+
+{% load humanize %}
+
+{% block title %}{{ customer.business_name }} - Oweru Admin{% endblock %}
+
+{% block content %}
+<section class="bg-light py-4">
+    <div class="container d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div>
+            <h1 class="fw-bold mb-0">{{ customer.business_name }}</h1>
+            <p class="text-muted mb-0">{{ customer.name }} &middot; {{ customer.email }} &middot; {{ customer.phone }}</p>
+        </div>
+        <a href="{% url 'core:admin_customers' %}" class="btn btn-outline-secondary">Back to Customers</a>
+    </div>
+</section>
+
+<section class="py-4">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white fw-bold">Enquiries</div>
+                    <div class="card-body p-0">
+                        <table class="table table-sm mb-0">
+                            <thead><tr><th>Date</th><th>Package</th><th>Stage</th><th>Payment</th></tr></thead>
+                            <tbody data-showmore="8" data-key="cust-enquiries">
+                            {% for e in enquiries %}
+                            <tr style="cursor:pointer;" onclick="document.location='{% url 'core:admin_enquiry_detail' e.id %}'">
+                                <td>{{ e.date_created|date:'d M Y' }}</td>
+                                <td>{{ e.package_name|default:'Not sure' }}</td>
+                                <td>{{ e.stage }}</td>
+                                <td>{{ e.payment_status }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="4" class="text-muted text-center py-3">No enquiries</td></tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white fw-bold">Proposals</div>
+                    <div class="card-body p-0">
+                        <table class="table table-sm mb-0">
+                            <thead><tr><th>Ref</th><th>Title</th><th>Amount</th><th>Status</th></tr></thead>
+                            <tbody data-showmore="8" data-key="cust-proposals">
+                            {% for p in proposals %}
+                            <tr style="cursor:pointer;" onclick="document.location='{% url 'core:admin_proposal_detail' p.id %}'">
+                                <td>{{ p.reference }}</td>
+                                <td>{{ p.title }}</td>
+                                <td>{{ p.currency }} {{ p.total_amount|floatformat:0|intcomma }}</td>
+                                <td>{{ p.status }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="4" class="text-muted text-center py-3">No proposals</td></tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white fw-bold">Service Deliveries</div>
+                    <div class="card-body p-0">
+                        <table class="table table-sm mb-0">
+                            <thead><tr><th>Ref</th><th>Service</th><th>Status</th><th>Delivery date</th></tr></thead>
+                            <tbody data-showmore="8" data-key="cust-deliveries">
+                            {% for d in deliveries %}
+                            <tr style="cursor:pointer;" onclick="document.location='{% url 'core:admin_delivery_detail' d.id %}'">
+                                <td>{{ d.reference }}</td>
+                                <td>{{ d.service_name }}</td>
+                                <td>{{ d.status }}</td>
+                                <td>{{ d.delivery_date|default:'—' }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="4" class="text-muted text-center py-3">No deliveries</td></tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white fw-bold">Support Tickets</div>
+                    <div class="card-body p-0">
+                        <table class="table table-sm mb-0">
+                            <thead><tr><th>Ref</th><th>Subject</th><th>Status</th><th>Priority</th></tr></thead>
+                            <tbody data-showmore="8" data-key="cust-tickets">
+                            {% for t in tickets %}
+                            <tr style="cursor:pointer;" onclick="document.location='{% url 'core:admin_ticket_detail' t.id %}'">
+                                <td>{{ t.reference }}</td>
+                                <td>{{ t.subject }}</td>
+                                <td>{{ t.status }}</td>
+                                <td>{{ t.priority }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="4" class="text-muted text-center py-3">No tickets</td></tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white fw-bold">Details</div>
+                    <div class="card-body">
+                        <form method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="save">
+                            <div class="mb-2">
+                                <label class="form-label small fw-semibold">Contact name</label>
+                                <input name="name" value="{{ customer.name }}" class="form-control">
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small fw-semibold">Business name</label>
+                                <input name="business_name" value="{{ customer.business_name }}" class="form-control">
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small fw-semibold">Phone</label>
+                                <input name="phone" value="{{ customer.phone }}" class="form-control">
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small fw-semibold">Industry</label>
+                                <input name="industry" value="{{ customer.industry }}" class="form-control">
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small fw-semibold">Website</label>
+                                <input name="website" value="{{ customer.website }}" class="form-control">
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small fw-semibold">Address</label>
+                                <textarea name="address" rows="2" class="form-control">{{ customer.address }}</textarea>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small fw-semibold">Country</label>
+                                <input name="country" value="{{ customer.country }}" class="form-control">
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small fw-semibold">Notes</label>
+                                <textarea name="notes" rows="3" class="form-control">{{ customer.notes }}</textarea>
+                            </div>
+                            <button class="btn btn-primary w-100">Save Changes</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white fw-bold">Payments</div>
+                    <div class="card-body" data-showmore="5" data-key="cust-payments">
+                        {% for p in payments %}
+                        <div class="d-flex justify-content-between border-bottom py-1 small">
+                            <span>{{ p.get_method_display }} &middot; {{ p.created_at|date:'d M' }}</span>
+                            <strong>{{ p.currency }} {{ p.amount|floatformat:0|intcomma }} ({{ p.status }})</strong>
+                        </div>
+                        {% empty %}
+                        <p class="text-muted small mb-0">No payments recorded.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,115 @@
+{% load humanize %}
+<div class="mb-4">
+    <h2 class="fw-bold mb-2">{% if selected_package %}Request {{ selected_package.name }}{% else %}Request a Service{% endif %}</h2>
+    <p style="color:var(--muted); margin:0 0 6px;">Fill in your details below. We review every request and respond within one working day.</p>
+</div>
+
+<form method="post" id="request-form" style="max-width:760px;">
+    {% csrf_token %}
+    <input type="hidden" name="package_name" value="{{ package_name_value }}">
+
+    {% if form.errors %}
+    <div style="background:#f6ecec; border:1px solid #e5c2c2; color:#7a1f1f; padding:12px 16px; border-radius:10px; margin-bottom:20px;">
+        <strong>Please check the form below.</strong>
+        <div style="font-size:14px;">Some required fields are missing or incorrect. Complete the fields below and click <b>Submit Request</b> again.</div>
+    </div>
+    {% endif %}
+
+    {% if form.non_field_errors %}
+    <div style="background:#f6ecec; border:1px solid #e5c2c2; color:#7a1f1f; padding:12px 16px; border-radius:10px; margin-bottom:20px;">
+        {% for err in form.non_field_errors %}{{ err }}{% endfor %}
+    </div>
+    {% endif %}
+
+    <h3 style="color:var(--ink); margin:24px 0 4px; font-size:17px; font-family:'Sora',sans-serif;">1. Provide your details</h3>
+    <p style="color:var(--muted); font-size:14px; margin:0;">These details let us respond to your request.</p>
+
+    <label style="font-weight:600; font-size:14px; display:block; margin-top:14px;">Full name *</label>
+    <input type="text" name="name" required maxlength="255" placeholder="Your full name"
+           value="{{ form.name.value|default:'' }}" class="form-control">
+    {{ form.name.errors }}
+
+    <label style="font-weight:600; font-size:14px; display:block; margin-top:14px;">Email address *</label>
+    <input type="email" name="email" required maxlength="254" placeholder="you@business.com"
+           value="{{ form.email.value|default:'' }}" class="form-control">
+    {{ form.email.errors }}
+
+    <label style="font-weight:600; font-size:14px; display:block; margin-top:14px;">Phone number *</label>
+    <input type="text" name="phone" required maxlength="50" placeholder="+255 7XX XXX XXX"
+           value="{{ form.phone.value|default:'' }}" class="form-control">
+    {{ form.phone.errors }}
+
+    <label style="font-weight:600; font-size:14px; display:block; margin-top:14px;">Business name</label>
+    <input type="text" name="business_name" maxlength="200" placeholder="Business name (optional)"
+           value="{{ form.business_name.value|default:'' }}" class="form-control">
+    {{ form.business_name.errors }}
+
+    <label style="font-weight:600; font-size:14px; display:block; margin-top:14px;">Country</label>
+    <input type="text" name="country" maxlength="100" placeholder="Tanzania"
+           value="{{ form.country.value|default:'' }}" class="form-control">
+    {{ form.country.errors }}
+
+    <label style="font-weight:600; font-size:14px; display:block; margin-top:14px;">Address</label>
+    <input type="text" name="address" maxlength="255" placeholder="Street, city (optional)"
+           value="{{ form.address.value|default:'' }}" class="form-control">
+    {{ form.address.errors }}
+
+    <h3 style="color:var(--ink); margin:28px 0 4px; font-size:17px; font-family:'Sora',sans-serif;">2. Specify your problem</h3>
+    <p style="color:var(--muted); font-size:14px; margin:0;">Tell us exactly what you need.</p>
+
+    <label style="font-weight:600; font-size:14px; display:block; margin-top:14px;">Which package are you interested in?</label>
+    <select name="package_select" id="package_select" class="form-select">
+        <option value="">Not sure yet</option>
+        {% for pkg in packages %}
+        <option value="{{ pkg.slug }}" {% if selected_package and selected_package.slug == pkg.slug %}selected{% endif %}>{{ pkg.name }}</option>
+        {% endfor %}
+    </select>
+
+    <label style="font-weight:600; font-size:14px; display:block; margin-top:14px;">Describe your problem / what you need *</label>
+    <textarea name="problem_description" rows="4" required maxlength="2000" placeholder="What do you need? Tell us the problem you want solved..."
+              class="form-control">{{ form.problem_description.value|default:'' }}</textarea>
+    {{ form.problem_description.errors }}
+
+    <label style="font-weight:600; font-size:14px; display:block; margin-top:14px;">Current cost (optional)</label>
+    <textarea name="current_cost" rows="2" maxlength="1000" placeholder="Optional - how is this costing you now? (Lost sales, manual work...)"
+              class="form-control">{{ form.current_cost.value|default:'' }}</textarea>
+
+    <label style="font-weight:600; font-size:14px; display:block; margin-top:14px;">Timeline (optional)</label>
+    <input type="text" name="timeline" maxlength="200" placeholder="e.g. Need it working by December 2026"
+           value="{{ form.timeline.value|default:'' }}" class="form-control">
+
+    <label style="font-weight:600; font-size:14px; display:block; margin-top:14px;">Budget range</label>
+    <select name="budget_range" class="form-select">
+        {% for value, label in budget_choices %}
+        <option value="{{ value }}" {% if form.budget_range.value == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+    </select>
+
+    <div style="margin-top:18px;">
+        <label style="font-size:14px;">
+            <input type="checkbox" name="consent_given" id="id_consent_given" style="margin-right:6px;">
+            I agree to be contacted about my enquiry and accept the
+            <a href="{% url 'core:privacy' %}" target="_blank" rel="noopener">privacy policy</a>
+        </label>
+    </div>
+    {{ form.consent_given.errors }}
+
+    <div style="margin-top:26px; border-top:1px solid var(--line); padding-top:20px;">
+        <button type="submit" class="btn btn-champagne btn-sheen" style="padding:12px 46px; font-size:1rem;">
+            Submit Request <i class="bi bi-arrow-right"></i>
+        </button>
+        <span style="font-size:13px; color:var(--muted); margin-left:12px;">We only use your details to respond about your request.</span>
+    </div>
+</form>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const pkgSelect = document.getElementById('package_select');
+    const pkgNameField = document.querySelector('input[name="package_name"]');
+    if (pkgSelect && pkgNameField) {
+        pkgSelect.addEventListener('change', function () {
+            pkgNameField.value = pkgSelect.options[pkgSelect.selectedIndex].text;
+        });
+    }
+});
+</script>

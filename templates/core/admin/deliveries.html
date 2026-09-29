@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}Service Delivery - Oweru Admin{% endblock %}
+
+{% block content %}
+{% include 'core/admin/_admin_header.html' with title='Service Delivery' subtitle='Systems delivered and running for customers' %}
+
+<section class="py-4">
+    <div class="container">
+        <div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
+            <a href="{% url 'core:admin_deliveries' %}" class="btn btn-sm {% if not current_status %}btn-primary{% else %}btn-outline-primary{% endif %}">All</a>
+            {% for code, label in status_choices %}
+            <a href="{% url 'core:admin_deliveries' %}?status={{ code }}"
+               class="btn btn-sm {% if current_status == code %}btn-primary{% else %}btn-outline-primary{% endif %}">{{ label }}</a>
+            {% endfor %}
+            <a href="{% url 'core:admin_delivery_new' %}" class="btn btn-sm btn-outline-primary ms-auto">+ New Delivery</a>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr><th>Ref</th><th>Service</th><th>Customer</th><th>Status</th><th>Delivered</th><th>Care plan</th><th>Assigned to</th></tr>
+                </thead>
+                    <tbody data-showmore="10" data-key="deliveries-rows">
+                    {% for d in deliveries %}
+                    <tr style="cursor:pointer;" onclick="document.location='{% url 'core:admin_delivery_detail' d.id %}'">
+                        <td class="fw-semibold">{{ d.reference }}</td>
+                        <td>{{ d.service_name }}</td>
+                        <td>{{ d.customer.business_name|default:'—' }}</td>
+                        <td>
+                            <span class="badge {% if d.status == 'active' %}bg-success{% elif d.status == 'delivered' %}bg-info text-dark{% elif d.status == 'in_progress' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
+                                {{ d.status }}
+                            </span>
+                        </td>
+                        <td>{{ d.delivery_date|default:'—' }}</td>
+                        <td>{{ d.care_plan.name|default:'—' }}</td>
+                        <td>{{ d.assigned_to|default:'—' }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="7" class="text-center text-muted py-5">No deliveries yet</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block title %}Privacy Policy - Oweru Tech Solutions{% endblock %}
+
+{% block content %}
+
+<section class="hero" style="padding:84px 0;">
+    <div class="aurora" style="width:360px;height:360px;background:radial-gradient(circle,rgba(240,191,77,.16),transparent 65%);top:-120px;right:-40px;"></div>
+    <div class="container position-relative" style="z-index:2;">
+        <span class="eyebrow mb-3"><span class="d-inline-block me-2" style="width:30px;height:2px;border-radius:99px;background:#e6b44a;"></span>Legal</span>
+        <h1 class="fw-bold text-white mb-2">Privacy Policy</h1>
+        <p class="text-white-50 mb-0" style="max-width:640px;">How Oweru Tech Solutions collects, uses and protects your information.</p>
+    </div>
+</section>
+
+<section class="py-5" style="background:var(--cream);">
+    <div class="container" style="max-width:860px;">
+        <div class="card-lift p-4 p-lg-5" style="background:#fff;">
+            <div class="small text-muted mb-4">Last updated: {% now "F j, Y" %}</div>
+
+            <h2 class="fw-bold h5 mb-2">1. Who we are</h2>
+            <p class="text-muted small">
+                Oweru Tech Solutions (Oweru International Ltd) designs, builds and maintains
+                software systems. When you use our website, request a quote or order a service,
+                we handle the personal information you provide.
+            </p>
+
+            <h2 class="fw-bold h5 mb-2 mt-4">2. Information we collect</h2>
+            <ul class="text-muted small">
+                <li>Details you give us in an enquiry: name, email, phone, business name, country, address and a description of what you need.</li>
+                <li>When you request a website health check, we record only the public web addresses you ask us to scan. We never log into any site and never collect personal data from third-party websites.</li>
+                <li>Basic technical data such as the date and time of your visit and the pages you view.</li>
+            </ul>
+
+            <h2 class="fw-bold h5 mb-2 mt-4">3. How we use it</h2>
+            <ul class="text-muted small">
+                <li>To respond to your enquiry and prepare quotes.</li>
+                <li>To communicate about your project, payments and support.</li>
+                <li>To improve our website and services.</li>
+                <li>We do not sell your personal information and we do not share it with third parties for their own marketing.</li>
+            </ul>
+
+            <h2 class="fw-bold h5 mb-2 mt-4">4. How long we keep it</h2>
+            <p class="text-muted small">
+                We keep enquiry and project records for as long as needed to deliver and support
+                your services and to meet our legal obligations. You can ask us to delete your
+                personal information at any time, except where we are required to keep records by law.
+            </p>
+
+            <h2 class="fw-bold h5 mb-2 mt-4">5. Your choices</h2>
+            <p class="text-muted small">
+                You can ask us at any time what information we hold about you, correct it, or ask
+                us to delete it. Contact us at
+                <a href="mailto:hello@oweru.tech">hello@oweru.tech</a>.
+            </p>
+
+            <h2 class="fw-bold h5 mb-2 mt-4">6. Security</h2>
+            <p class="text-muted small">
+                We store data on secure servers, restrict access to authorised staff only, and use
+                encrypted connections (HTTPS) on this website.
+            </p>
+
+            <h2 class="fw-bold h5 mb-2 mt-4">7. Changes to this policy</h2>
+            <p class="text-muted small">
+                We may update this policy from time to time. The latest version always appears on
+                this page with the date it was last updated.
+            </p>
+
+            <h2 class="fw-bold h5 mb-2 mt-4">8. Contact</h2>
+            <p class="text-muted small mb-0">
+                For any privacy question or request, email <a href="mailto:hello@oweru.tech">hello@oweru.tech</a>
+                or call +255 123 456 789.
+            </p>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

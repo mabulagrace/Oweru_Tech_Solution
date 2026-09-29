@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% load humanize %}
+
+{% block title %}Payments - Oweru Admin{% endblock %}
+
+{% block content %}
+{% include 'core/admin/_admin_header.html' with title='Payments' subtitle='All customer payments across projects' %}
+
+<section class="py-4">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="d-flex flex-wrap gap-2">
+            <a href="{% url 'core:admin_payments' %}" class="btn btn-sm {% if not current_status %}btn-primary{% else %}btn-outline-primary{% endif %}">All</a>
+            {% for code, label in status_choices %}
+            <a href="{% url 'core:admin_payments' %}?status={{ code }}"
+               class="btn btn-sm {% if current_status == code %}btn-primary{% else %}btn-outline-primary{% endif %}">{{ label }}</a>
+            {% endfor %}
+            </div>
+            <span class="badge rounded-pill" style="background:#e7f4ec;color:#2e7d4f;">Confirmed total: TZS {{ total_confirmed|floatformat:0|intcomma }}</span>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr><th>Date</th><th>Business</th><th>Method</th><th>Reference</th><th>Type</th><th>Amount</th><th>Status</th><th></th></tr>
+                </thead>
+                    <tbody data-showmore="10" data-key="payments-rows">
+                    {% for p in payments %}
+                    <tr>
+                        <td class="small">{{ p.created_at|date:'d M Y' }}</td>
+                        <td class="fw-semibold">{{ p.enquiry.business_name }}</td>
+                        <td>{{ p.get_method_display }}</td>
+                        <td class="small">{{ p.reference }}</td>
+                        <td>{{ p.get_kind_display }}</td>
+                        <td>{{ p.currency }} {{ p.amount|floatformat:0|intcomma }}</td>
+                        <td>
+                            {% if p.status == 'confirmed' %}<span class="badge bg-success">Confirmed</span>
+                            {% elif p.status == 'rejected' %}<span class="badge bg-danger">Rejected</span>
+                            {% else %}<span class="badge bg-warning text-dark">Pending</span>{% endif %}
+                        </td>
+                        <td class="text-end">
+                            {% if p.status == 'pending' %}
+                            <form method="post" class="d-inline" action="{% url 'core:admin_payment_action' p.id %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="confirm">
+                                <button class="btn btn-sm btn-success">Confirm</button>
+                            </form>
+                            <form method="post" class="d-inline" action="{% url 'core:admin_payment_action' p.id %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="reject">
+                                <button class="btn btn-sm btn-outline-danger">Reject</button>
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="8" class="text-center text-muted py-5">No payments yet</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+{% endblock %}

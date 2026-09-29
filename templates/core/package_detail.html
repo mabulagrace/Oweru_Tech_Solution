@@ -1,0 +1,220 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% load static %}
+
+{% block title %}{{ package.name }} - Oweru Tech Solutions{% endblock %}
+
+{% block content %}
+
+{% if 'website' in package.slug %}{% static 'images/hero-slide-web.jpg' as pkg_img %}
+{% elif 'application' in package.slug %}{% static 'images/hero-slide-mobile.jpg' as pkg_img %}
+{% elif 'crm' in package.slug %}{% static 'images/hero-slide-crm.jpg' as pkg_img %}
+{% elif 'network' in package.slug %}{% static 'images/hero-slide-network.jpg' as pkg_img %}
+{% else %}{% static 'images/hero-slide-ecommerce.jpg' as pkg_img %}{% endif %}
+
+<section class="hero" style="padding:80px 0;background:linear-gradient(90deg, rgba(8,12,32,.92) 0%, rgba(20,27,52,.72) 52%, rgba(20,27,52,.30) 100%),url('{{ pkg_img }}') center 30% cover no-repeat;">
+    <div class="aurora" style="width:520px;height:520px;background:radial-gradient(circle,rgba(240,191,77,.20),transparent 65%);top:-170px;right:-70px;"></div>
+    <div class="container position-relative" style="z-index:2;">
+        <div class="row align-items-center g-4">
+            <div class="col-lg-8">
+                <span class="eyebrow mb-3">{{ package.get_group_display }}</span>
+                <h1 class="fw-bold text-white mb-2">{{ package.name }}</h1>
+                <p class="text-white-50 mb-0" style="max-width:640px;">{{ package.description }}</p>
+            </div>
+            <div class="col-lg-4 text-lg-end">
+                <div class="text-uppercase small text-white-50" style="letter-spacing:.1em;">Starting price</div>
+                <div class="fw-bold text-white mb-1" style="font-size:2rem;">
+                    {% if display_currency == 'USD' and package.price_usd_min %}
+                        USD {{ package.price_usd_min }}
+                        {% if package.price_usd_max %} - {{ package.price_usd_max }}{% endif %}
+                        <span class="small text-white-50 fw-normal">(TZS {{ package.price_tzs_min|floatformat:0|intcomma }})</span>
+                    {% elif package.price_tzs_min %}
+                        TZS {{ package.price_tzs_min|floatformat:0|intcomma }}
+                        {% if package.price_tzs_max %} - {{ package.price_tzs_max|floatformat:0|intcomma }}{% endif %}
+                        <span class="small text-white-50 fw-normal">(USD {{ package.price_usd_min }}{% if package.price_usd_max %} - {{ package.price_usd_max }}{% endif %})</span>
+                    {% elif package.price_usd_min %}
+                        USD {{ package.price_usd_min }}
+                        {% if package.price_usd_max %} - {{ package.price_usd_max }}{% endif %}
+                    {% else %}
+                        Custom quote
+                    {% endif %}
+                </div>
+                {% if package.timeline %}
+                <div class="small" style="color:#ffd471;"><i class="bi bi-clock me-1"></i>{{ package.timeline }}</div>
+                {% endif %}
+                <div class="mt-3">
+                    <div class="btn-group btn-group-sm" role="group" aria-label="Display currency">
+                        <a href="?currency=TZS" class="btn {% if display_currency == 'TZS' %}btn-light{% else %}btn-outline-light{% endif %}">TZS h</a>
+                        <a href="?currency=USD" class="btn {% if display_currency == 'USD' %}btn-light{% else %}btn-outline-light{% endif %}">USD $</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- REQUEST FORM - FIRST THING AFTER PRICE -->
+<section id="request-this-service" class="py-5" style="background:var(--cream);">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="card-lift">
+                    <div class="card-body p-4">
+                        {% include 'core/partials/_enquiry_form.html' %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card-lift mb-4">
+                    <div class="card-body text-center p-4">
+                        <span class="icon-chip mx-auto mb-3"><i class="bi bi-headset"></i></span>
+                        <h5 class="fw-bold">Prefer to talk to us?</h5>
+                        <p class="text-muted small">Skip the form and contact Oweru directly. We answer within 1 working day.</p>
+                        <a href="{% url 'core:contact' %}" class="btn btn-outline-primary w-100 mb-3">Contact Oweru</a>
+                        <div class="small text-muted">
+                            <div><i class="bi bi-telephone me-1"></i>+255 123 456 789</div>
+                            <div><i class="bi bi-envelope me-1"></i>hello@oweru.tech</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-lift">
+                    <div class="card-body p-4">
+                        <div class="fw-bold mb-2" style="color:var(--ink);">What's included</div>
+                        <ul class="list-unstyled small mb-0">
+                            {% for item in package.included %}
+                            <li class="py-1"><i class="bi bi-check-circle-fill me-2" style="color:#e6b44a;"></i>{{ item|truncatechars:42 }}</li>
+                            {% empty %}
+                            <li class="text-muted">Detailed scope agreed in the free consultation.</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-5" style="background:#fff;">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="mb-2 reveal">
+                    <span class="eyebrow mb-2"><span class="d-inline-block me-2" style="width:28px;height:2px;border-radius:99px;background:#e6b44a;"></span>Details</span>
+                    <h2 class="fw-bold mb-3">What's included</h2>
+                </div>
+                <ul class="list-unstyled reveal">
+                    {% for item in package.included %}
+                    <li class="py-2 d-flex align-items-start">
+                        <i class="bi bi-check-circle-fill me-3 fs-5" style="color:#e6b44a;"></i>
+                        <span>{{ item }}</span>
+                    </li>
+                    {% empty %}
+                    <li class="text-muted">Detailed scope agreed in the free consultation.</li>
+                    {% endfor %}
+                </ul>
+
+                <div class="card-lift mt-4 reveal">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold mb-3">How we work</h5>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-start">
+                                    <div class="step-number me-3 flex-shrink-0" style="width:44px;height:44px;font-size:1rem;">1</div>
+                                    <div>
+                                        <div class="fw-semibold">Request this service</div>
+                                        <div class="small text-muted">Submit the request form with your details.</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-start">
+                                    <div class="step-number me-3 flex-shrink-0" style="width:44px;height:44px;font-size:1rem;">2</div>
+                                    <div>
+                                        <div class="fw-semibold">We review & respond</div>
+                                        <div class="small text-muted">Our team confirms scope and sends a fixed quote.</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-start">
+                                    <div class="step-number me-3 flex-shrink-0" style="width:44px;height:44px;font-size:1rem;">3</div>
+                                    <div>
+                                        <div class="fw-semibold">Pay 50% deposit</div>
+                                        <div class="small text-muted">Approve the quote and pay to book your slot.</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-start">
+                                    <div class="step-number me-3 flex-shrink-0" style="width:44px;height:44px;font-size:1rem;">4</div>
+                                    <div>
+                                        <div class="fw-semibold">We deliver</div>
+                                        <div class="small text-muted">Progress updates, milestone sign-off, delivery.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 reveal">
+                    <h4 class="fw-bold mb-3">What every package excludes</h4>
+                    <div class="row g-3">
+                        {% for exclusion in exclusions %}
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-start">
+                                <i class="bi bi-x-circle text-muted me-2 mt-1"></i>
+                                <span>{{ exclusion.description }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card-lift mb-4 sticky-lg-top" style="top:84px;">
+                    <div class="card-body p-4 text-center">
+                        <div class="small text-muted text-uppercase" style="letter-spacing:.1em;">Starting price</div>
+                        <div class="fw-bold mb-1" style="font-size:2.1rem;color:var(--ink);">
+                            {% if display_currency == 'USD' and package.price_usd_min %}
+                                USD {{ package.price_usd_min }}
+                                {% if package.price_usd_max %}- {{ package.price_usd_max }}{% endif %}
+                                <div class="small text-muted fw-normal">(TZS {{ package.price_tzs_min|floatformat:0|intcomma }}<span>{% if package.price_tzs_max %} - {{ package.price_tzs_max|floatformat:0|intcomma }}{% endif %}</span>)</div>
+                            {% elif package.price_tzs_min %}
+                                TZS {{ package.price_tzs_min|floatformat:0|intcomma }}
+                                {% if package.price_tzs_max %}- {{ package.price_tzs_max|floatformat:0|intcomma }}{% endif %}
+                                <div class="small text-muted fw-normal">(USD {{ package.price_usd_min }}{% if package.price_usd_max %} - {{ package.price_usd_max }}{% endif %})</div>
+                            {% elif package.price_usd_min %}
+                                USD {{ package.price_usd_min }}
+                                {% if package.price_usd_max %}- {{ package.price_usd_max }}{% endif %}
+                            {% else %}
+                                Custom quote
+                            {% endif %}
+                        </div>
+                        {% if package.timeline %}
+                        <div class="text-muted small mb-3"><i class="bi bi-clock me-1"></i>{{ package.timeline }}</div>
+                        {% endif %}
+                        <a href="#request-this-service" class="btn btn-champagne btn-sheen btn-lg w-100 mb-2">
+                            Request This Service
+                        </a>
+                        <a href="{% url 'core:contact' %}" class="btn btn-outline-primary w-100 mb-2">Contact Oweru for More Information</a>
+                        <div class="small text-muted mt-2">
+                            <div><i class="bi bi-telephone me-1"></i>+255 123 456 789</div>
+                            <div><i class="bi bi-envelope me-1"></i>hello@oweru.tech</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="py-4" style="background:var(--cream);">
+    <div class="container">
+        <a href="{% url 'core:services' %}" class="btn btn-outline-primary">Back to all packages</a>
+    </div>
+</div>
+
+{% endblock %}

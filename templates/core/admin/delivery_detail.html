@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ delivery.reference }} - Oweru Admin{% endblock %}
+
+{% block content %}
+<section class="bg-light py-4">
+    <div class="container d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div>
+            <h1 class="fw-bold mb-0">{{ delivery.service_name }}</h1>
+            <p class="text-muted mb-0">
+                {{ delivery.reference }} &middot; {{ delivery.customer.business_name|default:'No customer' }}
+                &middot; <span class="badge bg-secondary">{{ delivery.status }}</span>
+            </p>
+        </div>
+        <a href="{% url 'core:admin_deliveries' %}" class="btn btn-outline-secondary">Back to Deliveries</a>
+    </div>
+</section>
+
+<section class="py-4">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-lg-7">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white fw-bold">Delivery details</div>
+                    <div class="card-body">
+                        <form method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="save">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-semibold">Delivery date</label>
+                                    <input name="delivery_date" type="date" value="{{ delivery.delivery_date|date:'Y-m-d' }}" class="form-control">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-semibold">Handover date</label>
+                                    <input name="handover_date" type="date" value="{{ delivery.handover_date|date:'Y-m-d' }}" class="form-control">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-semibold">Care plan</label>
+                                    <input value="{{ delivery.care_plan.name|default:'None' }}" class="form-control" readonly>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label small fw-semibold">Notes</label>
+                                    <textarea name="notes" rows="4" class="form-control">{{ delivery.notes }}</textarea>
+                                </div>
+                                <div class="col-12">
+                                    <button class="btn btn-primary">Save</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm mt-4">
+                    <div class="card-header bg-white fw-bold">Support tickets</div>
+                    <div class="card-body p-0">
+                        <table class="table table-sm mb-0">
+                            <thead><tr><th>Ref</th><th>Subject</th><th>Status</th><th>Created</th></tr></thead>
+                            <tbody data-showmore="8" data-key="delivery-tickets">
+                            {% for t in tickets %}
+                            <tr style="cursor:pointer;" onclick="document.location='{% url 'core:admin_ticket_detail' t.id %}'">
+                                <td>{{ t.reference }}</td>
+                                <td>{{ t.subject }}</td>
+                                <td>{{ t.status }}</td>
+                                <td>{{ t.created_at|date:'d M Y' }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="4" class="text-muted text-center py-3">No tickets</td></tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-5">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white fw-bold">Status</div>
+                    <div class="card-body">
+                        <form method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="change_status">
+                            <div class="mb-3">
+                                <select name="status" class="form-select">
+                                    {% for code, label in delivery.STATUS_CHOICES %}
+                                    <option value="{{ code }}" {% if delivery.status == code %}selected{% endif %}>{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <button class="btn btn-primary w-100">Update Status</button>
+                        </form>
+                        <hr>
+                        {% if delivery.customer %}
+                        <a href="{% url 'core:admin_customer_detail' delivery.customer.id %}" class="btn btn-outline-primary w-100">
+                            View {{ delivery.customer.business_name }}
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

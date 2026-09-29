@@ -1,0 +1,191 @@
+# Oweru Tech Solutions Platform
+
+Complete lead-generation and sales system for Oweru International Ltd, built with
+**Django + PostgreSQL (SQLite in dev) + Python**.
+
+## Features
+
+### 1. Offer Page (Build 1)
+- 6 service packages across 3 areas: **Mobile & Web Systems, CRM Systems, Network Design & Maintenance**
+- Independent TZS and USD pricing (admin editable, not auto-converted)
+- 3 monthly care plans
+- Shared exclusions list
+- Delivery commitments band
+
+### 2. Enquiry & Qualification Pipeline (Build 2)
+- Standard enquiry form (package pre-filled from offer page)
+- Pipeline stages: New → Qualified → Diagnostic Paid → Proposal Sent → Won → Lost
+- Stage history tracking
+- Owner assignment and notes
+
+### 2b. Customer Journey & Payment Process (Build 6)
+- Every enquiry gets a **customer reference code** (e.g. `SV97YV`)
+- Public tracking page `/my-project/<reference>/` shows the customer their full journey:
+  Enquiry → Consultation & quote → Agreement & 50% deposit → Development milestones → Delivery
+- Public payment page `/my-project/<reference>/pay/` with:
+  - Deposit due (50% of agreed amount, admin-configurable) + already-paid + balance
+  - Payment instructions for **M-Pesa, Tigo Pesa, Airtel Money, Bank transfer** (admin Settings)
+  - "I have paid" form where the customer submits their transaction reference
+- Staff records the **agreed amount** on the enquiry → deposit goes live for the customer
+- Staff **confirm/reject** customer-submitted payments (with one click); payment status auto-updates
+  (deposit due → deposit paid → milestones in progress → paid in full)
+- Email + WhatsApp alert to the team when a customer reports a payment
+- Payment status badges visible in the pipeline list and enquiry detail
+
+### 3. Site Health Scanner (Build 3)
+- Public self-check tool at `/scan/` - instant score + top issues
+- Full report with contact capture (creates pipeline enquiry)
+- **Background batch scanning** (manual list up to 50, live progress in admin)
+- **Automatic daily scanning** (`daily_scan` command) - discovers + scans up to 50 sites/day
+- **Government websites are never scanned** (`.go.tz`, `gov.*`, ministries, parliament)
+- **Platform detection** (WordPress, Magento, Shopify, Wix, React, Bootstrap...)
+- **Sector detection** (hotel, banking, education, retail, telecom...)
+- **Downloadable PDF health report** per scan (branded, one-page)
+- 22 checks scored out of 100 with configurable weights
+- Ethical scanning: respects robots.txt, rate limits, exclusion list, no personal data
+
+### 4. Admin Area
+- Django admin (`/admin/`) for full content management
+- Staff dashboard at `/admin-app/` with pipeline and scan views
+
+## Quick Start
+
+```bash
+# 1. Create and activate virtual environment
+python -m venv venv
+venv\Scripts\activate
+
+# 2. Install dependencies
+pip install -r requirements.txt
+
+# 3. Migrate the database
+python manage.py migrate
+
+# 4. Seed initial content (packages, care plans, scanner weights)
+python manage.py seed_data
+
+# 5. Create an admin user
+python manage.py createsuperuser
+
+# 6. Run the server
+python manage.py runserver
+```
+
+Visit:
+- **Public site:** http://127.0.0.1:8000/
+- **Admin:** http://127.0.0.1:8000/admin/
+- **Staff dashboard:** http://127.0.0.1:8000/admin-app/dashboard/
+- **Customer tracking (example):** http://127.0.0.1:8000/my-project/SV97YV/
+- **Customer payment (example):** http://127.0.0.1:8000/my-project/SV97YV/pay/
+
+## Default Admin (created during setup)
+
+```
+Username: admin
+Password: admin12345
+```
+
+> Change this immediately in production.
+
+## Switching to PostgreSQL
+
+1. Create the database:
+   ```sql
+   CREATE DATABASE oweru_tech;
+   ```
+2. Uncomment the PostgreSQL block in `oweru_tech_solutions/settings.py`
+3. Update `USER` / `PASSWORD`
+4. Run `python manage.py migrate`
+
+## Notifications
+
+### Email
+Real email uses SMTP via environment variables (no secrets in code):
+
+```powershell
+$env:SMTP_HOST="smtp.gmail.com"
+$env:SMTP_PORT="587"
+$env:SMTP_USER="you@gmail.com"
+$env:SMTP_PASSWORD="app-password"
+$env:SMTP_FROM="Oweru Tech Solutions <hello@oweru.tech>"
+$env:SMTP_NOTIFY_TO="hello@oweru.tech"
+```
+
+Test it: `python manage.py test_notifications your@email.com`
+
+### WhatsApp
+Configure in Django admin under **Settings** (keys `whatsapp_webhook_url` and
+`whatsapp_staff_number`), pointing at any API such as UltraMsg, ChatAPI or Twilio.
+Until configured, alerts are logged and skipped.
+
+## Automatic Daily Scanning
+
+Two ways to run up to 50 site-scans per day:
+
+```bash
+# Manual - run now
+python manage.py daily_scan
+
+# Preview what it will pick
+python manage.py discover_sites --limit 50
+```
+
+Windows Task Scheduler is already set up:
+- Task name: `Oweru Daily Site Scan` (runs daily at 06:00)
+- Wrapper: `run_daily_scan.bat`  (logs to `daily_scan.log`)
+- Reinstall/unregister: `powershell -File install_daily_scan.ps1`
+
+Discovery draws from a verified seed list plus public business directories
+(configurable via the `discovery_directory_urls` Setting).
+
+## Project Structure
+
+```
+OWERU TECH_SOLUTION/
+├── manage.py
+├── requirements.txt
+├── core/                    # Main application
+│   ├── models.py            # All database models
+│   ├── views.py             # Public + admin views
+│   ├── forms.py             # Enquiry and scanner forms
+│   ├── scanner.py           # Website health scanning engine
+│   ├── discovery.py         # Auto site discovery (seed + directories)
+│   ├── workers.py           # Background batch processing
+│   ├── notifications.py     # Email + WhatsApp alerts
+│   ├── reports.py           # PDF health report generation
+│   ├── admin.py             # Django admin config
+│   ├── urls.py
+│   ├── templatetags/        # Custom template filters
+│   └── management/commands/ # seed_data, daily_scan, discover_sites, test_notifications
+├── run_daily_scan.bat       # Scheduled-task wrapper
+├── install_daily_scan.ps1   # Registers the Windows scheduled task
+├── oweru_tech_solutions/    # Project settings
+│   └── settings.py
+└── templates/               # HTML templates
+    ├── base.html
+    └── core/
+        ├── home.html        # Homepage
+        ├── services.html    # Packages page
+        ├── enquiry_form.html
+        ├── scanner.html     # Public health check
+        └── admin/           # Staff dashboard templates
+```
+
+## Scanner Ethics (required by the brief)
+
+1. Public pages only - never logs in
+2. Respects each site's `robots.txt`
+3. Max 1 request per 2 seconds per site
+4. Identifies itself as Oweru Tech Solutions with a contact address
+5. Stores business-level information only - no personal data
+6. Exclusion list respected (`ScanExclusion` model)
+7. Raw HTML deleted - only scored results kept
+
+## Notes
+
+- Email and WhatsApp alerts are wired. Use `test_notifications` to verify sending.
+- The daily scan target, rate limits and max pages are configurable via the
+  **Settings** model in Django admin.
+- PageSpeed checks are simplified locally; wire the Google PageSpeed Insights
+  API in `core/scanner.py` for real speed measurements.
+- Score weightings are fully editable via the Django admin (`ScannerWeight`).

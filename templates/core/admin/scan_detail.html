@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+
+{% block title %}Scan Details - Oweru Admin{% endblock %}
+
+{% block content %}
+
+<section class="bg-light py-4">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+                <h1 class="fw-bold mb-0">{{ scan.business_name|default:scan.website_url }}</h1>
+                <p class="text-muted mb-0">
+                    <a href="{{ scan.website_url }}" target="_blank">{{ scan.website_url }}</a>
+                    &middot; Scanned {{ scan.date_scanned|date:'d M Y H:i' }}
+                </p>
+                {% if scan.platform or scan.sector %}
+                <p class="mb-0 mt-1">
+                    {% if scan.platform %}<span class="badge bg-light text-dark border">Platform: {{ scan.platform }}</span>{% endif %}
+                    {% if scan.sector %}<span class="badge bg-light text-dark border">Sector: {{ scan.sector }}</span>{% endif %}
+                    {% if scan.scan_type %}<span class="badge bg-light text-dark border">Type: {{ scan.get_scan_type_display }}</span>{% endif %}
+                </p>
+                {% endif %}
+            </div>
+            <div class="d-flex gap-2">
+                <form method="post" action="{% url 'core:admin_scan_rescan' scan.id %}" class="d-inline" onsubmit="return confirm('Re-scan {{ scan.business_name|default:scan.website_url }} now? This runs in the background.');">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-primary"><i class="bi bi-arrow-repeat me-1"></i> Re-scan</button>
+                </form>
+                <a href="{% url 'core:admin_scans' %}" class="btn btn-outline-secondary">Back</a>
+                <a href="{% url 'core:admin_scan_pdf' scan.id %}" class="btn btn-primary">
+                    <i class="bi bi-file-pdf me-1"></i> Download PDF
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-4">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm text-center p-4">
+                    <div class="score-circle mx-auto mb-3 {% if scan.band == 'critical' %}bg-danger{% elif scan.band == 'weak' %}bg-warning{% elif scan.band == 'adequate' %}bg-primary{% else %}bg-success{% endif %}">
+                        {{ scan.score }}
+                    </div>
+                    <h4 class="fw-bold text-uppercase">{{ scan.band }}</h4>
+                    {% if scan.score_change %}
+                    <div class="small {% if scan.score_change > 0 %}text-success{% else %}text-danger{% endif %}">
+                        {{ scan.score_change }} pts vs previous scan
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-md-8">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <span class="fw-bold">Check Results</span>
+                        <span class="small text-muted fw-normal">{{ passed_count }}/{{ total_checks }} passed</span>
+                    </div>
+                    <div class="card-body">
+                        {% for key, group in check_groups.items %}
+                        <div class="mb-3">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <i class="bi {{ group.icon }} {{ group.colour }}"></i>
+                                <span class="fw-bold small">{{ group.title }}</span>
+                                <span class="badge bg-light text-dark border">{{ group.passed }}/{{ group.total }}</span>
+                            </div>
+                            <div class="d-flex flex-wrap" style="gap:8px;">
+                                {% for name, passed in group.items %}
+                                <span class="badge" style="font-weight:500;{% if passed %}background:#e6f4ea;color:#2e7d4f;{% else %}background:#fdecea;color:#c0392b;{% endif %}">
+                                    <i class="bi {% if passed %}bi-check-lg{% else %}bi-x-lg{% endif %} me-1"></i>{{ name }}
+                                </span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% empty %}
+                        <p class="text-muted mb-0">No checks were recorded for this scan.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm mt-4">
+            <div class="card-header bg-white fw-bold">Findings</div>
+            <div class="card-body" data-showmore="5" data-key="scan-findings">
+                {% for finding in scan.findings %}
+                <div class="border-start border-4 border-danger ps-3 py-2 mb-3">
+                    <h6 class="fw-bold mb-1">{{ finding.area|title }} - {{ finding.check|title }}</h6>
+                    <p class="mb-1">{{ finding.description }}</p>
+                    <p class="mb-0 small text-muted">Fix: {{ finding.fix_involved }}</p>
+                </div>
+                {% empty %}
+                <p class="text-muted mb-0">No findings. This site passed all checks.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        {% if scan.crawl_log %}
+        <div class="card border-0 shadow-sm mt-4">
+            <div class="card-header bg-white fw-bold">
+                Crawl Log
+                <span class="small fw-normal text-muted">- every request the scanner made to this site</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0">
+                        <thead class="thead-navy">
+                            <tr>
+                                <th>#</th>
+                                <th>Type</th>
+                                <th>URL</th>
+                                <th class="text-center">Status</th>
+                                <th class="text-end">Size</th>
+                                <th class="text-end">Time</th>
+                                <th>Note</th>
+                            </tr>
+                        </thead>
+                        <tbody data-showmore="12" data-key="scan-crawl-log">
+                            {% for entry in scan.crawl_log %}
+                            <tr>
+                                <td class="text-muted">{{ forloop.counter }}</td>
+                                <td>
+                                    {% if entry.type == 'robots' %}
+                                    <span class="badge bg-secondary">robots.txt</span>
+                                    {% elif entry.type == 'home' %}
+                                    <span class="badge" style="background:#1f2750;color:#fff;">home</span>
+                                    {% else %}
+                                    <span class="badge bg-light text-dark border">page</span>
+                                    {% endif %}
+                                </td>
+                                <td class="small text-break">{{ entry.url }}</td>
+                                <td class="text-center">
+                                    {% if entry.type == 'robots' %}
+                                    {% if entry.ok %}
+                                    <span class="badge bg-success">allowed</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">blocked</span>
+                                    {% endif %}
+                                    {% elif entry.ok and entry.status == 200 %}
+                                    <span class="badge bg-success">{{ entry.status }}</span>
+                                    {% elif entry.status %}
+                                    <span class="badge bg-danger">{{ entry.status }}</span>
+                                    {% else %}
+                                    <span class="badge bg-light text-muted border">no response</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end small">{{ entry.size_bytes|filesizeformat }}</td>
+                                <td class="text-end small">{{ entry.elapsed_ms }} ms</td>
+                                <td class="small">{{ entry.note|default:'' }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+{% endblock %}

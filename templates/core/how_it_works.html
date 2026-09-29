@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block title %}How It Works - Oweru Tech Solutions{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <div class="container">
+        <div class="row align-items-center text-center text-lg-start">
+            <div class="col-lg-8">
+                <h1 class="fw-bold mb-3">How it works</h1>
+                <p class="text-white-50 mb-0">
+                    Six clear steps from "we have a problem" to "your system is running".
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-4" style="background:linear-gradient(120deg,#ffd471,#e6b44a 55%,#b8933f);color:#221d10;">
+    <div class="container">
+        <div class="row align-items-center g-3 text-center text-md-start">
+            <div class="col-md-7">
+                <div class="fw-bold mb-1">Why this process matters</div>
+                <div class="small">A written proposal, weekly progress and milestone sign-off mean no surprises on cost, scope or the date it ships.</div>
+            </div>
+            <div class="col-md-5 d-flex justify-content-center justify-content-md-end gap-2 small fw-semibold">
+                <span class="d-flex align-items-center gap-1"><i class="bi bi-tag-fill"></i> Fixed price</span>
+                <span class="d-flex align-items-center gap-1"><i class="bi bi-clipboard-data-fill"></i> Weekly updates</span>
+                <span class="d-flex align-items-center gap-1"><i class="bi bi-check-circle-fill"></i> Milestone sign-off</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-9">
+                {% for step in steps %}
+                <div class="d-flex align-items-start gap-4 mb-5">
+                    <div class="text-center flex-shrink-0">
+                        <div class="step-number">{{ step.number }}</div>
+                    </div>
+                    <div>
+                        <h4 class="fw-bold mb-1">{{ step.title }}</h4>
+                        <p class="text-muted mb-0">{{ step.text }}</p>
+                    </div>
+                </div>
+                {% if not forloop.last %}
+                <div class="text-center mb-4 text-primary" style="margin-left:-2.5rem;">
+                    <i class="bi bi-arrow-down fs-3"></i>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="pb-5">
+    <div class="container">
+        <div class="position-relative overflow-hidden reveal"
+             style="background:linear-gradient(150deg,#0e142e,var(--ink-2));border:1px solid rgba(240,191,77,.30);border-radius:26px;padding:48px 40px;text-align:center;">
+            <div class="aurora" style="width:340px;height:340px;background:radial-gradient(circle,rgba(240,191,77,.28),transparent 65%);top:-120px;left:50%;transform:translateX(-50%);"></div>
+            <div class="position-relative" style="z-index:2;">
+                <h2 class="fw-bold text-white mb-2">Ready to start?</h2>
+                <p class="text-white-50 mb-4" style="max-width:520px;margin:0 auto;">
+                    Tell us what you need and get a fixed quote, free — with no obligation.
+                </p>
+                <div class="d-flex flex-wrap justify-content-center gap-2">
+                    <a href="{% url 'core:enquiry_new' %}" class="btn btn-champagne btn-sheen btn-lg px-4">Get a Free Quote</a>
+                    <a href="{% url 'core:scanner_home' %}" class="btn btn-outline-light btn-lg px-4">Check Your Website Free</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
