@@ -3,583 +3,464 @@
 {% load static %}
 
 {% block title %}Oweru Tech Solutions - Software That Grows Your Business{% endblock %}
-{% block meta_description %}Oweru is a Tanzanian software studio building mobile apps, web platforms, CRM systems and networks for growing businesses. Fixed prices, on-time delivery.{% endblock %}
+{% block meta_description %}Oweru is a Tanzanian software house building mobile apps, web platforms, CRM systems and networks for growing businesses. Fixed prices, on-time delivery.{% endblock %}
 
 {% block extra_css %}
 <style>
-    .hero-slideshow { position: relative; overflow: hidden; min-height: max(620px, 90vh); background: var(--navy-deep); }
-    .hero-slide { position: absolute; inset: 0; opacity: 0; visibility: hidden; transition: opacity 1.1s ease, visibility 1.1s ease; }
-    .hero-slide.active { opacity: 1; visibility: visible; z-index: 1; }
-    .hero-bg { position: absolute; inset: 0; background-size: cover; background-position: center 30%; }
-    .hero-slide.active .hero-bg { animation: kenburns 9s ease-out forwards; }
-    @keyframes kenburns { from { transform: scale(1); } to { transform: scale(1.12); } }
-    .hero-overlay { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(8,12,32,.92) 0%, rgba(20,27,52,.60) 42%, rgba(20,27,52,.18) 72%, rgba(240,191,77,.20) 100%); }
-    .hero-overlay::after { content: ""; position: absolute; inset: 0; background: linear-gradient(0deg, rgba(8,12,32,.30), transparent 28%); }
-    .slide-inner { position: relative; z-index: 2; min-height: inherit; display: flex; align-items: center; padding: 112px 0 96px; }
-    .slide-content { opacity: 0; transform: translateY(24px); transition: opacity .85s ease .30s, transform .85s ease .30s; }
-    .hero-slide.active .slide-content { opacity: 1; transform: none; }
-    .hero-floats { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
-    .hero-dots { position: absolute; left: 0; right: 0; bottom: 26px; z-index: 6; display: flex; justify-content: center; gap: 10px; }
-    .hero-dot { width: 26px; height: 6px; border-radius: 99px; border: 0; padding: 0; cursor: pointer; background: rgba(255,255,255,.38); transition: all .4s ease; }
-    .hero-dot.active { width: 42px; background: linear-gradient(90deg, #ffd471, #e6b44a); }
-    @media (max-width: 991.98px) {
-        .hero-slideshow { min-height: auto; }
-        .slide-inner { min-height: auto; padding: 96px 0 80px; }
+    /* =========================================================
+       HERO — reference-style, navy + gold
+    ========================================================= */
+    .hero-prime {
+        position: relative;
+        display: flex; align-items: center; justify-content: center; text-align: center;
+        min-height: max(560px, 78vh);
+        overflow: hidden;
+        background-color: var(--navy-deep);
+        color: #fff;
+        padding: 108px 20px 148px;
+    }
+    .hero-prime::before {
+        content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+        background:
+            radial-gradient(ellipse at center 80%, rgba(230,180,74,.20) 0%, rgba(230,180,74,.09) 24%, transparent 52%),
+            linear-gradient(160deg, rgba(12,18,48,.86) 0%, rgba(20,27,52,.66) 55%, rgba(28,37,71,.74) 100%);
+    }
+    .hero-slide {
+        position: absolute; inset: 0; z-index: 0;
+        background-size: cover; background-position: center;
+        opacity: 0; transition: opacity 1.4s ease; will-change: opacity;
+    }
+    .hero-slide.active { opacity: 1; }
+    .hero-inner { position: relative; z-index: 2; }
+    .hero-prime::before {
+        content: "";
+        position: absolute;
+        left: 50%; bottom: -660px;
+        width: 740px; height: 740px;
+        border-radius: 50%;
+        border: 36px solid transparent;
+        border-top-color: rgba(230,180,74,.55);
+        border-left-color: rgba(255,212,113,.42);
+        border-right-color: rgba(230,180,74,.32);
+        filter: blur(3px) drop-shadow(0 0 20px rgba(230,180,74,.35)) drop-shadow(0 0 70px rgba(230,180,74,.22));
+        transform: translateX(-50%) rotate(-10deg);
+        pointer-events: none;
+    }
+    .hero-inner { position: relative; z-index: 3; max-width: 860px; }
+    .hero-prime h1 {
+        font-size: clamp(40px, 7vw, 74px);
+        font-weight: 800;
+        letter-spacing: -.03em;
+        line-height: 1.02;
+        color: #fff;
+        margin: 20px 0 22px;
+    }
+    .hero-gold {
+        background: linear-gradient(100deg, #ffe9a8, #f4c24d 45%, #ffd471 70%, #f7c448);
+        -webkit-background-clip: text; background-clip: text;
+        color: transparent;
+        filter: drop-shadow(0 0 18px rgba(255,212,113,.35));
+    }
+    .hero-prime p { max-width: 640px; margin: 0 auto; color: rgba(255,255,255,.76); font-size: 15px; line-height: 1.75; }
+    .hero-cta { margin-top: 34px; display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+    .btn-outline-gold {
+        background: transparent; color: #fff;
+        border: 1px solid rgba(255,255,255,.35); border-radius: 999px;
+        font-weight: 600; padding: .72rem 1.45rem;
+        transition: border-color .22s ease, background .22s ease, transform .22s ease;
+    }
+    .btn-outline-gold:hover { border-color: #ffd471; background: rgba(230,180,74,.12); color: #fff; transform: translateY(-2px); }
+    .hero-trust { margin-top: 30px; display: flex; flex-wrap: wrap; justify-content: center; gap: 16px 28px; color: rgba(255,255,255,.8); font-size: .86rem; }
+    .hero-trust i { color: #ffd471; }
+
+    /* =========================================================
+       FLOATING STATS BAR
+    ========================================================= */
+    .stats-glass {
+        position: relative; z-index: 6;
+        margin: -66px auto 0;
+        width: min(1000px, 92%);
+        display: grid; grid-template-columns: repeat(4, 1fr);
+        background: rgba(12,18,48,.84);
+        border: 1px solid rgba(230,180,74,.30);
+        backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+        border-radius: 16px; overflow: hidden;
+        box-shadow: 0 34px 66px -34px rgba(8,12,32,.9);
+    }
+    .stat-cell { padding: 24px 14px; text-align: center; border-right: 1px solid rgba(230,180,74,.18); }
+    .stat-cell:last-child { border-right: 0; }
+    .stat-value { font-family: 'Sora', sans-serif; font-size: clamp(1.6rem, 3vw, 2rem); font-weight: 800; color: #ffd471; line-height: 1; }
+    .stat-label { margin-top: 7px; font-size: .72rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: rgba(255,255,255,.72); }
+
+    /* =========================================================
+       SECTIONS
+    ========================================================= */
+    .sec { padding: 92px 0; }
+    .sec-head { text-align: center; max-width: 720px; margin: 0 auto 54px; }
+    .sec-head h2 { font-size: clamp(30px, 5vw, 46px); font-weight: 800; letter-spacing: -.02em; margin: 14px 0 14px; }
+    .sec-head p { color: var(--muted); line-height: 1.7; margin: 0; font-size: 14px; }
+
+    /* What we do: bento grid */
+    .wdo-grid { display: grid; grid-template-columns: 1.12fr 1fr 1fr; gap: 16px; max-width: 1080px; margin: 0 auto; align-items: stretch; }
+    .wdo-feat {
+        position: relative; grid-column: 1; grid-row: 1 / span 3;
+        display: flex; flex-direction: column; justify-content: flex-end;
+        border-radius: 18px; overflow: hidden; padding: 30px;
+        color: #fff;
+        background-color: var(--navy-deep);
+        background-image:
+            linear-gradient(180deg, rgba(12,18,48,.12) 0%, rgba(12,18,48,.30) 42%, rgba(12,18,48,.92) 100%),
+            url('{% static "images/home-wedo.jpg" %}');
+        background-size: cover; background-position: center;
+    }
+    .wdo-feat::after {
+        content: ""; position: absolute; inset: auto -60px -60px auto; width: 220px; height: 220px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(230,180,74,.28), transparent 68%);
+        pointer-events: none;
+    }
+    .feat-badge {
+        position: absolute; top: 20px; left: 20px; z-index: 1;
+        display: inline-flex; align-items: center; gap: 7px;
+        padding: 7px 13px; border-radius: 99px;
+        font-size: .7rem; font-weight: 800; letter-spacing: .08em;
+        color: #221d10; background: linear-gradient(135deg, var(--champagne-2), var(--champagne));
+        box-shadow: 0 10px 22px -10px rgba(230,180,74,.65);
+    }
+    .wdo-feat h3 { font-size: clamp(20px, 2.6vw, 27px); font-weight: 800; line-height: 1.22; margin: 0 0 10px; }
+    .wdo-feat p { color: rgba(255,255,255,.8); font-size: .9rem; line-height: 1.6; margin: 0 0 18px; max-width: 320px; }
+    .feat-line { display: block; width: 44px; height: 3px; border-radius: 99px; background: linear-gradient(90deg, var(--champagne-2), var(--champagne)); margin-bottom: 16px; }
+    .wdo-card {
+        position: relative; display: flex; flex-direction: column;
+        padding: 24px; border-radius: 16px; min-height: 178px;
+        background: #fff; border: 1px solid var(--line);
+        box-shadow: 0 12px 28px -20px rgba(20,27,52,.28);
+        color: inherit; text-decoration: none;
+        transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease;
+    }
+    .wdo-card:hover { transform: translateY(-6px); border-color: rgba(230,180,74,.65); box-shadow: 0 24px 48px -24px rgba(20,27,52,.38); }
+    .wdo-card.wdo-gold { background: linear-gradient(140deg, #fff9ea, #fdf0d3); border-color: rgba(230,180,74,.55); }
+    .sol-num {
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 44px; height: 44px; border-radius: 11px;
+        background: linear-gradient(135deg, var(--champagne-2), var(--champagne));
+        color: #221d10; font-weight: 800; font-size: 1rem;
+    }
+    .wdo-card .sol-num { margin-bottom: 18px; }
+    .wdo-card h3 { font-size: 1.05rem; font-weight: 700; margin: 0 0 8px; }
+    .wdo-card p { color: var(--muted); font-size: .85rem; line-height: 1.6; margin: 0 0 14px; }
+    .wdo-card .sol-link { margin-top: auto; }
+    .sol-link { display: inline-flex; align-items: center; gap: 6px; font-size: .78rem; font-weight: 700; color: #c08a1f; transition: color .18s ease; }
+    .wdo-card:hover .sol-link { color: var(--champagne); }
+    .sol-link i { font-size: .72rem; }
+
+    /* Trust band */
+    .trust-band {
+        position: relative;
+        background-color: var(--navy-deep);
+        background-image:
+            radial-gradient(circle at 50% 45%, rgba(12,18,48,.42), transparent 62%),
+            linear-gradient(150deg, rgba(12,18,48,.82) 0%, rgba(20,27,52,.55) 45%, rgba(28,37,71,.40) 100%),
+            url('{% static "images/home-trust.jpg" %}');
+        background-size: cover;
+        background-position: center;
+        color: #fff;
+    }
+    .trust-band .sec-head { position: relative; z-index: 2; }
+    .trust-band .sec-head h2 { color: #fff; }
+    .trust-band .sec-head p { color: rgba(255,255,255,.78); }
+    .trust-wrap { position: relative; z-index: 2; display: grid; grid-template-columns: 0.9fr 1.1fr; gap: 48px; align-items: center; max-width: 1020px; margin: 0 auto; }
+    .trust-media { position: relative; }
+    .trust-media::before {
+        content: ""; position: absolute; top: -26px; left: -26px; width: 180px; height: 180px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(230,180,74,.32), transparent 68%);
+        pointer-events: none;
+    }
+    .trust-media img {
+        display: block; width: 100%; max-width: 380px; margin-inline: auto;
+        border-radius: 20px; aspect-ratio: 3/4; object-fit: cover;
+        border: 1px solid rgba(230,180,74,.55);
+        box-shadow: 0 40px 80px -40px rgba(12,18,48,.85);
+    }
+    .trust-list { display: flex; flex-direction: column; gap: 12px; }
+    .trust-card {
+        display: flex; align-items: center; gap: 14px; text-align: left;
+        padding: 14px 16px; border-radius: 14px;
+        border: 1px solid rgba(255,255,255,.18);
+        background: rgba(255,255,255,.06);
+        backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+        transition: border-color .22s ease, transform .22s ease, background .22s ease;
+    }
+    .trust-card:hover { border-color: rgba(255,212,113,.6); transform: translateY(-3px); background: rgba(255,255,255,.09); }
+    .trust-card .t-icon {
+        width: 42px; height: 42px; min-width: 42px; border-radius: 11px;
+        display: flex; align-items: center; justify-content: center; font-size: 1.05rem;
+        background: rgba(240,191,77,.14); color: #ffd471;
+    }
+    .trust-card strong { display: block; font-size: .66rem; letter-spacing: .12em; text-transform: uppercase; color: #ffe9a8; margin-bottom: 2px; }
+    .trust-card h3 { font-size: .9rem; color: #fff; margin: 0; line-height: 1.3; }
+
+    /* Impact: photo-backed bento */
+    .impact-band {
+        background-color: var(--navy-deep);
+        background-image:
+            radial-gradient(circle at 80% -10%, rgba(230,180,74,.20), transparent 45%),
+            linear-gradient(150deg, rgba(12,18,48,.90) 0%, rgba(20,27,52,.62) 55%, rgba(28,37,71,.68) 100%),
+            url('{% static "images/home-impact.jpg" %}');
+        background-size: cover;
+        background-position: center;
+    }
+    .impact-band .sec-head h2 { color: #fff; }
+    .impact-band .sec-head p { color: rgba(255,255,255,.72); }
+    .impact-grid { display: grid; grid-template-columns: 1.25fr 1fr; gap: 16px; max-width: 1000px; margin: 0 auto; align-items: stretch; }
+    .impact-card {
+        position: relative; display: flex; flex-direction: column;
+        padding: 28px; border-radius: 16px;
+        background: #fff; border: 1px solid var(--line);
+        box-shadow: 0 18px 40px -28px rgba(12,18,48,.45);
+        color: inherit;
+        transition: transform .25s ease, border-color .25s ease;
+    }
+    .impact-card:hover { transform: translateY(-5px); border-color: rgba(230,180,74,.65); }
+    .ic-chip {
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 52px; height: 52px; border-radius: 14px; margin-bottom: 20px;
+        background: linear-gradient(135deg, var(--champagne-2), var(--champagne));
+        color: #221d10; font-size: 1.35rem;
+        box-shadow: 0 10px 20px -10px rgba(230,180,74,.6);
+    }
+    .impact-card.impact-feature { grid-row: span 2; background: linear-gradient(160deg, #fff, #fffdf4); }
+    .impact-card h3 { font-size: 1.1rem; font-weight: 700; margin: 0 0 10px; color: var(--navy-deep); }
+    .impact-card p { color: var(--muted); font-size: .87rem; line-height: 1.65; margin: 0; }
+    .impact-feature .check-list { list-style: none; margin: 18px 0 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+    .impact-feature .check-list li { display: flex; align-items: center; gap: 10px; font-size: .85rem; font-weight: 600; color: #2b335c; }
+    .impact-feature .check-list i { color: #c08a1f; font-size: .95rem; }
+    .impact-feature .gold-line {
+        margin-top: auto; display: block; height: 3px; border-radius: 99px;
+        background: linear-gradient(90deg, var(--champagne-2), var(--champagne), transparent);
     }
 
-    /* ---- typography: stronger brand hierarchy ---- */
-    .slide-content h1 { font-size: clamp(2.1rem, 4.6vw, 3.7rem); letter-spacing: -.02em; line-height: 1.08; }
-    .slide-content p { font-size: 1.06rem; line-height: 1.65; }
-    .slide-content .eyebrow { font-size: .8rem; letter-spacing: .12em; }
+    /* Final CTA: split word + picture */
+    .cta-prime {
+        position: relative; padding: 100px 20px; color: #fff;
+        background-color: var(--navy-deep);
+        background-image: radial-gradient(circle at 85% 15%, rgba(230,180,74,.16), transparent 55%);
+    }
+    .cta-split { display: grid; grid-template-columns: 1.05fr 1fr; gap: 52px; align-items: center; max-width: 1060px; margin: 0 auto; text-align: left; }
+    .cta-copy h2 { font-size: clamp(30px, 4.4vw, 44px); font-weight: 800; letter-spacing: -.02em; margin: 0 0 16px; line-height: 1.16; }
+    .cta-copy p { color: rgba(255,255,255,.78); font-size: 15px; line-height: 1.7; margin: 0 0 30px; max-width: 460px; }
+    .cta-media { position: relative; }
+    .cta-media::before {
+        content: ""; position: absolute; top: -26px; right: -26px; width: 190px; height: 190px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(230,180,74,.32), transparent 68%);
+        pointer-events: none;
+    }
+    .cta-frame {
+        position: relative; border-radius: 22px; overflow: hidden;
+        border: 1px solid rgba(230,180,74,.55);
+        box-shadow: 0 40px 80px -40px rgba(12,18,48,.85), 0 0 0 6px rgba(230,180,74,.08);
+    }
+    .cta-frame img { display: block; width: 100%; height: 100%; object-fit: cover; aspect-ratio: 4/3; }
+    .cta-float {
+        position: absolute; left: -14px; bottom: 22px; z-index: 2;
+        display: flex; align-items: center; gap: 12px;
+        padding: 12px 16px; border-radius: 14px;
+        background: #fff; color: var(--navy-deep);
+        box-shadow: 0 18px 36px -18px rgba(12,18,48,.5);
+    }
+    .cta-float i { color: #c08a1f; font-size: 1.2rem; }
+    .cta-float b { display: block; font-size: .95rem; line-height: 1.15; }
+    .cta-float span { font-size: .72rem; color: var(--muted); }
 
-    section h2 { font-size: clamp(1.85rem, 2.9vw, 2.7rem); letter-spacing: -.015em; }
-    section h5, .card-lift h5 { font-size: 1.13rem; }
+    /* Responsive */
+    @media (max-width: 900px) {
+        .cta-split { grid-template-columns: 1fr; gap: 40px; text-align: center; }
+        .cta-copy p { margin-left: auto; margin-right: auto; }
+        .cta-copy .hero-cta { justify-content: center; }
+        .cta-media { max-width: 520px; margin: 0 auto; }
+        .cta-float { left: 6px; }
 
-    .stat-value { font-size: clamp(2rem, 3.4vw, 2.9rem); letter-spacing: -.02em; font-weight: 700; }
-    .step-number { font-size: 1.5rem; }
-
-    @media (max-width: 575.98px) {
-        .slide-content h1 { font-size: 1.85rem; }
-        .hero-slide p { font-size: 1rem; }
+        .wdo-grid { grid-template-columns: 1fr 1fr; }
+        .wdo-feat { grid-column: 1 / -1; grid-row: auto; min-height: 270px; }
+        .impact-grid { grid-template-columns: 1fr 1fr; }
+        .impact-feature { grid-column: 1 / -1; grid-row: auto; }
+        .trust-wrap { grid-template-columns: 1fr; gap: 36px; }
+        .trust-media { max-width: 420px; margin: 0 auto; }
+        .trust-list { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     }
-
-    /* ---- who we are: photo showcase ---- */
-    .who-card { display:flex; flex-wrap:wrap; overflow:hidden; border-radius:24px;
-                background:#fff; box-shadow:0 26px 60px -30px rgba(8,12,32,.45); }
-    .who-media { position:relative; flex:1 1 44%; min-height:430px;
-                 background-size:cover; background-position:center;
-                 background-image:
-                     linear-gradient(135deg, rgba(8,12,32,.38), rgba(8,12,32,.66)),
-                     url('{% static "images/hero-team.jpg" %}'),
-                     linear-gradient(135deg, var(--navy-deep), #1f2852);
-                 background-color: var(--navy-deep); }
-    .who-media::after { content:""; position:absolute; inset:0;
-                        background:linear-gradient(100deg, rgba(8,12,32,.40), transparent 55%); }
-    .who-logo { position:absolute; z-index:2; top:24px; left:24px;
-                background:rgba(255,255,255,.94); padding:12px 18px; border-radius:14px;
-                box-shadow:0 12px 28px -12px rgba(8,12,32,.60); }
-    .who-logo img { height:56px; width:auto; display:block; }
-    .who-body { flex:1 1 50%; padding:48px 42px; background:var(--cream); }
-    @media (max-width: 991.98px) {
-        .who-card { border-radius:20px; }
-        .who-media { flex-basis:100%; min-height:320px; }
-        .who-body { flex-basis:100%; padding:34px 26px; }
+    @media (max-width: 760px) {
+        .stats-glass { grid-template-columns: repeat(2, 1fr); margin-top: -46px; }
+        .stat-cell:nth-child(2) { border-right: 0; }
+        .stat-cell:nth-child(-n+2) { border-bottom: 1px solid rgba(230,180,74,.18); }
+        .wdo-grid, .impact-grid { grid-template-columns: 1fr; }
+        .wdo-feat { min-height: 240px; }
+        .impact-feature { grid-column: auto; }
+        .trust-list { grid-template-columns: 1fr; }
     }
-
-    /* ---- what we do: service cards ---- */
-    .service-card {
-        background:#fff;
-        border:1px solid var(--line);
-        border-radius:18px;
-        box-shadow:0 10px 24px -14px rgba(20,27,52,.14);
-        transition:transform .26s ease, box-shadow .26s ease, border-color .26s ease;
-        overflow:hidden;
-        position:relative;
+    @media (max-width: 560px) {
+        .hero-cta { flex-direction: column; align-items: center; }
+        .hero-cta .btn { width: 220px; }
     }
-    .service-card::before {
-        content:""; position:absolute; top:0; left:0; right:0; height:4px;
-        background:linear-gradient(90deg,var(--champagne),var(--champagne-2));
-        opacity:.45; transition:opacity .26s ease;
-    }
-    .service-card:hover {
-        transform:translateY(-6px);
-        border-color:rgba(230,180,74,.60);
-        box-shadow:0 22px 44px -20px rgba(20,27,52,.22);
-    }
-    .service-card:hover::before { opacity:1; }
-    .service-card .card-body { border-radius:18px; }
-    .service-icon {
-        width:68px; height:68px; border-radius:50%;
-        display:flex; align-items:center; justify-content:center;
-        font-size:1.7rem;
-        background:linear-gradient(135deg,#fff,var(--champagne-soft));
-        border:1px solid rgba(230,180,74,.45);
-        color:#c08a1f;
-        box-shadow:0 10px 20px -10px rgba(240,191,77,.65);
-        margin-bottom:1.1rem;
-        transition:transform .26s ease, box-shadow .26s ease;
-    }
-    .service-card:hover .service-icon { transform:scale(1.08); box-shadow:0 14px 26px -10px rgba(240,191,77,.75); }
-    .accent-gold { color:var(--champagne); }
-
-    /* ---- who we serve: bento grid ---- */
-    .bento-hero {
-        position:relative; overflow:hidden; height:100%;
-        border-radius:22px; padding:40px 38px;
-        background:linear-gradient(150deg, var(--ink) 0%, var(--ink-2) 55%, #2b3568 130%);
-        color:#fff;
-        box-shadow:0 28px 52px -26px rgba(20,27,52,.6);
-        display:flex; flex-direction:column; justify-content:space-between;
-        min-height:360px;
-    }
-    .bento-hero::before { /* faint gold dot grid in the corner */
-        content:""; position:absolute; inset:auto -40px -40px auto;
-        width:230px; height:230px;
-        background-image:radial-gradient(rgba(255,212,113,.30) 1.5px, transparent 1.5px);
-        background-size:16px 16px;
-        -webkit-mask-image:linear-gradient(135deg, transparent 35%, #000 100%);
-        mask-image:linear-gradient(135deg, transparent 35%, #000 100%);
-    }
-    .bento-aurora {
-        position:absolute; top:-70px; right:-60px;
-        width:280px; height:280px; border-radius:50%;
-        background:radial-gradient(circle, rgba(230,180,74,.32), transparent 65%);
-        filter:blur(6px); pointer-events:none;
-    }
-    .bento-badge {
-        display:inline-flex; align-items:center; gap:8px;
-        padding:6px 14px; border-radius:999px;
-        border:1px solid rgba(255,212,113,.55); color:#ffe9a8;
-        font-size:.72rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase;
-        background:rgba(255,212,113,.10); position:relative; z-index:1;
-        margin-bottom:1.5rem;
-    }
-    .bento-icon {
-        width:64px; height:64px; border-radius:50%;
-        display:flex; align-items:center; justify-content:center; font-size:1.6rem;
-        background:linear-gradient(135deg,#ffd471,#e6b44a); color:#221d10;
-        box-shadow:0 12px 26px -10px rgba(240,191,77,.7);
-        position:relative; z-index:1; margin-bottom:1.4rem;
-    }
-    .bento-hero h5 { color:#fff; position:relative; z-index:1; }
-    .bento-hero p { color:rgba(255,255,255,.80); position:relative; z-index:1; }
-    .bento-checks { position:relative; z-index:1; }
-    .bento-link { color:#ffd471; position:relative; z-index:1; transition:color .18s ease; }
-    .bento-link:hover { color:#ffe9a8; text-decoration:underline; }
-    .bento-card {
-        background:#fff; border:1px solid var(--line); border-radius:16px;
-        box-shadow:0 8px 20px -12px rgba(20,27,52,.12);
-        transition:transform .24s ease, box-shadow .24s ease;
-    }
-    .bento-card:hover { transform:translateY(-4px); box-shadow:0 16px 30px -14px rgba(20,27,52,.18); }
-
-    /* ---- who we serve: full-bleed image + glass cards ---- */
-    .who-serve {
-        position:relative;
-        background-size:cover; background-position:center;
-    }
-    .who-serve::before {
-        content:""; position:absolute; inset:0;
-        background:linear-gradient(120deg, rgba(12,18,48,.92) 0%, rgba(12,18,48,.82) 45%, rgba(20,27,52,.62) 100%);
-    }
-    .who-serve .container { position:relative; z-index:1; }
-    .who-serve h2 { color:#fff; }
-    .who-serve-sub { color:rgba(255,255,255,.82); }
-    .who-serve .bento-card {
-        background:rgba(255,255,255,.10);
-        -webkit-backdrop-filter:blur(12px);
-        backdrop-filter:blur(12px);
-        border:1px solid rgba(255,255,255,.20);
-        box-shadow:0 14px 30px -14px rgba(0,0,0,.45);
-        transition:transform .24s ease, border-color .24s ease, background .24s ease, box-shadow .24s ease;
-    }
-    .who-serve .bento-card:hover {
-        background:rgba(255,255,255,.15);
-        border-color:rgba(255,212,113,.60);
-        box-shadow:0 18px 36px -16px rgba(0,0,0,.55);
-    }
-    .who-serve .bento-card h5 { color:#fff; }
-    .who-serve .bento-card p { color:#fff; }
-    .who-serve .bento-card a { color:#ffd471; }
-    .who-serve .bento-card a:hover { color:#ffe9a8; }
-    .who-serve .bento-hero {
-        background:linear-gradient(150deg, rgba(12,18,48,.80), rgba(12,18,48,.42));
-        -webkit-backdrop-filter:blur(10px);
-        backdrop-filter:blur(10px);
-        border:1px solid rgba(255,212,113,.40);
-        box-shadow:0 30px 60px -28px rgba(0,0,0,.65);
-    }
-
-    /* ---- what we do: service showcase module ---- */
-    .showcase-wrap { position:relative; }
-    .showcase-glow {
-        position:absolute; top:8%; left:-4%; width:94%; height:92%;
-        background:radial-gradient(circle, rgba(230,180,74,.32), transparent 70%);
-        filter:blur(6px); pointer-events:none;
-    }
-    .showcase-frame {
-        position:relative; border-radius:18px; overflow:hidden; background:#fff;
-        border:1px solid rgba(230,180,74,.45);
-        box-shadow:0 34px 66px -32px rgba(20,27,52,.35);
-    }
-    .showcase-bar {
-        display:flex; align-items:center; gap:6px; padding:11px 16px;
-        background:var(--ink); border-bottom:1px solid rgba(255,255,255,.08);
-    }
-    .showcase-bar span { width:10px; height:10px; border-radius:50%; }
-    .showcase-bar span:nth-child(1) { background:#e0826f; }
-    .showcase-bar span:nth-child(2) { background:#e6b44a; }
-    .showcase-bar span:nth-child(3) { background:#63b787; }
-    .showcase-bar div { margin-left:12px; font-size:.72rem; color:rgba(255,255,255,.60); letter-spacing:.05em; }
-    .showcase-frame img { width:100%; display:block; }
-    .showcase-chip {
-        position:absolute; display:inline-flex; align-items:center; gap:7px;
-        background:rgba(20,27,52,.94); color:#fff; font-size:.76rem; font-weight:600;
-        padding:9px 15px; border-radius:999px; white-space:nowrap;
-        border:1px solid rgba(230,180,74,.55);
-        box-shadow:0 14px 26px -12px rgba(20,27,52,.55);
-    }
-    .showcase-chip i { color:#ffd471; }
-    .chip-tl { top:-16px; left:-12px; }
-    .chip-br { bottom:-16px; right:-8px; }
-    .practice-list { display:flex; flex-direction:column; gap:14px; }
-    .practice-row {
-        display:flex; gap:1rem; align-items:flex-start; padding:16px 18px; border-radius:16px;
-        background:#fff; border:1px solid var(--line); text-decoration:none; color:inherit;
-        transition:transform .22s ease, border-color .22s ease, box-shadow .22s ease;
-    }
-    .practice-row:hover {
-        transform:translateX(5px); border-color:rgba(230,180,74,.55);
-        box-shadow:0 16px 28px -16px rgba(20,27,52,.18);
-    }
-    .practice-row .service-icon { margin-bottom:0; flex-shrink:0; }
-    .practice-title { display:block; font-weight:700; color:var(--ink); margin-bottom:2px; }
-    .practice-text { display:block; color:#66707d; font-size:.85rem; line-height:1.5; }
-    .practice-link { display:inline-block; margin-top:6px; font-size:.78rem; font-weight:700; color:#c08a1f; transition:color .18s ease; }
-    .practice-row:hover .practice-link { color:var(--champagne); }
 </style>
 {% endblock %}
 
 {% block content %}
 
 <!-- ================= HERO ================= -->
-<section id="heroSlideshow" class="hero-slideshow">
-
-    <div class="hero-slide active">
-        <div class="hero-bg" style="background-image:url('{% static "images/hero-slide-web.jpg" %}');"></div>
-        <div class="hero-overlay"></div>
-        <div class="container slide-inner">
-            <div class="row g-5 align-items-center w-100">
-                <div class="col-lg-6">
-                    <div class="slide-content">
-                        <span class="eyebrow mb-3"><span class="d-inline-block me-2" style="width:30px;height:2px;border-radius:99px;background:linear-gradient(90deg,#ffd471,#e6b44a);"></span>Mobile &amp; web systems</span>
-                        <h1 class="fw-bold text-white mb-3">Software that gives your business <span class="gold-text">an unfair advantage</span></h1>
-                        <p class="text-white-50 mb-4" style="max-width:520px;">We are Oweru — Tanzania's premier software company. A large team of experienced professionals building mobile apps, web platforms and business portals. A fixed price before we start, delivery on the day we promise.</p>
-                        <div class="d-flex flex-wrap gap-2 mb-4">
-                            <a href="{% url 'core:enquiry_new' %}" class="btn btn-champagne btn-sheen btn-lg px-4">Get a Free Quote</a>
-                            <a href="{% url 'core:services' %}" class="btn btn-outline-light btn-lg px-4">Explore Solutions</a>
-                        </div>
-                        <div class="d-flex flex-wrap gap-3 small text-white-50">
-                            <span><i class="bi bi-tag me-2" style="color:#ffd471;"></i>Fixed prices</span>
-                            <span><i class="bi bi-clipboard-data me-2" style="color:#ffd471;"></i>Weekly updates</span>
-                            <span><i class="bi bi-shield-check me-2" style="color:#ffd471;"></i>On-time delivery</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+<section class="hero-prime">
+    <div class="hero-slide active" style="background-image:url('{% static "images/hero-mobile.jpg" %}');"></div>
+    <div class="hero-slide" style="background-image:url('{% static "images/hero-cross-2.jpg" %}');"></div>
+    <div class="hero-slide" style="background-image:url('{% static "images/hero-cross-3.jpg" %}');"></div>
+    <div class="hero-inner">
+        <span class="eyebrow mb-3"><i class="bi bi-stars me-1" style="color:#ffd471;"></i>Oweru Tech Solutions · Tanzania</span>
+        <h1>
+            Innovating Tomorrow.
+            <br>
+            <span class="hero-gold">Building Today.</span>
+        </h1>
+        <p>
+            We are Oweru — a Tanzanian software house building mobile apps, web platforms,
+            CRM systems and secure networks for growing businesses. A fixed price before we
+            start, delivery on the day we promise.
+        </p>
+        <div class="hero-cta">
+            <a href="{% url 'core:enquiry_new' %}" class="btn btn-champagne btn-sheen btn-lg px-4">Get a Free Quote</a>
+            <a href="{% url 'core:services' %}" class="btn btn-outline-gold btn-lg px-4">Explore Solutions</a>
         </div>
-    </div>
-
-    <div class="hero-slide">
-        <div class="hero-bg" style="background-image:url('{% static "images/hero-slide-crm.jpg" %}');"></div>
-        <div class="hero-overlay"></div>
-        <div class="container slide-inner">
-            <div class="row g-5 align-items-center w-100">
-                <div class="col-lg-6">
-                    <div class="slide-content">
-                        <span class="eyebrow mb-3"><span class="d-inline-block me-2" style="width:30px;height:2px;border-radius:99px;background:linear-gradient(90deg,#ffd471,#e6b44a);"></span>CRM &amp; sales systems</span>
-                        <h1 class="fw-bold text-white mb-3">Know your customers. <span class="gold-text">Close more sales.</span></h1>
-                        <p class="text-white-50 mb-4" style="max-width:520px;">From simple customer records to full sales pipelines — automated follow-ups, reports and dashboards that turn leads into loyal customers.</p>
-                        <div class="d-flex flex-wrap gap-2 mb-4">
-                            <a href="{% url 'core:enquiry_new' %}?package=crm-essentials" class="btn btn-champagne btn-sheen btn-lg px-4">Build Your CRM</a>
-                            <a href="{% url 'core:services' %}" class="btn btn-outline-light btn-lg px-4">See All Packages</a>
-                        </div>
-                        <div class="d-flex flex-wrap gap-3 small text-white-50">
-                            <span><i class="bi bi-tag me-2" style="color:#ffd471;"></i>Fixed prices</span>
-                            <span><i class="bi bi-clipboard-data me-2" style="color:#ffd471;"></i>Weekly updates</span>
-                            <span><i class="bi bi-shield-check me-2" style="color:#ffd471;"></i>On-time delivery</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="hero-slide">
-        <div class="hero-bg" style="background-image:url('{% static "images/hero-slide-network.jpg" %}');"></div>
-        <div class="hero-overlay"></div>
-        <div class="container slide-inner">
-            <div class="row g-5 align-items-center w-100">
-                <div class="col-lg-6">
-                    <div class="slide-content">
-                        <span class="eyebrow mb-3"><span class="d-inline-block me-2" style="width:30px;height:2px;border-radius:99px;background:linear-gradient(90deg,#ffd471,#e6b44a);"></span>Networks &amp; connectivity</span>
-                        <h1 class="fw-bold text-white mb-3">Offices that <span class="gold-text">stay online</span> and secure</h1>
-                        <p class="text-white-50 mb-4" style="max-width:520px;">Design, installation and maintenance of office networks, secure Wi-Fi, VPN access and proactive support so your business never goes quiet.</p>
-                        <div class="d-flex flex-wrap gap-2 mb-4">
-                            <a href="{% url 'core:enquiry_new' %}" class="btn btn-champagne btn-sheen btn-lg px-4">Get a Free Quote</a>
-                            <a href="{% url 'core:services' %}" class="btn btn-outline-light btn-lg px-4">Explore Solutions</a>
-                        </div>
-                        <div class="d-flex flex-wrap gap-3 small text-white-50">
-                            <span><i class="bi bi-tag me-2" style="color:#ffd471;"></i>Fixed prices</span>
-                            <span><i class="bi bi-clipboard-data me-2" style="color:#ffd471;"></i>Weekly updates</span>
-                            <span><i class="bi bi-shield-check me-2" style="color:#ffd471;"></i>On-time delivery</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="hero-slide">
-        <div class="hero-bg" style="background-image:url('{% static "images/hero-slide-ecommerce.jpg" %}');"></div>
-        <div class="hero-overlay"></div>
-        <div class="container slide-inner">
-            <div class="row g-5 align-items-center w-100">
-                <div class="col-lg-6">
-                    <div class="slide-content">
-                        <span class="eyebrow mb-3"><span class="d-inline-block me-2" style="width:30px;height:2px;border-radius:99px;background:linear-gradient(90deg,#ffd471,#e6b44a);"></span>E-commerce &amp; growth platforms</span>
-                        <h1 class="fw-bold text-white mb-3">Sell online with a platform <span class="gold-text">built for you</span></h1>
-                        <p class="text-white-50 mb-4" style="max-width:520px;">Online stores, booking platforms and order dashboards built around the way your business actually works — delivered and supported locally.</p>
-                        <div class="d-flex flex-wrap gap-2 mb-4">
-                            <a href="{% url 'core:enquiry_new' %}?package=starter-website" class="btn btn-champagne btn-sheen btn-lg px-4">Start Your Store</a>
-                            <a href="{% url 'core:services' %}" class="btn btn-outline-light btn-lg px-4">See All Packages</a>
-                        </div>
-                        <div class="d-flex flex-wrap gap-3 small text-white-50">
-                            <span><i class="bi bi-tag me-2" style="color:#ffd471;"></i>Fixed prices</span>
-                            <span><i class="bi bi-clipboard-data me-2" style="color:#ffd471;"></i>Weekly updates</span>
-                            <span><i class="bi bi-shield-check me-2" style="color:#ffd471;"></i>On-time delivery</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="hero-dots" role="tablist" aria-label="Services">
-        <button type="button" class="hero-dot active" data-slide="0" aria-label="Mobile and web systems"></button>
-        <button type="button" class="hero-dot" data-slide="1" aria-label="CRM systems"></button>
-        <button type="button" class="hero-dot" data-slide="2" aria-label="Networks"></button>
-        <button type="button" class="hero-dot" data-slide="3" aria-label="E-commerce"></button>
-    </div>
-</section>
-
-<!-- ================= WHO WE ARE ================= -->
-<section class="py-5" style="background:var(--cream);">
-    <div class="container">
-        <div class="who-card reveal">
-            <div class="who-media">
-                <div class="who-logo">
-                    <img src="{% static 'images/oweru-logo.jpg' %}" alt="Oweru Tech Solutions">
-                </div>
-            </div>
-            <div class="who-body">
-                <span class="eyebrow mb-2"><span class="d-inline-block me-2" style="width:30px;height:2px;border-radius:99px;background:#e6b44a;"></span>Who we are</span>
-                <h2 class="fw-bold mb-3">We are a Large, Professional Tanzanian Software Company</h2>
-                <p class="text-muted mb-4" style="max-width:560px;">
-                    Oweru is a premier Tanzanian software house, powered by a large team of
-                    highly experienced professionals. We design, build, and maintain the
-                    enterprise-grade systems that businesses depend on every day. Our commitment
-                    is to deliver excellence at scale, with transparent processes, guaranteed
-                    quality, and on-time delivery.
-                </p>
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <div class="d-flex gap-3">
-                            <span class="icon-chip"><i class="bi bi-tag"></i></span>
-                            <div>
-                                <div class="fw-bold" style="color:var(--ink);">Know the cost</div>
-                                <div class="small text-muted">Transparent enterprise pricing.</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="d-flex gap-3">
-                            <span class="icon-chip"><i class="bi bi-check2-circle"></i></span>
-                            <div>
-                                <div class="fw-bold" style="color:var(--ink);">Milestone sign-off</div>
-                                <div class="small text-muted">Rigorous quality assurance at every stage.</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="d-flex gap-3">
-                            <span class="icon-chip"><i class="bi bi-clipboard-data"></i></span>
-                            <div>
-                                <div class="fw-bold" style="color:var(--ink);">Track the work</div>
-                                <div class="small text-muted">Detailed progress and delivery reporting.</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="d-flex gap-3">
-                            <span class="icon-chip"><i class="bi bi-shield-check"></i></span>
-                            <div>
-                                <div class="fw-bold" style="color:var(--ink);">On-time delivery</div>
-                                <div class="small text-muted">Guaranteed delivery dates.</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="hero-trust">
+            <span><i class="bi bi-tag me-2"></i>Fixed prices</span>
+            <span><i class="bi bi-clipboard-data me-2"></i>Weekly updates</span>
+            <span><i class="bi bi-shield-check me-2"></i>On-time delivery</span>
         </div>
     </div>
 </section>
+
+<!-- ================= STATS BAR ================= -->
+<div class="stats-glass" id="statStrip">
+    <div class="stat-cell">
+        <div class="stat-value" data-count="50" data-suffix="+">0+</div>
+        <div class="stat-label">Projects delivered</div>
+    </div>
+    <div class="stat-cell">
+        <div class="stat-value" data-count="22">0</div>
+        <div class="stat-label">Checks per scan</div>
+    </div>
+    <div class="stat-cell">
+        <div class="stat-value" data-count="99" data-suffix="%">0%</div>
+        <div class="stat-label">On-time delivery</div>
+    </div>
+    <div class="stat-cell">
+        <div class="stat-value" data-count="3">0</div>
+        <div class="stat-label">Practice areas</div>
+    </div>
+</div>
 
 <!-- ================= WHAT WE DO ================= -->
-<section class="py-5" style="background:#f8f9fa;">
+<section class="sec" style="background:var(--cream);">
     <div class="container">
-        <div class="row g-5 align-items-center">
-            <!-- Product showcase mockup -->
-            <div class="col-lg-6 reveal">
-                <div class="showcase-wrap">
-                    <div class="showcase-glow"></div>
-                    <div class="showcase-frame">
-                        <div class="showcase-bar"><span></span><span></span><span></span><div>dashboard.oweru.co</div></div>
-                        <img src="{% static 'images/hero-dashboard.jpg' %}" alt="Sample Oweru dashboard preview" loading="lazy">
-                    </div>
-                    <div class="showcase-chip chip-tl"><i class="bi bi-bar-chart-line-fill"></i>Live dashboards</div>
-                    <div class="showcase-chip chip-br"><i class="bi bi-shield-check"></i>Secure by default</div>
+        <div class="sec-head reveal">
+            <span class="eyebrow mb-2"><span class="d-inline-block me-2" style="width:30px;height:2px;border-radius:99px;background:#e6b44a;"></span>What we do</span>
+            <h2>Innovating tomorrow, <span class="hero-gold">building today.</span></h2>
+            <p>We combine technology, creativity and strategy to build solutions that help organisations operate smarter and grow faster.</p>
+        </div>
+        <div class="wdo-grid">
+            <div class="wdo-feat reveal">
+                <span class="feat-badge"><i class="bi bi-stars"></i> OUR WORK · LIVE</span>
+                <div>
+                    <span class="feat-line"></span>
+                    <h3>Real systems our engineers ship.</h3>
+                    <p>From internal CRMs to public booking platforms and visitor dashboards — designed, built, launched and kept healthy end-to-end.</p>
+                    <a href="{% url 'core:services' %}" class="btn btn-champagne btn-sheen px-3">Meet the solutions</a>
                 </div>
             </div>
-            <!-- Copy + practice areas -->
-            <div class="col-lg-6 reveal">
-                <span class="eyebrow mb-2"><span class="d-inline-block me-2" style="width:30px;height:2px;border-radius:99px;background:#e6b44a;"></span>What we do</span>
-                <h2 class="fw-bold mb-2">Three practice areas, <span class="accent-gold">one standard</span></h2>
-                <p class="text-muted mb-4">Built around how your business actually works — not the other way round.</p>
-                <div class="practice-list">
-                    <a href="{% url 'core:services' %}" class="practice-row">
-                        <span class="service-icon"><i class="bi bi-phone"></i></span>
-                        <span>
-                            <span class="practice-title">Mobile &amp; Web Systems</span>
-                            <span class="practice-text">Custom apps, e-commerce stores, booking platforms and business portals matched to how you actually work.</span>
-                            <span class="practice-link">Learn more <i class="bi bi-arrow-right"></i></span>
-                        </span>
-                    </a>
-                    <a href="{% url 'core:services' %}" class="practice-row">
-                        <span class="service-icon"><i class="bi bi-graph-up"></i></span>
-                        <span>
-                            <span class="practice-title">CRM Systems</span>
-                            <span class="practice-text">Know your customers, track every sale and automate follow-ups — from simple records to full sales pipelines.</span>
-                            <span class="practice-link">Learn more <i class="bi bi-arrow-right"></i></span>
-                        </span>
-                    </a>
-                    <a href="{% url 'core:services' %}" class="practice-row">
-                        <span class="service-icon"><i class="bi bi-diagram-3"></i></span>
-                        <span>
-                            <span class="practice-title">Networks &amp; Connectivity</span>
-                            <span class="practice-text">Office networks, secure Wi-Fi, VPN access and proactive maintenance so your systems stay up and secure.</span>
-                            <span class="practice-link">Learn more <i class="bi bi-arrow-right"></i></span>
-                        </span>
-                    </a>
-                </div>
-            </div>
+            <a href="{% url 'core:services' %}" class="wdo-card reveal">
+                <span class="sol-num">01</span>
+                <h3>Mobile &amp; Web Systems</h3>
+                <p>Custom apps, e-commerce stores, booking platforms and business portals matched to how you actually work.</p>
+                <span class="sol-link">Learn more <i class="bi bi-arrow-right"></i></span>
+            </a>
+            <a href="{% url 'core:services' %}" class="wdo-card reveal">
+                <span class="sol-num">02</span>
+                <h3>CRM Systems</h3>
+                <p>Know your customers, track every sale and automate follow-ups in one clean dashboard.</p>
+                <span class="sol-link">Learn more <i class="bi bi-arrow-right"></i></span>
+            </a>
+            <a href="{% url 'core:services' %}" class="wdo-card reveal">
+                <span class="sol-num">03</span>
+                <h3>Networks &amp; Connectivity</h3>
+                <p>Office networks, secure Wi-Fi, VPN access and proactive maintenance so you stay up and secure.</p>
+                <span class="sol-link">Learn more <i class="bi bi-arrow-right"></i></span>
+            </a>
+            <a href="{% url 'core:services' %}" class="wdo-card reveal">
+                <span class="sol-num">04</span>
+                <h3>E-commerce &amp; Booking</h3>
+                <p>Online stores and booking platforms built around the way your business actually sells.</p>
+                <span class="sol-link">Learn more <i class="bi bi-arrow-right"></i></span>
+            </a>
+            <a href="{% url 'core:scanner_home' %}" class="wdo-card wdo-gold reveal">
+                <span class="sol-num">05</span>
+                <h3>Website Health Scanner</h3>
+                <p>Free 22-check health score — speed, mobile, security and trust, measured not claimed.</p>
+                <span class="sol-link">Run free check <i class="bi bi-arrow-right"></i></span>
+            </a>
+            <a href="{% url 'core:services' %}" class="wdo-card reveal">
+                <span class="sol-num">06</span>
+                <h3>Care Plans &amp; Support</h3>
+                <p>Monthly plans that keep your systems healthy and your team unblocked, delivered by real people.</p>
+                <span class="sol-link">View plans <i class="bi bi-arrow-right"></i></span>
+            </a>
         </div>
     </div>
 </section>
 
-<!-- ================= HOW IT WORKS ================= -->
-<section class="py-5" style="background:var(--cream);">
+<!-- ================= TRUST ================= -->
+<section class="sec trust-band">
     <div class="container">
-        <div class="text-center reveal">
-            <span class="eyebrow mb-2"><span class="d-inline-block me-2" style="width:30px;height:2px;border-radius:99px;background:#e6b44a;"></span>How it works</span>
-            <h2 class="fw-bold mb-5">Start in three simple steps</h2>
+        <div class="sec-head reveal">
+            <span class="eyebrow mb-2"><i class="bi bi-patch-check me-1" style="color:#ffd471;"></i>Why choose us</span>
+            <h2>Built on trust. Driven by results.</h2>
+            <p>Our approach combines technical expertise, reliability and long-term partnerships.</p>
         </div>
-        <div class="row g-4 text-center reveal">
-            <div class="col-md-4 position-relative">
-                <div class="step-number">1</div>
-                <h5 class="fw-bold mt-3 mb-2">Tell us your problem</h5>
-                <p class="text-muted small mb-0">Share what you need solved. A free consultation, no obligation.</p>
-            </div>
-            <div class="col-md-4 position-relative">
-                <div class="step-number">2</div>
-                <h5 class="fw-bold mt-3 mb-2">We give a fixed quote</h5>
-                <p class="text-muted small mb-0">Exact price and timeline before you commit. No surprises later.</p>
-            </div>
-            <div class="col-md-4 position-relative">
-                <div class="step-number">3</div>
-                <h5 class="fw-bold mt-3 mb-2">We deliver on time</h5>
-                <p class="text-muted small mb-0">Weekly updates and milestone sign-off. Our word is our brand.</p>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- ================= STATS STRIP ================= -->
-<section class="py-4" style="background:linear-gradient(120deg,#ffd471,#e6b44a 55%,#b8933f);color:#221d10;">
-    <div class="container">
-        <div class="row text-center g-4" id="statStrip">
-            <div class="col-6 col-md-3">
-                <div class="stat-value fs-2 fw-bold" data-count="50" data-suffix="+">0+</div>
-                <div class="small fw-semibold text-uppercase" style="letter-spacing:.08em;font-size:.72rem;">Projects delivered</div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="stat-value fs-2 fw-bold" data-count="22">0</div>
-                <div class="small fw-semibold text-uppercase" style="letter-spacing:.08em;font-size:.72rem;">Checks per scan</div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="stat-value fs-2 fw-bold" data-count="99" data-suffix="%">0%</div>
-                <div class="small fw-semibold text-uppercase" style="letter-spacing:.08em;font-size:.72rem;">On-time delivery</div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="stat-value fs-2 fw-bold" data-count="3">0</div>
-                <div class="small fw-semibold text-uppercase" style="letter-spacing:.08em;font-size:.72rem;">Practice areas</div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- ================= WHO WE SERVE ================= -->
-<section class="py-5 who-serve" style="background-image:url('{% static "images/hero-slide-crm.jpg" %}');">
-    <div class="container">
-        <div class="row mb-5 reveal">
-            <div class="col-lg-7">
-                <span class="eyebrow mb-2"><span class="d-inline-block me-2" style="width:30px;height:2px;border-radius:99px;background:#e6b44a;"></span>Who we serve</span>
-                <h2 class="fw-bold mb-2">Built for how your business works</h2>
-                <p class="who-serve-sub mb-0">One size fits no one. We match the right tools to your stage of growth.</p>
-            </div>
-        </div>
-        <div class="row g-4">
-            <!-- Featured audience: Enterprises (large bento cell) -->
-            <div class="col-lg-6 reveal">
-                <div class="bento-hero">
-                    <span class="bento-aurora"></span>
+        <div class="trust-wrap reveal">
+            <div class="trust-media">
+                <img src="{% static 'images/trust-deco.jpg' %}" alt="Oweru team at work">
+                <div class="cta-float" style="right:-12px; left:auto; top:26px; bottom:auto;">
+                    <i class="bi bi-shield-check"></i>
                     <div>
-                        <span class="bento-badge"><i class="bi bi-stars"></i> Featured audience</span>
-                        <span class="bento-icon"><i class="bi bi-building"></i></span>
-                        <h5 class="fw-bold mb-2">Enterprises that run on one system</h5>
-                        <p class="mb-4">Multi-branch operations, high-volume transactions and teams that need CRM, dashboards and integrations connected on a single reliable platform — built to your scale.</p>
-                        <div class="bento-checks d-flex flex-wrap gap-3 small">
-                            <span><i class="bi bi-check2-circle me-1" style="color:#ffd471;"></i>CRM &amp; sales pipelines</span>
-                            <span><i class="bi bi-check2-circle me-1" style="color:#ffd471;"></i>Custom dashboards</span>
-                            <span><i class="bi bi-check2-circle me-1" style="color:#ffd471;"></i>System integrations</span>
-                        </div>
+                        <b>99% on-time</b>
+                        <span>delivery rate</span>
                     </div>
-                    <a href="{% url 'core:enquiry_new' %}" class="bento-link small fw-bold text-decoration-none">Get a quote <i class="bi bi-arrow-right"></i></a>
                 </div>
             </div>
-            <div class="col-lg-6 reveal">
-                <div class="row g-4">
-                    <div class="col-sm-6">
-                        <div class="bento-card h-100">
-                            <div class="card-body p-4">
-                                <span class="icon-chip mb-3"><i class="bi bi-rocket-takeoff"></i></span>
-                                <h5 class="fw-bold">Startups</h5>
-                                <p class="text-muted small mb-3">Go from idea to first product without burning your runway. Lean builds that ship fast and can grow.</p>
-                                <a href="{% url 'core:enquiry_new' %}" class="small fw-semibold text-decoration-none" style="color:#c08a1f;">Get a quote <i class="bi bi-arrow-right"></i></a>
-                            </div>
-                        </div>
+            <div class="trust-list">
+                <div class="trust-card">
+                    <span class="t-icon"><i class="bi bi-tag"></i></span>
+                    <div>
+                        <strong>01</strong>
+                        <h3>Transparent Enterprise Pricing</h3>
                     </div>
-                    <div class="col-sm-6">
-                        <div class="bento-card h-100">
-                            <div class="card-body p-4">
-                                <span class="icon-chip mb-3"><i class="bi bi-graph-up-arrow"></i></span>
-                                <h5 class="fw-bold">Growing businesses</h5>
-                                <p class="text-muted small mb-3">Restaurants, shops, clinics and transport firms that need clean records, sales tracking and online bookings.</p>
-                                <a href="{% url 'core:enquiry_new' %}" class="small fw-semibold text-decoration-none" style="color:#c08a1f;">Get a quote <i class="bi bi-arrow-right"></i></a>
-                            </div>
-                        </div>
+                </div>
+                <div class="trust-card">
+                    <span class="t-icon"><i class="bi bi-check2-circle"></i></span>
+                    <div>
+                        <strong>02</strong>
+                        <h3>Rigorous Quality Assurance</h3>
                     </div>
-                    <div class="col-12">
-                        <div class="bento-card h-100">
-                            <div class="card-body p-4 d-flex flex-column flex-md-row gap-3 align-items-md-center">
-                                <span class="icon-chip flex-shrink-0"><i class="bi bi-bank2"></i></span>
-                                <div>
-                                    <h5 class="fw-bold mb-1">Public &amp; NGO</h5>
-                                    <p class="text-muted small mb-2">Schools, hospitals, government agencies and non-profits with tight budgets that still need reliable systems.</p>
-                                    <a href="{% url 'core:enquiry_new' %}" class="small fw-semibold text-decoration-none" style="color:#c08a1f;">Get a quote <i class="bi bi-arrow-right"></i></a>
-                                </div>
-                            </div>
-                        </div>
+                </div>
+                <div class="trust-card">
+                    <span class="t-icon"><i class="bi bi-clipboard-data"></i></span>
+                    <div>
+                        <strong>03</strong>
+                        <h3>Detailed Progress Reporting</h3>
+                    </div>
+                </div>
+                <div class="trust-card">
+                    <span class="t-icon"><i class="bi bi-calendar-check"></i></span>
+                    <div>
+                        <strong>04</strong>
+                        <h3>Guaranteed Delivery Dates</h3>
                     </div>
                 </div>
             </div>
@@ -587,62 +468,65 @@
     </div>
 </section>
 
-<!-- ================= SCANNER CTA ================= -->
-<section class="py-5" style="background:#fff;">
+<!-- ================= IMPACT ================= -->
+<section class="sec impact-band">
     <div class="container">
-        <div class="position-relative overflow-hidden reveal"
-             style="background:linear-gradient(150deg,#0e142e,var(--ink-2));border:1px solid rgba(240,191,77,.30);border-radius:26px;padding:56px 48px;">
-            <div class="aurora" style="width:340px;height:340px;background:radial-gradient(circle,rgba(240,191,77,.28),transparent 65%);top:-120px;right:-60px;"></div>
-            <div class="row align-items-center position-relative" style="z-index:2;">
-                <div class="col-lg-7">
-                    <span class="eyebrow mb-2"><i class="bi bi-search-heart me-1"></i>Free tool</span>
-                    <h2 class="fw-bold text-white mb-2">Is your website working for you?</h2>
-                    <p class="text-white-50 mb-0">Get a free health score instantly — speed, mobile, security and trust, measured not claimed. No sign-up needed.</p>
-                </div>
-                <div class="col-lg-5 text-lg-end mt-4 mt-lg-0">
-                    <a href="{% url 'core:scanner_home' %}" class="btn btn-champagne btn-sheen btn-lg px-4">Run Free Site Check</a>
-                </div>
+        <div class="sec-head reveal">
+            <span class="eyebrow mb-2"><span class="d-inline-block me-2" style="width:30px;height:2px;border-radius:99px;background:#e6b44a;"></span>Real impact</span>
+            <h2>Proven <span class="hero-gold">results.</span></h2>
+            <p>Technology is valuable when it creates real improvements for people and businesses.</p>
+        </div>
+        <div class="impact-grid reveal">
+            <div class="impact-card impact-feature">
+                <span class="ic-chip"><i class="bi bi-lightning-charge"></i></span>
+                <h3>Business Automation</h3>
+                <p>Removing repetitive manual work through smart systems and integrations that run by themselves.</p>
+                <ul class="check-list">
+                    <li><i class="bi bi-check2"></i> Fewer manual errors</li>
+                    <li><i class="bi bi-check2"></i> Hours returned to your team</li>
+                    <li><i class="bi bi-check2"></i> Processes that run on their own</li>
+                </ul>
+                <span class="gold-line"></span>
+            </div>
+            <div class="impact-card">
+                <span class="ic-chip"><i class="bi bi-graph-up-arrow"></i></span>
+                <h3>Digital Growth</h3>
+                <p>Platforms that help businesses reach, serve and convert more customers — measured, not guessed.</p>
+            </div>
+            <div class="impact-card">
+                <span class="ic-chip"><i class="bi bi-lightbulb"></i></span>
+                <h3>Technology Innovation</h3>
+                <p>Modern solutions built around how your business actually works, backed by a team of local engineers.</p>
             </div>
         </div>
     </div>
 </section>
 
-<!-- ================= PRICING ================= -->
-<section class="py-5" style="background:var(--cream);">
+<!-- ================= CTA ================= -->
+<section class="cta-prime reveal">
     <div class="container">
-        <div class="row mb-5 g-4 align-items-end reveal">
-            <div class="col-lg-6">
-                <span class="eyebrow mb-2"><span class="d-inline-block me-2" style="width:30px;height:2px;border-radius:99px;background:#e6b44a;"></span>Pricing</span>
-                <h2 class="fw-bold mb-2">A clear price before we start</h2>
-                <p class="text-muted mb-0">No hidden fees. The quote we give is the price you pay.</p>
+        <div class="cta-split">
+            <div class="cta-copy">
+                <span class="eyebrow mb-3"><i class="bi bi-rocket-takeoff me-1" style="color:#ffd471;"></i>Start today</span>
+                <h2><span class="hero-gold">Ready to build something extraordinary?</span></h2>
+                <p>Tell us the problem — we give you a fixed price and delivery date before you commit.</p>
+                <div class="hero-cta justify-content-start">
+                    <a href="{% url 'core:enquiry_new' %}" class="btn btn-champagne btn-sheen btn-lg px-5">Start a Project</a>
+                    <a href="{% url 'core:scanner_home' %}" class="btn btn-outline-gold btn-lg px-4">Run a Free Site Check</a>
+                </div>
             </div>
-        </div>
-        <div class="row g-4">
-            {% for group in groups %}
-            <div class="col-md-4 reveal">
-                <div class="card-lift h-100">
-                    <div class="p-3 ps-4 pt-4">
-                        <span class="small fw-semibold" style="color:#c08a1f;">{{ group.label }}</span>
-                    </div>
-                    <div class="card-body px-4 pb-4">
-                        {% for pkg in group.packages %}
-                        {% if forloop.first %}
-                        <h5 class="fw-bold mb-1">{{ pkg.name }}</h5>
-                        <p class="text-muted small mb-3">{{ pkg.description|truncatechars:92 }}</p>
-                        <div class="fw-bold mb-1" style="font-size:1.5rem;">
-                            {% if pkg.price_tzs_min %}TZS {{ pkg.price_tzs_min|floatformat:0|intcomma }}{% else %}Custom quote{% endif %}
-                        </div>
-                        <div class="small text-muted mb-4"><i class="bi bi-clock me-1"></i>{{ pkg.timeline }}</div>
-                        <a href="{% url 'core:enquiry_new' %}?package={{ pkg.slug }}" class="btn btn-primary w-100 px-3">Get a Quote</a>
-                        {% endif %}
-                        {% endfor %}
+            <div class="cta-media">
+                <div class="cta-frame">
+                    <img src="{% static 'images/home-cta.jpg' %}" alt="Oweru engineers at work">
+                </div>
+                <div class="cta-float">
+                    <i class="bi bi-shield-check"></i>
+                    <div>
+                        <b>On-time delivery</b>
+                        <span>99% of projects</span>
                     </div>
                 </div>
             </div>
-            {% endfor %}
-        </div>
-        <div class="text-center mt-4 reveal">
-            <a href="{% url 'core:services' %}" class="btn btn-champagne btn-sheen btn-lg px-5">See All Packages</a>
         </div>
     </div>
 </section>
@@ -652,61 +536,40 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    var slides = document.querySelectorAll('#heroSlideshow .hero-slide');
-    var dots = document.querySelectorAll('#heroSlideshow .hero-dot');
-    if (!slides.length) return;
-
-    var idx = 0;
-    var SLIDE_MS = 4000;
-    var timer = null;
-
-    function go(i) {
-        idx = i;
-        slides.forEach(function (s, k) { s.classList.toggle('active', k === i); });
-        dots.forEach(function (d, k) { d.classList.toggle('active', k === i); });
+    var heroSlides = document.querySelectorAll('.hero-slide');
+    if (heroSlides.length > 1) {
+        var i = 0;
+        setInterval(function () {
+            heroSlides[i].classList.remove('active');
+            i = (i + 1) % heroSlides.length;
+            heroSlides[i].classList.add('active');
+        }, 3000);
     }
-    function start() {
-        timer = setInterval(function () { go((idx + 1) % slides.length); }, SLIDE_MS);
+    var cells = document.querySelectorAll('.stat-value[data-count]');
+    function setFinal() {
+        cells.forEach(function (el) {
+            el.textContent = el.getAttribute('data-count') + (el.getAttribute('data-suffix') || '');
+        });
     }
-    function stop() { if (timer) { clearInterval(timer); timer = null; } }
-
-    dots.forEach(function (d, k) {
-        d.addEventListener('click', function () { stop(); go(k); start(); });
-    });
-
-    var wrap = document.getElementById('heroSlideshow');
-    wrap.addEventListener('mouseenter', stop);
-    wrap.addEventListener('mouseleave', start);
-
-    start();
-
-    // ---- stats counter ----
-    var statStrip = document.getElementById('statStrip');
-    if (statStrip && 'IntersectionObserver' in window) {
-        var counted = false;
-        var animate = function () {
-            if (counted) return;
-            counted = true;
-            statStrip.querySelectorAll('.stat-value').forEach(function (el) {
-                var target = parseInt(el.getAttribute('data-count'), 10) || 0;
-                var suffix = el.getAttribute('data-suffix') || '';
-                var dur = 1100;
-                var t0 = null;
-                function frame(t) {
-                    if (!t0) t0 = t;
-                    var p = Math.min((t - t0) / dur, 1);
-                    var eased = 1 - Math.pow(1 - p, 3);
-                    el.textContent = Math.round(target * eased) + suffix;
-                    if (p < 1) requestAnimationFrame(frame);
-                }
-                requestAnimationFrame(frame);
-            });
-        };
-        var io = new IntersectionObserver(function (entries) {
-            entries.forEach(function (e) { if (e.isIntersecting) { animate(); io.disconnect(); } });
-        }, { threshold: 0.3 });
-        io.observe(statStrip);
-    }
+    if (!cells.length || !('IntersectionObserver' in window)) { setFinal(); return; }
+    var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+            if (!e.isIntersecting) return;
+            var el = e.target;
+            io.unobserve(el);
+            var target = parseInt(el.getAttribute('data-count'), 10) || 0;
+            var suffix = el.getAttribute('data-suffix') || '';
+            var start = null, dur = 1300;
+            function step(ts) {
+                if (!start) start = ts;
+                var p = Math.min((ts - start) / dur, 1);
+                el.textContent = Math.round(target * (1 - Math.pow(1 - p, 3))) + suffix;
+                if (p < 1) requestAnimationFrame(step);
+            }
+            requestAnimationFrame(step);
+        });
+    }, { threshold: .4 });
+    cells.forEach(function (el) { io.observe(el); });
 });
 </script>
 {% endblock %}
