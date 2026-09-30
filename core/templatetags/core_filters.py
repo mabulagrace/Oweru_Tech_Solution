@@ -46,11 +46,21 @@ def stage_badge(stage):
     return STAGE_BADGES.get(stage, STAGE_BADGES['new'])
 
 
+_WHATSAPP_FALLBACK = '+255 700 000 000'
+
+
 def _whatsapp_number():
-    """Business WhatsApp number from Settings (core.notifications style lookup)."""
+    """Business WhatsApp number from Settings (core.notifications style lookup).
+
+    Falls back to a constant when the database is unavailable so public
+    pages keep rendering on serverless hosts before a DATABASE_URL is set.
+    """
     from core.models import Setting
-    setting = Setting.objects.filter(key='whatsapp_number').first()
-    return setting.value if setting and setting.value else '+255 700 000 000'
+    try:
+        setting = Setting.objects.filter(key='whatsapp_number').first()
+    except Exception:
+        return _WHATSAPP_FALLBACK
+    return setting.value if setting and setting.value else _WHATSAPP_FALLBACK
 
 
 @register.simple_tag

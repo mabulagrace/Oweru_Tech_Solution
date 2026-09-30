@@ -40,9 +40,23 @@ from .notifications import (
 # Public pages
 # ---------------------------------------------------------------------------
 
+def _db_safe(queryset, fallback=None):
+    """Return `queryset` as a list, or `fallback` (default `[]`) when the
+    database is unavailable.
+
+    Lets the static marketing pages render on serverless hosts before a
+    DATABASE_URL has been configured (e.g. an initial Vercel deployment).
+    """
+    if fallback is None:
+        fallback = []
+    try:
+        return list(queryset)
+    except Exception:
+        return fallback
+
 def home(request):
     """Homepage."""
-    packages = Package.objects.filter(is_active=True).order_by('sort_order')
+    packages = _db_safe(Package.objects.filter(is_active=True).order_by('sort_order'))
 
     groups = []
     for code, label in Package.GROUP_CHOICES:
@@ -53,16 +67,16 @@ def home(request):
     context = {
         'groups': groups,
         'packages': packages,
-        'care_plans': CarePlan.objects.filter(is_active=True).order_by('sort_order'),
-        'exclusions': Exclusion.objects.filter(is_active=True).order_by('sort_order'),
-        'commitments': DeliveryCommitment.objects.filter(is_active=True).order_by('sort_order'),
+        'care_plans': _db_safe(CarePlan.objects.filter(is_active=True).order_by('sort_order')),
+        'exclusions': _db_safe(Exclusion.objects.filter(is_active=True).order_by('sort_order')),
+        'commitments': _db_safe(DeliveryCommitment.objects.filter(is_active=True).order_by('sort_order')),
     }
     return render(request, 'core/home.html', context)
 
 
 def services(request):
     """Services / packages page."""
-    packages = Package.objects.filter(is_active=True).order_by('sort_order')
+    packages = _db_safe(Package.objects.filter(is_active=True).order_by('sort_order'))
 
     groups = []
     for code, label in Package.GROUP_CHOICES:
@@ -80,9 +94,9 @@ def services(request):
 
     context = {
         'groups': groups,
-        'care_plans': CarePlan.objects.filter(is_active=True).order_by('sort_order'),
-        'exclusions': Exclusion.objects.filter(is_active=True).order_by('sort_order'),
-        'commitments': DeliveryCommitment.objects.filter(is_active=True).order_by('sort_order'),
+        'care_plans': _db_safe(CarePlan.objects.filter(is_active=True).order_by('sort_order')),
+        'exclusions': _db_safe(Exclusion.objects.filter(is_active=True).order_by('sort_order')),
+        'commitments': _db_safe(DeliveryCommitment.objects.filter(is_active=True).order_by('sort_order')),
         'display_currency': display_currency,
     }
     return render(request, 'core/services.html', context)
