@@ -1,0 +1,15 @@
+.git
+venv
+__pycache__
+logs
+staticfiles
+*.log
+*.err
+db.sqlite3
+.run*
+server*.log
+server*.err
+run*.log
+run*.err
+test_showmore.js
+form_test.html

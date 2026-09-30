@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "functions": {
+    "oweru_tech_solutions/wsgi.py": {
+      "maxDuration": 30
+    }
+  },
+  "build": {
+    "command": "python manage.py collectstatic --noinput"
+  }
+}

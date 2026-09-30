@@ -190,3 +190,38 @@ SCANNER_GOVERNMENT_EXCLUDED = True
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# ============================================================
+# Vercel (serverless) adjustments
+# Activate only when running on Vercel, never locally.
+# ============================================================
+if _os.environ.get('VERCEL'):
+    DEBUG = _os.environ.get('DJANGO_DEBUG', 'false').lower() in ('1', 'true', 'yes')
+    ALLOWED_HOSTS = ['*']
+
+    # Stateless, in-memory sessions so pages render without a database.
+    SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        }
+    }
+
+    _db_url = _os.environ.get('DATABASE_URL', '').strip()
+    if _db_url and _db_url.startswith('postgres'):
+        from urllib.parse import urlparse as _urlparse
+        _u = _urlparse(_db_url)
+        DATABASES['default'] = {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': _u.path.lstrip('/'),
+            'USER': _u.username,
+            'PASSWORD': _u.password,
+            'HOST': _u.hostname,
+            'PORT': _u.port or '5432',
+        }
+    else:
+        DATABASES['default'] = {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
