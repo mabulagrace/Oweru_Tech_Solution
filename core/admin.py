@@ -21,8 +21,8 @@ class CustomUserAdmin(UserAdmin):
 
 @admin.register(Package)
 class PackageAdmin(admin.ModelAdmin):
-    list_display = ['name', 'group', 'price_tzs_min', 'price_tzs_max', 'timeline', 'sort_order', 'is_active']
-    list_filter = ['group', 'is_active']
+    list_display = ['name', 'group', 'price_tzs_min', 'price_tzs_max', 'price_tzs', 'book_now', 'timeline', 'sort_order', 'is_active']
+    list_filter = ['group', 'book_now', 'is_active']
     prepopulated_fields = {'slug': ('name',)}
     search_fields = ['name', 'description']
     list_editable = ['sort_order', 'is_active']

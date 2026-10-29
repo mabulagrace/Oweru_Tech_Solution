@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 
 {% load humanize %}
 
@@ -9,38 +9,70 @@
 
 <section class="py-4">
     <div class="container">
-        <div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
-            <a href="{% url 'core:admin_proposals' %}" class="btn btn-sm {% if not current_status %}btn-primary{% else %}btn-outline-primary{% endif %}">All</a>
+        <div class="ow-toolbar">
+            <a href="{% url 'core:admin_proposals' %}" class="btn btn-sm {% if not current_status %}pill-gold{% else %}pill-line{% endif %}">All</a>
             {% for code, label in status_choices %}
             <a href="{% url 'core:admin_proposals' %}?status={{ code }}"
-               class="btn btn-sm {% if current_status == code %}btn-primary{% else %}btn-outline-primary{% endif %}">{{ label }}</a>
+               class="btn btn-sm {% if current_status == code %}pill-gold{% else %}pill-line{% endif %}">{{ label }}</a>
             {% endfor %}
             <a href="{% url 'core:admin_proposal_new' %}" class="btn btn-sm btn-outline-primary ms-auto">+ New Proposal</a>
         </div>
-        </div>
 
-        <div class="table-responsive">
-            <table class="table table-hover align-middle">
-                <thead class="table-light">
-                    <tr><th>Ref</th><th>Title</th><th>Customer</th><th>Amount</th><th>Status</th><th>Created</th></tr>
+        <div class="ow-table-wrap">
+            <div class="table-responsive">
+            <table class="table ow-table align-middle">
+                <thead>
+                    <tr>
+                        <th><span class="ow-th"><i class="bi bi-hash"></i>Ref</span></th>
+                        <th><span class="ow-th"><i class="bi bi-file-earmark-text"></i>Proposal</span></th>
+                        <th><span class="ow-th"><i class="bi bi-shop"></i>Customer</span></th>
+                        <th><span class="ow-th"><i class="bi bi-cash-stack"></i>Amount</span></th>
+                        <th><span class="ow-th"><i class="bi bi-flag"></i>Status</span></th>
+                        <th class="ow-hide-sm"><span class="ow-th"><i class="bi bi-calendar3"></i>Created</span></th>
+                    </tr>
                 </thead>
                     <tbody data-showmore="10" data-key="proposals-rows">
                     {% for p in proposals %}
-                    <tr style="cursor:pointer;" onclick="document.location='{% url 'core:admin_proposal_detail' p.id %}'">
-                        <td class="fw-semibold">{{ p.reference }}</td>
-                        <td>{{ p.title }}</td>
-                        <td>{{ p.customer.business_name|default:'—' }}</td>
-                        <td>{{ p.currency }} {{ p.total_amount|floatformat:0|intcomma }}</td>
+                    <tr class="{% if p.status == 'accepted' %}ow-row--won{% elif p.status == 'sent' %}ow-row--teal{% elif p.status == 'rejected' %}ow-row--lost{% elif p.status == 'draft' %}ow-row--mute{% else %}ow-row--pro{% endif %}" style="cursor:pointer;" onclick="document.location='{% url 'core:admin_proposal_detail' p.id %}'">
+                        <td><span class="ow-chip ow-chip--mute">{{ p.reference }}</span></td>
                         <td>
-                            <span class="badge {% if p.status == 'accepted' %}bg-success{% elif p.status == 'sent' %}bg-info text-dark{% elif p.status == 'draft' %}bg-light text-dark border{% elif p.status == 'rejected' %}bg-danger{% else %}bg-secondary{% endif %}">{{ p.status }}</span>
+                            <span class="ow-strong">{{ p.title }}</span>
+                            <span class="ow-meta">Prepared for {{ p.customer.business_name|default:'unassigned client' }}</span>
                         </td>
-                        <td class="small text-muted">{{ p.created_at|date:'d M Y' }}</td>
+                        <td>
+                            {% if p.customer.business_name %}
+                            <div class="ow-cell-id">
+                                <span class="ow-ava ow-ava--p">{{ p.customer.business_name|slice:":1"|upper }}</span>
+                                <span class="ow-strong" style="font-weight:500;">{{ p.customer.business_name }}</span>
+                            </div>
+                            {% else %}
+                            <span class="ow-chip ow-chip--mute">No client</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="ow-amount">{{ p.currency }} {{ p.total_amount|floatformat:0|intcomma }}</span>
+                        </td>
+                        <td>
+                            {% if p.status == 'accepted' %}
+                            <span class="ow-chip ow-chip--won"><i class="bi bi-check-circle-fill"></i>Accepted</span>
+                            {% elif p.status == 'sent' %}
+                            <span class="ow-chip ow-chip--teal"><i class="bi bi-send-fill"></i>Sent</span>
+                            {% elif p.status == 'rejected' %}
+                            <span class="ow-chip ow-chip--lost"><i class="bi bi-x-circle-fill"></i>Rejected</span>
+                            {% elif p.status == 'draft' %}
+                            <span class="ow-chip ow-chip--mute"><i class="bi bi-pencil-fill"></i>Draft</span>
+                            {% else %}
+                            <span class="ow-chip ow-chip--mute">{{ p.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="ow-hide-sm"><span class="ow-meta" style="white-space:nowrap;">{{ p.created_at|date:'d M Y' }}</span></td>
                     </tr>
                     {% empty %}
-                    <tr><td colspan="6" class="text-center text-muted py-5">No proposals yet</td></tr>
+                    <tr><td colspan="6" class="ow-empty"><i class="bi bi-file-earmark-text"></i>No proposals yet</td></tr>
                     {% endfor %}
                 </tbody>
-            </table>
+</table>
+            </div>
         </div>
     </div>
 </section>

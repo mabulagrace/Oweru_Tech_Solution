@@ -18,7 +18,8 @@ from django.test import TestCase, Client
 from django.template.loader import render_to_string
 
 from core import notifications
-from core.models import (Enquiry, Scan, ScanBatch, ScanExclusion, Setting)
+from core.models import (Enquiry, Scan, ScanBatch, ScanExclusion, Setting,
+                         Package, Proposal, Payment)
 from core.scanner import _is_government, is_excluded, is_scannable
 from core.views import _group_scan_checks
 
@@ -91,6 +92,13 @@ class ExclusionEndpointTests(TestCase):
     def test_blocked_site_is_not_scanned(self):
         ScanExclusion.objects.create(website_url='https://blocked.co.tz')
         self.assertFalse(is_scannable('https://blocked.co.tz'))
+
+    def test_direct_browser_get_without_referer_redirects_not_crashes(self):
+        # A bare GET (no url, no referer) must fall back to the scanner page,
+        # not raise NoReverseMatch on a stale URL name.
+        r = self.client.get('/scan/exclude/')
+        self.assertNotEqual(r.status_code, 500)
+        self.assertRedirects(r, '/scan/', fetch_redirect_response=False)
 
 
 class ExclusionMatchingTests(TestCase):
@@ -785,3 +793,424 @@ class AdminScanFilterTests(TestCase):
             with self.subTest(scan_type=value):
                 r = c.get(f'/admin-app/scans/?scan_type={value}')
                 self.assertEqual(r.status_code, 200)
+
+
+class ScanUrlValidationTests(TestCase):
+    """Regression: the full-report form accepted an empty website address.
+
+    `FullReportForm.website` was an unvalidated optional CharField, so a
+    POST without a URL normalised to ``https://`` and created a Scan row
+    with that as its address - including rows whose report_status became
+    'pending' and 'sent'.
+    """
+
+    def _valid_post(self, **overrides):
+        data = {
+            'name': 'Amina Juma',
+            'business_name': 'Juma Traders',
+            'email': 'amina@example.com',
+            'phone': '+255712345678',
+            'country': 'Tanzania',
+            'notes': 'Please review.',
+            'consent': 'on',
+            'website': 'https://example.co.tz',
+        }
+        data.update(overrides)
+        return self.client.post('/scan/report/', data=data)
+
+    def test_full_report_post_without_website_creates_no_scan(self):
+        scans_before = Scan.objects.count()
+        r = self._valid_post(website='')
+        self.assertEqual(Scan.objects.count(), scans_before,
+                         'an address-less scan row was created')
+        # Form re-renders with the error rather than redirecting.
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'website address', status_code=200)
+
+    def test_full_report_post_with_scheme_only_creates_no_scan(self):
+        scans_before = Scan.objects.count()
+        self._valid_post(website='https://')
+        self.assertEqual(Scan.objects.count(), scans_before)
+
+    def test_valid_website_is_accepted_and_normalised(self):
+        from core.forms import FullReportForm
+        data = {
+            'name': 'Amina Juma',
+            'business_name': 'Juma Traders',
+            'email': 'amina@example.com',
+            'phone': '+255712345678',
+            'country': 'Tanzania',
+            'consent': 'on',
+            'website': 'example.co.tz',
+        }
+        form = FullReportForm(data=data)
+        self.assertTrue(form.is_valid(), form.errors)
+        self.assertEqual(form.cleaned_data['website'],
+                         'https://example.co.tz')
+
+    def test_error_is_shown_as_a_non_field_error(self):
+        # The field is a hidden input, so the message must surface where the
+        # template actually renders errors.
+        from core.forms import FullReportForm
+        form = FullReportForm(data={
+            'name': 'A', 'business_name': 'B',
+            'email': 'a@example.com', 'phone': '+255',
+            'country': 'Tanzania', 'consent': 'on', 'website': '',
+        })
+        self.assertFalse(form.is_valid())
+        self.assertIn('__all__', form.errors)
+        self.assertNotIn('website', form.errors)
+
+
+class NormalizeScanUrlTests(TestCase):
+    """core.scanner.normalize_scan_url - single source of truth for URLs."""
+
+    def _normalize(self, value):
+        from core.scanner import normalize_scan_url
+        return normalize_scan_url(value)
+
+    def test_bare_host_gets_a_scheme(self):
+        self.assertEqual(self._normalize('example.com'), 'https://example.com')
+
+    def test_existing_scheme_is_preserved(self):
+        self.assertEqual(self._normalize('http://example.com'),
+                         'http://example.com')
+
+    def test_path_and_www_are_preserved(self):
+        self.assertEqual(self._normalize('https://www.example.com/contact'),
+                         'https://www.example.com/contact')
+
+    def test_surrounding_whitespace_is_trimmed(self):
+        self.assertEqual(self._normalize('  example.com  '),
+                         'https://example.com')
+
+    def test_empty_is_rejected(self):
+        from core.scanner import normalize_scan_url
+        for value in ('', '   ', None):
+            with self.subTest(value=value):
+                with self.assertRaises(ValueError):
+                    normalize_scan_url(value)
+
+    def test_scheme_only_is_rejected(self):
+        with self.assertRaises(ValueError):
+            self._normalize('https://')
+        with self.assertRaises(ValueError):
+            self._normalize('http://')
+
+    def test_host_without_a_dot_is_rejected(self):
+        with self.assertRaises(ValueError):
+            self._normalize('localhost')
+
+    def test_prose_is_rejected(self):
+        with self.assertRaises(ValueError):
+            self._normalize('not a url at all')
+
+    def test_no_junk_scan_url_can_survive(self):
+        # Belt and braces: anything we accept must have a real host.
+        from urllib.parse import urlparse
+        for value in ('example.com', 'a.b.c.tz', 'https://sub.example.co.tz'):
+            with self.subTest(value=value):
+                self.assertIn('.', urlparse(self._normalize(value)).hostname)
+
+
+class CheckHeuristicTests(TestCase):
+    """The mobile / findability checks used to be hardcoded True/False."""
+
+    def _soup(self, markup):
+        from bs4 import BeautifulSoup
+        return BeautifulSoup(markup, 'html.parser')
+
+    def test_readable_text_gives_benefit_of_the_doubt(self):
+        from core.scanner import _readable_text
+        # No declared font sizes (they live in an external stylesheet).
+        self.assertTrue(_readable_text(self._soup('<p>Hello</p>')))
+
+    def test_readable_text_fails_on_tiny_declared_sizes(self):
+        from core.scanner import _readable_text
+        soup = self._soup(
+            '<style>body{font-size:12px}p{font-size:11px}</style><p>x</p>')
+        self.assertFalse(_readable_text(soup))
+
+    def test_readable_text_passes_when_large_size_declared(self):
+        from core.scanner import _readable_text
+        soup = self._soup('<style>p{font-size:18px}</style><p>x</p>')
+        self.assertTrue(_readable_text(soup))
+
+    def test_readable_text_understands_rem(self):
+        from core.scanner import _readable_text
+        soup = self._soup('<style>p{font-size:1rem}</style><p>x</p>')
+        self.assertTrue(_readable_text(soup))
+
+    def test_tappable_buttons_gives_benefit_of_the_doubt(self):
+        from core.scanner import _tappable_buttons
+        self.assertTrue(_tappable_buttons(self._soup('<a href="/">Go</a>')))
+
+    def test_tappable_buttons_fails_when_explicitly_tiny(self):
+        from core.scanner import _tappable_buttons
+        soup = self._soup('<style>.btn{min-height:20px}</style>')
+        self.assertFalse(_tappable_buttons(soup))
+
+    def test_tappable_buttons_passes_when_sized_for_touch(self):
+        from core.scanner import _tappable_buttons
+        soup = self._soup('<style>.btn{min-height:48px}</style>')
+        self.assertTrue(_tappable_buttons(soup))
+
+    def test_google_profile_detected_from_maps_link(self):
+        from core.scanner import _has_google_profile
+        soup = self._soup('<a href="https://goo.gl/maps/abc123">Map</a>')
+        self.assertTrue(_has_google_profile(soup))
+
+    def test_google_profile_detected_from_maps_embed(self):
+        from core.scanner import _has_google_profile
+        soup = self._soup(
+            '<iframe src="https://www.google.com/maps/embed?pb=x"></iframe>')
+        self.assertTrue(_has_google_profile(soup))
+
+    def test_google_profile_absent(self):
+        from core.scanner import _has_google_profile
+        soup = self._soup('<a href="/contact">Contact</a>')
+        self.assertFalse(_has_google_profile(soup))
+
+    def test_indexing_allowed_when_no_robots_file(self):
+        from core.scanner import _indexing_allowed
+        self.assertTrue(_indexing_allowed([]))
+
+    def test_indexing_allowed_when_googlebot_is_welcome(self):
+        from core.scanner import _indexing_allowed
+        log = [{'type': 'robots', 'status': 200, 'ok': False,
+                'googlebot_ok': True}]
+        # Our own scanner being blocked must not cost the site points.
+        self.assertTrue(_indexing_allowed(log))
+
+    def test_indexing_blocked_when_googlebot_is_blocked(self):
+        from core.scanner import _indexing_allowed
+        log = [{'type': 'robots', 'status': 200, 'ok': True,
+                'googlebot_ok': False}]
+        self.assertFalse(_indexing_allowed(log))
+
+    def test_indexing_allowed_for_older_log_rows(self):
+        from core.scanner import _indexing_allowed
+        # Rows saved before googlebot_ok existed must not be penalised.
+        log = [{'type': 'robots', 'status': 200, 'ok': True}]
+        self.assertTrue(_indexing_allowed(log))
+
+
+class CustomerPortalRemovalTests(TestCase):
+    """The public customer portal was removed entirely.
+
+    The 'My Project' pages, customer login and /my-project/<REF>/ routes no
+    longer exist; customers are followed up by email and WhatsApp instead.
+    """
+
+    def test_customer_login_route_removed(self):
+        self.assertEqual(self.client.get('/customer-login/').status_code, 404)
+
+    def test_my_project_routes_removed(self):
+        for url in (
+            '/my-project/SV97YV/',
+            '/my-project/SV97YV/services/',
+            '/my-project/SV97YV/proposals/',
+            '/my-project/SV97YV/payments/',
+            '/my-project/SV97YV/support/',
+            '/my-project/SV97YV/pay/',
+        ):
+            with self.subTest(url=url):
+                self.assertEqual(self.client.get(url).status_code, 404)
+
+    def test_nav_has_no_my_project_dropdown(self):
+        from django.contrib.auth import get_user_model
+        from core.models import Enquiry
+
+        admin = get_user_model().objects.create_superuser(
+            'navadmin', 'a@example.com', 'pw12345!')
+        c = Client()
+        c.force_login(admin)
+        enquiry = Enquiry.objects.create(
+            name='Niva', email='niva@example.com', phone='+255700000000',
+        )
+        session = c.session
+        session['enquiry_ref'] = enquiry.reference
+        session.save()
+        r = c.get('/')
+        self.assertNotContains(r, 'My Project')
+        self.assertNotContains(r, '/my-project/')
+
+
+class ScanSourceSeparationTests(TestCase):
+    """Customer-requested scans must never be mixed with scraped scans."""
+
+    def _admin_client(self):
+        from django.contrib.auth import get_user_model
+        admin = get_user_model().objects.create_superuser(
+            'sepadmin', 'a@example.com', 'pw12345!')
+        c = Client()
+        c.force_login(admin)
+        return c
+
+    def _make_scan(self, website, scan_type):
+        return Scan.objects.create(
+            website_url=website,
+            business_name=website,
+            score=60,
+            band='adequate',
+            scan_type=scan_type,
+        )
+
+    def test_scans_page_reports_per_source_counts(self):
+        self._make_scan('https://customer-scan.co.tz', 'public')
+        self._make_scan('https://scraped-site.co.tz', 'batch')
+        self._make_scan('https://internal-site.co.tz', 'internal')
+        r = self._admin_client().get('/admin-app/scans/')
+        self.assertEqual(r.status_code, 200)
+        counts = r.context['type_counts']
+        self.assertGreaterEqual(counts['public'], 1)
+        self.assertGreaterEqual(counts['batch'], 1)
+        self.assertGreaterEqual(counts['internal'], 1)
+
+    def test_public_tab_only_shows_customer_scans(self):
+        self._make_scan('https://customer-only.co.tz', 'public')
+        self._make_scan('https://scraped-only.co.tz', 'batch')
+        r = self._admin_client().get('/admin-app/scans/?scan_type=public')
+        rows = [s.website_url for s in r.context['scans']]
+        self.assertIn('https://customer-only.co.tz', rows)
+        self.assertNotIn('https://scraped-only.co.tz', rows)
+
+    def test_batch_tab_only_shows_scraped_scans(self):
+        self._make_scan('https://customer-only.co.tz', 'public')
+        self._make_scan('https://scraped-only.co.tz', 'batch')
+        r = self._admin_client().get('/admin-app/scans/?scan_type=batch')
+        rows = [s.website_url for s in r.context['scans']]
+        self.assertNotIn('https://customer-only.co.tz', rows)
+        self.assertIn('https://scraped-only.co.tz', rows)
+
+    def test_report_requests_loads_with_source_badge(self):
+        r = self._admin_client().get('/admin-app/reports/')
+        self.assertEqual(r.status_code, 200)
+
+
+class PaymentFlowTests(TestCase):
+    """Customer payments: book-now deposits and proposal payment links."""
+
+    def _package(self, **overrides):
+        data = {
+            'name': 'Business Booking Site',
+            'slug': 'booking-site',
+            'group': 'mobile-web',
+            'price_tzs': 1000000,
+            'book_now': True,
+        }
+        data.update(overrides)
+        return Package.objects.create(**data)
+
+    def _enquiry(self):
+        return Enquiry.objects.create(
+            name='Niva Kimaro', business_name='Moshi Honey Ltd',
+            email='niva@example.com', phone='+255700000000',
+            problem_description='We need an online booking site.',
+            package_name='Business Booking Site',
+        )
+
+    def _enquiry_post(self, package):
+        return {
+            'name': 'Niva Kimaro', 'email': 'niva@example.com',
+            'phone': '+255700000000', 'problem_description': 'We need a booking site.',
+            'consent_given': 'on',
+            'package_name': package.name,
+        }
+
+    def test_book_now_enquiry_gets_token_and_thanks_link(self):
+        package = self._package()
+        r = self.client.post(f'/enquiry/?package={package.slug}', self._enquiry_post(package))
+        self.assertEqual(r.status_code, 302)
+        enquiry = Enquiry.objects.get()
+        self.assertTrue(enquiry.payment_token)
+        self.assertEqual(enquiry.book_now_deposit(), 500000)
+        thanks = self.client.get(r.url)
+        self.assertContains(thanks, 'Secure your spot')
+        self.assertContains(thanks, '/pay/')
+
+    def test_non_book_now_enquiry_gets_no_payment_link(self):
+        package = self._package(book_now=False, price_tzs=None)
+        r = self.client.post(f'/enquiry/?package={package.slug}', self._enquiry_post(package))
+        enquiry = Enquiry.objects.get()
+        self.assertEqual(enquiry.payment_token, '')
+        thanks = self.client.get(r.url)
+        self.assertNotContains(thanks, 'Secure your spot')
+
+    def test_proposal_payment_page_shows_deposit(self):
+        enquiry = self._enquiry()
+        proposal = Proposal.objects.create(
+            enquiry=enquiry, title='Online Booking Platform',
+            total_amount=2000000, currency='TZS', status='sent')
+        self.assertTrue(proposal.payment_token)
+        r = self.client.get(f'/pay/{proposal.payment_token}/')
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, '1,000,000')
+
+    def test_payment_claim_creates_pending_payment(self):
+        enquiry = self._enquiry()
+        proposal = Proposal.objects.create(
+            enquiry=enquiry, title='Online Booking Platform',
+            total_amount=2000000, currency='TZS', status='sent')
+        r = self.client.post(f'/pay/{proposal.payment_token}/', {
+            'kind': 'deposit', 'payer_name': 'Niva Kimaro',
+            'method': 'mpesa', 'amount': '', 'reference': 'PESAK9S8B7X',
+        })
+        self.assertEqual(r.status_code, 302)
+        payment = Payment.objects.get()
+        self.assertEqual(payment.status, 'pending')
+        self.assertEqual(payment.amount, 1000000)
+        self.assertEqual(payment.enquiry, enquiry)
+        self.assertEqual(payment.proposal, proposal)
+        self.assertEqual(payment.paid_by, 'Niva Kimaro')
+        done = self.client.get(r.url)
+        self.assertEqual(done.status_code, 200)
+        self.assertContains(done, 'Awaiting confirmation')
+
+    def test_invalid_payment_token_404(self):
+        self.assertEqual(self.client.get('/pay/INVALIDTOKEN123/').status_code, 404)
+
+    def test_admin_confirm_deposit_directly_from_quote(self):
+        from django.contrib.auth import get_user_model
+        admin = get_user_model().objects.create_superuser(
+            'payadmin', 'a@example.com', 'pw12345!')
+        c = Client()
+        c.force_login(admin)
+        enquiry = self._enquiry()
+        proposal = Proposal.objects.create(
+            enquiry=enquiry, title='Online Booking Platform',
+            total_amount=2000000, currency='TZS', status='accepted')
+        self.assertEqual(proposal.deposit_amount(), 1000000)
+        r = c.post(f'/admin-app/proposals/{proposal.id}/', {
+            'action': 'confirm_deposit', 'method': 'mpesa',
+            'reference': 'STAFF-REF-123',
+        })
+        self.assertEqual(r.status_code, 302)
+        payment = Payment.objects.get()
+        self.assertEqual(payment.status, 'confirmed')
+        self.assertEqual(payment.amount, 1000000)
+        self.assertEqual(payment.submitted_by, 'staff')
+        self.assertEqual(payment.confirmed_by, admin)
+        self.assertEqual(payment.reference, 'STAFF-REF-123')
+        enquiry.refresh_from_db()
+        self.assertEqual(enquiry.payment_status, 'deposit_paid')
+        # A second confirmation must not create a duplicate payment.
+        r2 = c.post(f'/admin-app/proposals/{proposal.id}/', {
+            'action': 'confirm_deposit', 'method': 'bank_transfer',
+        })
+        self.assertEqual(Payment.objects.count(), 1)
+        self.assertTrue(any(m.level == 'error' for m in r2.wsgi_request._messages))
+
+    def test_admin_confirm_deposit_needs_enquiry(self):
+        from django.contrib.auth import get_user_model
+        admin = get_user_model().objects.create_superuser(
+            'payadmin2', 'a@example.com', 'pw12345!')
+        c = Client()
+        c.force_login(admin)
+        proposal = Proposal.objects.create(
+            title='No Enquiry Quote', total_amount=500000,
+            currency='TZS', status='accepted')
+        c.post(f'/admin-app/proposals/{proposal.id}/', {
+            'action': 'confirm_deposit', 'method': 'cash',
+        })
+        self.assertEqual(Payment.objects.count(), 0)

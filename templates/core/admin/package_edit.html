@@ -3,62 +3,255 @@
 {% block title %}Edit Package - Oweru Admin{% endblock %}
 
 {% block content %}
-<section class="bg-light py-4">
-    <div class="container d-flex justify-content-between align-items-center">
-        <div>
-            <h1 class="fw-bold mb-0">Edit Package</h1>
-            <p class="text-muted mb-0">{{ package.name }}</p>
-        </div>
-        <a href="{% url 'core:admin_packages' %}" class="btn btn-outline-secondary">Back to Packages</a>
-    </div>
-</section>
+{% include 'core/admin/_admin_header.html' with title='Edit Package' subtitle=package.name %}
 
 <section class="py-4">
     <div class="container">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body">
-                <form method="post">
-                    {% csrf_token %}
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label small fw-semibold">Name</label>
-                            <input name="name" value="{{ package.name }}" class="form-control">
+        <form method="post" id="pkgForm">
+            {% csrf_token %}
+            <div class="row g-4">
+                <div class="col-lg-7">
+
+                    <div class="ow-card">
+                        <div class="ow-card__head">
+                            <span class="ow-card__icon"><i class="bi bi-box-seam"></i></span>
+                            <div>
+                                <div class="ow-card__title">Basics</div>
+                                <div class="ow-card__sub">How this package is named and grouped on the public site</div>
+                            </div>
                         </div>
-                        <div class="col-md-3">
-                            <label class="form-label small fw-semibold">Group</label>
-                            <select name="group" class="form-select">
-                                {% for code, label in package.GROUP_CHOICES %}
-                                <option value="{{ code }}" {% if package.group == code %}selected{% endif %}>{{ label }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label small fw-semibold">Sort order</label>
-                            <input name="sort_order" type="number" value="{{ package.sort_order }}" class="form-control">
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label small fw-semibold">Price min (TZS)</label>
-                            <input name="price_tzs_min" value="{{ package.price_tzs_min }}" class="form-control">
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label small fw-semibold">Price max (TZS)</label>
-                            <input name="price_tzs_max" value="{{ package.price_tzs_max }}" class="form-control">
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label small fw-semibold">Timeline</label>
-                            <input name="timeline" value="{{ package.timeline }}" class="form-control">
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label small fw-semibold">Description</label>
-                            <textarea name="description" rows="4" class="form-control">{{ package.description }}</textarea>
-                        </div>
-                        <div class="col-12">
-                            <button class="btn btn-primary">Save Package</button>
+                        <div class="ow-card__body">
+                            <div class="mb-3">
+                                <label class="ow-label" for="f-name"><i class="bi bi-type"></i>Package name <span class="ow-req">*</span></label>
+                                <input id="f-name" name="name" value="{{ package.name }}" class="ow-input" required
+                                       placeholder="e.g. Starter Business Website">
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-7">
+                                    <label class="ow-label" for="f-group"><i class="bi bi-collection"></i>Group</label>
+                                    <select id="f-group" name="group" class="ow-input">
+                                        {% for code, label in package.GROUP_CHOICES %}
+                                        <option value="{{ code }}" {% if package.group == code %}selected{% endif %}>{{ label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <div class="ow-help">Controls which section of the Services page it appears in.</div>
+                                </div>
+                                <div class="col-md-5">
+                                    <label class="ow-label" for="f-sort"><i class="bi bi-sort-down"></i>Sort order</label>
+                                    <input id="f-sort" name="sort_order" type="number" value="{{ package.sort_order }}" class="ow-input">
+                                    <div class="ow-help">Lower numbers show first.</div>
+                                </div>
+                            </div>
+                            <div class="mt-3">
+                                <label class="ow-switch">
+                                    <input type="checkbox" name="is_active" value="1" {% if package.is_active %}checked{% endif %}>
+                                    <span class="ow-switch__track"></span>
+                                    <span class="ow-switch__txt">
+                                        <b>Visible on the website</b>
+                                        <span>Turn off to hide this package without deleting it</span>
+                                    </span>
+                                </label>
+                            </div>
                         </div>
                     </div>
-                </form>
+
+                    <div class="ow-card">
+                        <div class="ow-card__head">
+                            <span class="ow-card__icon"><i class="bi bi-cash-stack"></i></span>
+                            <div>
+                                <div class="ow-card__title">Pricing</div>
+                                <div class="ow-card__sub">Leave blank to show &ldquo;on request&rdquo; instead of a price</div>
+                            </div>
+                        </div>
+                        <div class="ow-card__body">
+                            <div class="ow-label"><i class="bi bi-bank"></i>Tanzanian Shilling (TZS)</div>
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-6">
+                                    <label class="ow-label" for="f-tzs-min"><i class="bi bi-arrow-down-short"></i>From</label>
+                                    <div class="ow-money">
+                                        <span class="ow-money__tag">TZS</span>
+                                        <input id="f-tzs-min" name="price_tzs_min" value="{{ package.price_tzs_min|default_if_none:'' }}" class="ow-input" inputmode="numeric" placeholder="0">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="ow-label" for="f-tzs-max"><i class="bi bi-arrow-up-short"></i>To</label>
+                                    <div class="ow-money">
+                                        <span class="ow-money__tag">TZS</span>
+                                        <input id="f-tzs-max" name="price_tzs_max" value="{{ package.price_tzs_max|default_if_none:'' }}" class="ow-input" inputmode="numeric" placeholder="0">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="ow-label"><i class="bi bi-globe2"></i>US Dollar (USD)</div>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="ow-label" for="f-usd-min"><i class="bi bi-arrow-down-short"></i>From</label>
+                                    <div class="ow-money">
+                                        <span class="ow-money__tag">USD</span>
+                                        <input id="f-usd-min" name="price_usd_min" value="{{ package.price_usd_min|default_if_none:'' }}" class="ow-input" inputmode="decimal" placeholder="0">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="ow-label" for="f-usd-max"><i class="bi bi-arrow-up-short"></i>To</label>
+                                    <div class="ow-money">
+                                        <span class="ow-money__tag">USD</span>
+                                        <input id="f-usd-max" name="price_usd_max" value="{{ package.price_usd_max|default_if_none:'' }}" class="ow-input" inputmode="decimal" placeholder="0">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ow-card">
+                        <div class="ow-card__head">
+                            <span class="ow-card__icon"><i class="bi bi-clock-history"></i></span>
+                            <div>
+                                <div class="ow-card__title">Delivery &amp; content</div>
+                                <div class="ow-card__sub">What the client gets and how long it takes</div>
+                            </div>
+                        </div>
+                        <div class="ow-card__body">
+                            <div class="mb-3">
+                                <label class="ow-label" for="f-timeline"><i class="bi bi-hourglass-split"></i>Timeline</label>
+                                <input id="f-timeline" name="timeline" value="{{ package.timeline }}" class="ow-input" placeholder="e.g. 2-3 weeks">
+                                <div class="ow-help">Shown as a chip next to the price.</div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="ow-label" for="f-desc"><i class="bi bi-card-text"></i>Description</label>
+                                <textarea id="f-desc" name="description" rows="4" class="ow-input"
+                                          placeholder="A short plain-English summary of who this package is for.">{{ package.description }}</textarea>
+                            </div>
+                            <div>
+                                <label class="ow-label"><i class="bi bi-list-check"></i>What's included</label>
+                                <div id="incList">
+                                    {% for item in package.included %}
+                                    <div class="ow-inc">
+                                        <span class="ow-inc__n">{{ forloop.counter }}</span>
+                                        <input name="included" value="{{ item }}" class="ow-input" placeholder="e.g. Mobile-friendly design">
+                                        <button type="button" class="btn btn-sm pill-line" data-inc-remove aria-label="Remove item"><i class="bi bi-x-lg"></i></button>
+                                    </div>
+                                    {% empty %}
+                                    <div class="ow-inc">
+                                        <span class="ow-inc__n">1</span>
+                                        <input name="included" value="" class="ow-input" placeholder="e.g. Mobile-friendly design">
+                                        <button type="button" class="btn btn-sm pill-line" data-inc-remove aria-label="Remove item"><i class="bi bi-x-lg"></i></button>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                <button type="button" class="btn btn-sm pill-line mt-1" id="incAdd">
+                                    <i class="bi bi-plus-lg me-1"></i>Add another item
+                                </button>
+                                <div class="ow-help">Each line becomes a gold checkmark bullet on the Services page.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-5">
+                    <div class="ow-preview">
+                        <div class="ow-preview__lab"><i class="bi bi-eye me-1"></i>Public preview</div>
+                        <div class="mt-2">
+                            <div class="ow-preview__name" id="pvName">{{ package.name|default:'Untitled package' }}</div>
+                            <div class="ow-preview__price mt-1" id="pvPrice">&mdash;</div>
+                            <div class="mt-1" id="pvTimeline"></div>
+                        </div>
+                        <p class="ow-preview__desc mt-3 mb-0" id="pvDesc">{{ package.description|default:'No description yet.' }}</p>
+                        <ul id="pvInc">
+                            {% for item in package.included %}
+                            <li><i class="bi bi-check-circle-fill"></i>{{ item }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
             </div>
-        </div>
+
+            <div class="ow-actions">
+                <button type="submit" class="btn btn-primary btn-sheen"><i class="bi bi-check-lg me-1"></i>Save Package</button>
+                <a href="{% url 'core:admin_packages' %}" class="btn btn-sm pill-line">Cancel</a>
+                <span class="ow-actions__grow"></span>
+                <span class="small text-muted">Changes go live on the Services page immediately.</span>
+            </div>
+        </form>
     </div>
 </section>
+
+<script>
+(function () {
+    var list = document.getElementById('incList');
+
+    function renumber() {
+        var rows = list.querySelectorAll('.ow-inc');
+        rows.forEach(function (row, i) {
+            row.querySelector('.ow-inc__n').textContent = i + 1;
+        });
+    }
+
+    document.getElementById('incAdd').addEventListener('click', function () {
+        var last = list.querySelector('.ow-inc:last-child');
+        var row = last.cloneNode(true);
+        var input = row.querySelector('input');
+        input.value = '';
+        input.placeholder = 'e.g. ' + (list.children.length + 1) + ' weeks of support';
+        row.querySelector('.ow-inc__n').textContent = list.children.length + 1;
+        list.appendChild(row);
+        input.focus();
+    });
+
+    list.addEventListener('click', function (e) {
+        var btn = e.target.closest('[data-inc-remove]');
+        if (!btn) return;
+        var rows = list.querySelectorAll('.ow-inc');
+        if (rows.length === 1) {
+            rows[0].querySelector('input').value = '';
+        } else {
+            btn.closest('.ow-inc').remove();
+            renumber();
+        }
+    });
+
+    function money(v) {
+        var n = parseFloat(String(v || '').replace(/,/g, ''));
+        return isNaN(n) ? null : n;
+    }
+    function fmt(n) {
+        return n.toLocaleString('en-US', { maximumFractionDigits: 0 });
+    }
+
+    function price() {
+        var min = money(document.getElementById('f-tzs-min').value);
+        var max = money(document.getElementById('f-tzs-max').value);
+        var usd = money(document.getElementById('f-usd-min').value);
+        if (min === null && max === null) {
+            return usd === null ? '&mdash;' : 'From USD ' + fmt(usd);
+        }
+        var out = 'TZS ';
+        if (min !== null && max !== null && min !== max) out += fmt(min) + ' &ndash; ' + fmt(max);
+        else out += fmt(min !== null ? min : max);
+        if (usd !== null) out += ' <small style="font-size:.74rem;color:#7b8398;font-weight:500;">(from USD ' + fmt(usd) + ')</small>';
+        return out;
+    }
+
+    function sync() {
+        document.getElementById('pvName').textContent = document.getElementById('f-name').value || 'Untitled package';
+        document.getElementById('pvPrice').innerHTML = price();
+        var tl = document.getElementById('f-timeline').value.trim();
+        document.getElementById('pvTimeline').innerHTML = tl
+            ? '<span class="ow-chip ow-chip--teal"><i class="bi bi-clock-fill"></i>' + tl.replace(/</g, '&lt;') + '</span>'
+            : '';
+        var desc = document.getElementById('f-desc').value.trim();
+        document.getElementById('pvDesc').textContent = desc || 'No description yet.';
+
+        var items = Array.prototype.map.call(
+            list.querySelectorAll('input[name="included"]'),
+            function (i) { return i.value.trim(); }
+        ).filter(Boolean);
+        document.getElementById('pvInc').innerHTML = items.map(function (t) {
+            return '<li><i class="bi bi-check-circle-fill"></i>' + t.replace(/</g, '&lt;') + '</li>';
+        }).join('');
+    }
+
+    document.getElementById('pkgForm').addEventListener('input', sync);
+    renumber();
+    sync();
+})();
+</script>
 {% endblock %}

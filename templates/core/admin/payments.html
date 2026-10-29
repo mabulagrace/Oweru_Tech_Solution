@@ -9,56 +9,92 @@
 
 <section class="py-4">
     <div class="container">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <div class="d-flex flex-wrap gap-2">
-            <a href="{% url 'core:admin_payments' %}" class="btn btn-sm {% if not current_status %}btn-primary{% else %}btn-outline-primary{% endif %}">All</a>
+        <div class="ow-toolbar">
+            <a href="{% url 'core:admin_payments' %}" class="btn btn-sm {% if not current_status %}pill-gold{% else %}pill-line{% endif %}">All</a>
             {% for code, label in status_choices %}
             <a href="{% url 'core:admin_payments' %}?status={{ code }}"
-               class="btn btn-sm {% if current_status == code %}btn-primary{% else %}btn-outline-primary{% endif %}">{{ label }}</a>
+               class="btn btn-sm {% if current_status == code %}pill-gold{% else %}pill-line{% endif %}">{{ label }}</a>
             {% endfor %}
-            </div>
-            <span class="badge rounded-pill" style="background:#e7f4ec;color:#2e7d4f;">Confirmed total: TZS {{ total_confirmed|floatformat:0|intcomma }}</span>
+            <span class="ow-chip ow-chip--won ms-auto" style="padding:7px 15px;font-size:.82rem;">
+                <i class="bi bi-patch-check-fill"></i>Confirmed total: TZS {{ total_confirmed|floatformat:0|intcomma }}
+            </span>
         </div>
 
-        <div class="table-responsive">
-            <table class="table table-hover align-middle">
-                <thead class="table-light">
-                    <tr><th>Date</th><th>Business</th><th>Method</th><th>Reference</th><th>Type</th><th>Amount</th><th>Status</th><th></th></tr>
+        <div class="ow-table-wrap">
+            <div class="table-responsive">
+            <table class="table ow-table align-middle">
+                <thead>
+                    <tr>
+                        <th class="ow-hide-sm"><span class="ow-th"><i class="bi bi-calendar3"></i>Date</span></th>
+                        <th><span class="ow-th"><i class="bi bi-shop"></i>Business</span></th>
+                        <th class="ow-hide-md"><span class="ow-th"><i class="bi bi-person"></i>From</span></th>
+                        <th class="ow-hide-md"><span class="ow-th"><i class="bi bi-credit-card"></i>Method</span></th>
+                        <th class="ow-hide-md"><span class="ow-th"><i class="bi bi-hash"></i>Reference</span></th>
+                        <th><span class="ow-th"><i class="bi bi-tags"></i>Type</span></th>
+                        <th><span class="ow-th"><i class="bi bi-paperclip"></i>Proof</span></th>
+                        <th><span class="ow-th"><i class="bi bi-cash-stack"></i>Amount</span></th>
+                        <th><span class="ow-th"><i class="bi bi-flag"></i>Status</span></th>
+                        <th class="text-end"><span class="ow-th" style="justify-content:flex-end;"><i class="bi bi-check2-square"></i>Action</span></th>
+                    </tr>
                 </thead>
                     <tbody data-showmore="10" data-key="payments-rows">
                     {% for p in payments %}
-                    <tr>
-                        <td class="small">{{ p.created_at|date:'d M Y' }}</td>
-                        <td class="fw-semibold">{{ p.enquiry.business_name }}</td>
-                        <td>{{ p.get_method_display }}</td>
-                        <td class="small">{{ p.reference }}</td>
-                        <td>{{ p.get_kind_display }}</td>
-                        <td>{{ p.currency }} {{ p.amount|floatformat:0|intcomma }}</td>
+                    <tr class="{% if p.status == 'confirmed' %}ow-row--won{% elif p.status == 'rejected' %}ow-row--lost{% else %}ow-row--new{% endif %}">
+                        <td class="ow-hide-sm"><span class="ow-meta" style="white-space:nowrap;">{{ p.created_at|date:'d M Y' }}</span></td>
                         <td>
-                            {% if p.status == 'confirmed' %}<span class="badge bg-success">Confirmed</span>
-                            {% elif p.status == 'rejected' %}<span class="badge bg-danger">Rejected</span>
-                            {% else %}<span class="badge bg-warning text-dark">Pending</span>{% endif %}
+                            <div class="ow-cell-id">
+                                <span class="ow-ava ow-ava--g">{{ p.enquiry.business_name|slice:":1"|upper }}</span>
+                                <span class="ow-strong" style="font-weight:500;">{{ p.enquiry.business_name }}</span>
+                            </div>
+                        </td>
+                        <td class="ow-hide-md"><span class="ow-chip ow-chip--g"><i class="bi bi-person-check"></i>{{ p.paid_by|default:'—' }}</span></td>
+                        <td class="ow-hide-md"><span class="ow-chip ow-chip--mute"><i class="bi bi-credit-card-2-front"></i>{{ p.get_method_display }}</span></td>
+                        <td class="ow-hide-md"><span class="ow-chip ow-chip--mute">{{ p.reference|default:'—' }}</span></td>
+                        <td><span class="ow-strong" style="font-weight:500;">{{ p.get_kind_display }}</span></td>
+                        <td>
+                            {% if p.proof_image %}
+                            <a href="{{ p.proof_image.url }}" target="_blank" class="btn btn-sm btn-outline-secondary" title="View payment proof">
+                                <i class="bi bi-image"></i> View
+                            </a>
+                            {% else %}
+                            <span class="ow-meta">—</span>
+                            {% endif %}
+                        </td>
+                        <td><span class="ow-amount">{{ p.currency }} {{ p.amount|floatformat:0|intcomma }}</span></td>
+                        <td>
+                            {% if p.status == 'confirmed' %}
+                            <span class="ow-chip ow-chip--won"><i class="bi bi-check-circle-fill"></i>Confirmed</span>
+                            {% elif p.status == 'rejected' %}
+                            <span class="ow-chip ow-chip--lost"><i class="bi bi-x-circle-fill"></i>Rejected</span>
+                            {% else %}
+                            <span class="ow-chip ow-chip--new"><i class="bi bi-hourglass-split"></i>Pending</span>
+                            {% endif %}
                         </td>
                         <td class="text-end">
                             {% if p.status == 'pending' %}
-                            <form method="post" class="d-inline" action="{% url 'core:admin_payment_action' p.id %}">
-                                {% csrf_token %}
-                                <input type="hidden" name="action" value="confirm">
-                                <button class="btn btn-sm btn-success">Confirm</button>
-                            </form>
-                            <form method="post" class="d-inline" action="{% url 'core:admin_payment_action' p.id %}">
-                                {% csrf_token %}
-                                <input type="hidden" name="action" value="reject">
-                                <button class="btn btn-sm btn-outline-danger">Reject</button>
-                            </form>
+                            <div class="d-inline-flex gap-2">
+                                <form method="post" action="{% url 'core:admin_payment_action' p.id %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="confirm">
+                                    <button class="btn btn-sm btn-success">Confirm</button>
+                                </form>
+                                <form method="post" action="{% url 'core:admin_payment_action' p.id %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="reject">
+                                    <button class="btn btn-sm btn-outline-danger">Reject</button>
+                                </form>
+                            </div>
+                            {% else %}
+                            <span class="ow-meta">Settled</span>
                             {% endif %}
                         </td>
                     </tr>
                     {% empty %}
-                    <tr><td colspan="8" class="text-center text-muted py-5">No payments yet</td></tr>
+                    <tr><td colspan="10" class="ow-empty"><i class="bi bi-cash-coin"></i>No payments yet</td></tr>
                     {% endfor %}
                 </tbody>
             </table>
+            </div>
         </div>
     </div>
 </section>

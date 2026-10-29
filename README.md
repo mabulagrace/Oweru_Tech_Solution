@@ -20,16 +20,11 @@ Complete lead-generation and sales system for Oweru International Ltd, built wit
 
 ### 2b. Customer Journey & Payment Process (Build 6)
 - Every enquiry gets a **customer reference code** (e.g. `SV97YV`)
-- Public tracking page `/my-project/<reference>/` shows the customer their full journey:
-  Enquiry → Consultation & quote → Agreement & 50% deposit → Development milestones → Delivery
-- Public payment page `/my-project/<reference>/pay/` with:
-  - Deposit due (50% of agreed amount, admin-configurable) + already-paid + balance
-  - Payment instructions for **M-Pesa, Tigo Pesa, Airtel Money, Bank transfer** (admin Settings)
-  - "I have paid" form where the customer submits their transaction reference
-- Staff records the **agreed amount** on the enquiry → deposit goes live for the customer
-- Staff **confirm/reject** customer-submitted payments (with one click); payment status auto-updates
+- Staff records the **agreed amount** on the enquiry → deposit becomes due
+- Customers are updated by **email and WhatsApp** (no public customer portal)
+- Staff **record/confirm** payments (with one click); payment status auto-updates
   (deposit due → deposit paid → milestones in progress → paid in full)
-- Email + WhatsApp alert to the team when a customer reports a payment
+- Email + WhatsApp alert to the team reports progress to the customer
 - Payment status badges visible in the pipeline list and enquiry detail
 
 ### 3. Site Health Scanner (Build 3)
@@ -75,8 +70,6 @@ Visit:
 - **Public site:** http://127.0.0.1:8000/
 - **Admin:** http://127.0.0.1:8000/admin/
 - **Staff dashboard:** http://127.0.0.1:8000/admin-app/dashboard/
-- **Customer tracking (example):** http://127.0.0.1:8000/my-project/SV97YV/
-- **Customer payment (example):** http://127.0.0.1:8000/my-project/SV97YV/pay/
 
 ## Default Admin (created during setup)
 

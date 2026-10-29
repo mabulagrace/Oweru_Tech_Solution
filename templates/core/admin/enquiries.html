@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 {% load core_filters %}
 
 {% block title %}Enquiries - Oweru Admin{% endblock %}
@@ -9,7 +9,7 @@
 
 <section class="py-4">
     <div class="container">
-        <div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
+        <div class="ow-toolbar">
             <a href="{% url 'core:admin_enquiries' %}"
                class="btn btn-sm {% if not current_stage %}pill-gold{% else %}pill-line{% endif %}">All</a>
             {% for code, label in stage_choices %}
@@ -24,55 +24,80 @@
             </span>
         </div>
 
-        <div class="table-responsive">
-            <table class="table table-hover align-middle">
-                <thead class="thead-navy">
+        <div class="ow-table-wrap">
+            <div class="table-responsive">
+            <table class="table ow-table align-middle">
+                <thead>
                     <tr>
-                        <th>Business</th>
-                        <th>Contact</th>
-                        <th>Package</th>
-                        <th>Stage</th>
-                        <th>Payment</th>
-                        <th>Source</th>
-                        <th>Owner</th>
-                        <th>Date</th>
+                        <th><span class="ow-th"><i class="bi bi-shop"></i>Business</span></th>
+                        <th><span class="ow-th"><i class="bi bi-person"></i>Contact</span></th>
+                        <th class="ow-hide-md"><span class="ow-th"><i class="bi bi-box-seam"></i>Package</span></th>
+                        <th><span class="ow-th"><i class="bi bi-signpost-split"></i>Stage</span></th>
+                        <th><span class="ow-th"><i class="bi bi-cash-coin"></i>Payment</span></th>
+                        <th class="ow-hide-sm"><span class="ow-th"><i class="bi bi-broadcast"></i>Source</span></th>
+                        <th class="ow-hide-md"><span class="ow-th"><i class="bi bi-person-badge"></i>Owner</span></th>
+                        <th class="ow-hide-sm"><span class="ow-th"><i class="bi bi-calendar3"></i>Date</span></th>
                     </tr>
                 </thead>
                     <tbody data-showmore="10" data-key="enquiries-rows">
                     {% for enquiry in enquiries %}
-                    <tr style="cursor:pointer;" onclick="document.location='{% url 'core:admin_enquiry_detail' enquiry.id %}'">
-                        <td class="fw-semibold">{{ enquiry.business_name }}</td>
-                        <td>{{ enquiry.name }}<br><small class="text-muted">{{ enquiry.email }}</small></td>
-                        <td>{{ enquiry.package_name|default:'Not sure' }}</td>
+                    <tr class="{% if enquiry.stage == 'new' %}ow-row--new{% elif enquiry.stage == 'won' %}ow-row--won{% elif enquiry.stage == 'lost' %}ow-row--lost{% elif enquiry.stage == 'qualified' %}ow-row--pro{% else %}ow-row--teal{% endif %}" style="cursor:pointer;" onclick="document.location='{% url 'core:admin_enquiry_detail' enquiry.id %}'">
+                        <td>
+                            <div class="ow-cell-id">
+                                <span class="ow-ava ow-ava--n">{{ enquiry.business_name|slice:":1"|upper }}</span>
+                                <span style="min-width:0;">
+                                    <span class="ow-strong">{{ enquiry.business_name }}</span>
+                                    <span class="ow-meta">Ref {{ enquiry.reference|default:'â€”' }}</span>
+                                </span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="ow-strong">{{ enquiry.name }}</span>
+                            <span class="ow-meta">{{ enquiry.phone|default:enquiry.email|default:'â€”' }}</span>
+                        </td>
+                        <td class="ow-hide-md">
+                            <span class="ow-strong" style="font-weight:500;">{{ enquiry.package_name|default:'Not sure' }}</span>
+                        </td>
                         <td>
                             {% if enquiry.stage == 'new' %}
-                            <span class="stage-badge text-white" style="{{ enquiry.stage|stage_badge }}">New - review now</span>
+                            <span class="ow-chip ow-chip--new"><i class="bi bi-exclamation-circle-fill"></i>New - review now</span>
+                            {% elif enquiry.stage == 'won' %}
+                            <span class="ow-chip ow-chip--won"><i class="bi bi-trophy-fill"></i>{{ enquiry.get_stage_display }}</span>
+                            {% elif enquiry.stage == 'lost' %}
+                            <span class="ow-chip ow-chip--lost"><i class="bi bi-x-circle-fill"></i>{{ enquiry.get_stage_display }}</span>
                             {% else %}
-                            <span class="stage-badge text-white" style="{{ enquiry.stage|stage_badge }}">{{ enquiry.get_stage_display }}</span>
+                            <span class="ow-chip ow-chip--pro"><i class="bi bi-arrow-right-circle-fill"></i>{{ enquiry.get_stage_display }}</span>
                             {% endif %}
                         </td>
                         <td>
                             {% if enquiry.payment_status == 'paid_in_full' %}
-                            <span class="badge bg-success">Paid in full</span>
+                            <span class="ow-chip ow-chip--won"><i class="bi bi-check-circle-fill"></i>Paid in full</span>
                             {% elif enquiry.payment_status == 'none' %}
-                            <span class="badge bg-light text-muted border">No payment</span>
+                            <span class="ow-chip ow-chip--mute"><i class="bi bi-dash-circle"></i>No payment</span>
                             {% elif enquiry.payment_status == 'deposit_pending' %}
-                            <span class="badge" style="background:#C87828;color:#fff;">Deposit due</span>
+                            <span class="ow-chip ow-chip--new"><i class="bi bi-hourglass-split"></i>Deposit due</span>
                             {% elif enquiry.payment_status == 'deposit_paid' %}
-                            <span class="badge bg-info text-dark">Deposit paid</span>
+                            <span class="ow-chip ow-chip--teal"><i class="bi bi-check-circle-fill"></i>Deposit paid</span>
                             {% else %}
-                            <span class="badge bg-primary">In progress</span>
+                            <span class="ow-chip ow-chip--gold"><i class="bi bi-hourglass-split"></i>In progress</span>
                             {% endif %}
                         </td>
-                        <td><span class="badge bg-light text-dark border">{{ enquiry.source }}</span></td>
-                        <td class="small">{{ enquiry.owner|default:'Unassigned' }}</td>
-                        <td class="small text-muted">{{ enquiry.date_created|date:'d M Y' }}</td>
+                        <td class="ow-hide-sm"><span class="ow-chip ow-chip--mute">{{ enquiry.source }}</span></td>
+                        <td class="ow-hide-md">
+                            {% if enquiry.owner %}
+                            <span class="ow-strong" style="font-weight:500;">{{ enquiry.owner }}</span>
+                            {% else %}
+                            <span class="ow-chip ow-chip--mute">Unassigned</span>
+                            {% endif %}
+                        </td>
+                        <td class="ow-hide-sm"><span class="ow-meta" style="white-space:nowrap;">{{ enquiry.date_created|date:'d M Y' }}</span></td>
                     </tr>
                     {% empty %}
-                    <tr><td colspan="9" class="text-center text-muted py-5">No enquiries in this view</td></tr>
+                    <tr><td colspan="8" class="ow-empty"><i class="bi bi-inbox"></i>No enquiries in this view</td></tr>
                     {% endfor %}
                 </tbody>
-            </table>
+</table>
+            </div>
         </div>
     </div>
 </section>

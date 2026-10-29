@@ -1,86 +1,350 @@
 {% extends 'base.html' %}
 {% load core_filters %}
+{% load static %}
 
 {% block title %}Contact Us - Oweru Tech Solutions{% endblock %}
 {% block meta_description %}Talk to Oweru about your project. We reply within one working day with a free consultation and a fixed quote.{% endblock %}
 
 {% block content %}
 
-<section class="hero" style="padding:80px 0;">
-    <div class="aurora" style="width:500px;height:500px;background:radial-gradient(circle,rgba(240,191,77,.16),transparent 65%);top:-150px;right:-40px;"></div>
-    <div class="container position-relative" style="z-index:2;">
-        <div class="row align-items-center">
-            <div class="col-lg-8">
-                <span class="eyebrow mb-3"><span class="d-inline-block me-2" style="width:30px;height:2px;border-radius:99px;background:#e6b44a;"></span>Contact us</span>
-                <h1 class="fw-bold text-white mb-3">Let's talk about your project</h1>
-                <p class="text-white-50 mb-0" style="max-width:620px;">
+{% block extra_css %}
+<style>
+.ct-band{
+    position:relative;
+    overflow:hidden;
+    background-color:#fdfbf4;
+    background-image:
+        radial-gradient(circle at 88% -6%, rgba(255,212,113,.55), transparent 46%),
+        radial-gradient(circle at 4% 104%, rgba(230,180,74,.28), transparent 44%),
+        linear-gradient(150deg, #fffdf8 0%, #fdf6e6 52%, #fbf0d6 100%);
+}
+.ct-chip{
+    display:inline-flex;
+    align-items:center;
+    gap:9px;
+    background:linear-gradient(120deg,#ffd471,#e6b44a);
+    color:#3a2a06;
+    font-size:.74rem;
+    font-weight:700;
+    letter-spacing:.09em;
+    text-transform:uppercase;
+    border-radius:999px;
+    padding:8px 17px;
+    box-shadow:0 12px 28px rgba(192,138,31,.28);
+}
+.ct-hero-media{
+    position:relative;
+    border-radius:22px;
+    overflow:hidden;
+    border:1px solid rgba(230,180,74,.55);
+    box-shadow:0 28px 64px rgba(120,92,20,.26);
+}
+.ct-hero-media img{
+    display:block;
+    width:100%;
+    aspect-ratio:5/4;
+    object-fit:cover;
+    object-position:center 28%;
+    transition:transform .5s ease;
+}
+.ct-hero-media:hover img{transform:scale(1.05);}
+.ct-hero-media::after{
+    content:"";
+    position:absolute;inset:0;
+    background:linear-gradient(180deg,rgba(8,12,32,0) 45%,rgba(8,12,32,.55) 100%);
+}
+.ct-hero-badge{
+    position:absolute;
+    left:20px;bottom:20px;
+    z-index:2;
+    display:inline-flex;
+    align-items:center;
+    gap:9px;
+    background:rgba(255,255,255,.95);
+    color:#0c1230;
+    font-size:.8rem;
+    font-weight:700;
+    border-radius:999px;
+    padding:9px 16px;
+    box-shadow:0 14px 30px rgba(8,12,32,.26);
+}
+.ct-promise{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:12px;
+    margin-top:26px;
+    max-width:560px;
+}
+.ct-promise__item{
+    background:rgba(255,255,255,.90);
+    border:1px solid rgba(230,180,74,.45);
+    border-radius:14px;
+    padding:13px 14px;
+    box-shadow:0 10px 24px rgba(120,92,20,.10);
+}
+.ct-promise__item i{color:#c08a1f;font-size:1.05rem;}
+.ct-promise__item b{display:block;font-size:.8rem;color:#0c1230;margin-top:5px;}
+.ct-promise__item span{font-size:.72rem;color:#7b8398;line-height:1.4;display:block;margin-top:2px;}
+
+.ct-panel{
+    background:#fff;
+    border:1px solid rgba(230,180,74,.42);
+    border-radius:20px;
+    box-shadow:0 20px 46px rgba(120,92,20,.13);
+    overflow:hidden;
+    height:100%;
+}
+.ct-panel__body{padding:26px 24px;}
+.ct-panel h5{color:#0c1230;}
+
+.ct-line{
+    display:flex;
+    align-items:center;
+    gap:13px;
+    background:linear-gradient(140deg,#fffdf8 0%,#fdf6e6 100%);
+    border:1px solid rgba(230,180,74,.38);
+    border-radius:14px;
+    padding:12px 14px;
+    text-decoration:none;
+    transition:transform .22s ease, border-color .22s ease, box-shadow .22s ease;
+}
+.ct-line:hover{
+    transform:translateY(-2px);
+    border-color:#e6b44a;
+    box-shadow:0 14px 28px rgba(120,92,20,.18);
+    color:#0c1230;
+}
+.ct-line__icon{
+    flex:0 0 auto;
+    width:40px;height:40px;
+    border-radius:12px;
+    display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(135deg,#ffd471,#e6b44a);
+    color:#3a2a06;
+    font-size:1.05rem;
+    box-shadow:0 8px 18px -9px rgba(230,180,74,.65);
+}
+.ct-line__icon.wa{background:linear-gradient(135deg,#4ce07a,#25d366);color:#fff;}
+.ct-line__txt{min-width:0;}
+.ct-line__lab{
+    display:block;
+    font-size:.64rem;
+    font-weight:700;
+    letter-spacing:.10em;
+    text-transform:uppercase;
+    color:#a08a4a;
+}
+.ct-line__val{display:block;font-size:.9rem;font-weight:700;color:#0c1230;word-break:break-word;}
+
+.ct-pick{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:10px 13px;
+    text-decoration:none;
+    font-size:.85rem;
+    font-weight:600;
+    color:#2b335c;
+    transition:transform .2s ease, border-color .2s ease, background .2s ease;
+}
+.ct-pick:hover{
+    transform:translateX(3px);
+    border-color:#e6b44a;
+    background:#fffdf4;
+    color:#0c1230;
+}
+.ct-pick__num{
+    flex:0 0 auto;
+    width:24px;height:24px;
+    border-radius:8px;
+    background:linear-gradient(135deg,#ffd471,#e6b44a);
+    color:#3a2a06;
+    font-size:.68rem;
+    font-weight:800;
+    display:flex;align-items:center;justify-content:center;
+}
+
+.ct-action{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    width:100%;
+    border-radius:14px;
+    padding:.85rem 1.1rem;
+    font-weight:700;
+    font-size:.95rem;
+    text-decoration:none;
+    border:1px solid transparent;
+    transition:transform .2s ease, box-shadow .2s ease;
+}
+.ct-action:hover{transform:translateY(-2px);color:#fff;}
+.ct-action--gold{
+    background:linear-gradient(135deg,#ffd471,#e6b44a);
+    color:#3a2a06;
+    box-shadow:0 14px 30px rgba(230,180,74,.36);
+}
+.ct-action--gold:hover{color:#3a2a06;box-shadow:0 20px 40px rgba(230,180,74,.5);}
+.ct-action--wa{
+    background:linear-gradient(135deg,#4ce07a,#25d366);
+    color:#fff;
+    box-shadow:0 14px 30px rgba(37,211,102,.30);
+}
+.ct-action--navy{
+    background:linear-gradient(130deg,#1c2547,#0c1230);
+    color:#fff;
+    box-shadow:0 14px 30px rgba(8,12,32,.28);
+}
+.ct-action--navy:hover{color:#ffd471;}
+
+.ct-note{
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    background:linear-gradient(130deg,#fffdf8,#fdf6e6);
+    border:1px solid rgba(230,180,74,.42);
+    border-radius:14px;
+    padding:13px 15px;
+    font-size:.8rem;
+    color:#5c6070;
+    line-height:1.55;
+}
+.ct-note i{color:#c08a1f;font-size:1rem;}
+
+.ct-team{
+    position:relative;
+    border-radius:20px;
+    overflow:hidden;
+    border:1px solid rgba(230,180,74,.5);
+    box-shadow:0 24px 54px rgba(120,92,20,.22);
+}
+.ct-team img{
+    display:block;
+    width:100%;
+    aspect-ratio:16/9;
+    object-fit:cover;
+    object-position:center 40%;
+    transition:transform .5s ease;
+}
+.ct-team:hover img{transform:scale(1.05);}
+.ct-team::after{
+    content:"";
+    position:absolute;inset:0;
+    background:linear-gradient(180deg,rgba(8,12,32,0) 42%,rgba(8,12,32,.58) 100%);
+}
+.ct-team__cap{
+    position:absolute;
+    left:20px;right:20px;bottom:18px;
+    z-index:2;
+    color:#fff;
+}
+.ct-team__cap b{display:block;font-size:1rem;margin-bottom:3px;}
+.ct-team__cap span{font-size:.8rem;color:rgba(255,255,255,.82);}
+
+@media (max-width: 991px){
+    .ct-promise{grid-template-columns:1fr;max-width:100%;}
+}
+</style>
+{% endblock %}
+
+<section class="ct-band" style="padding:70px 0 62px;">
+    <div class="container">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-7">
+                <span class="ct-chip mb-3"><i class="bi bi-chat-dots"></i>Contact us</span>
+                <h1 class="fw-bold mb-3" style="color:#0c1230;">Let's talk about your project</h1>
+                <p class="mb-0" style="color:#5c6070;max-width:600px;">
                     Tell us what you need — we reply within one working day with a free
-                    consultation and a fixed quote.
+                    consultation and a fixed quote. No sales pressure, no obligation.
                 </p>
+                <div class="ct-promise">
+                    <div class="ct-promise__item">
+                        <i class="bi bi-reply"></i>
+                        <b>1 working day</b>
+                        <span>Reply, guaranteed</span>
+                    </div>
+                    <div class="ct-promise__item">
+                        <i class="bi bi-cash-coin"></i>
+                        <b>Free quote</b>
+                        <span>Fixed price up front</span>
+                    </div>
+                    <div class="ct-promise__item">
+                        <i class="bi bi-shield-lock"></i>
+                        <span style="margin-top:5px;">Your details stay private</span>
+                        <b style="margin-top:2px;">No spam, ever</b>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <div class="ct-hero-media reveal">
+                    <img src="{% static 'images/contact-hero.jpg' %}" alt="Oweru team member smiling while taking a client call" loading="lazy">
+                    <span class="ct-hero-badge"><i class="bi bi-headset" style="color:#25d366;"></i> Real people, not a bot</span>
+                </div>
             </div>
         </div>
     </div>
 </section>
 
-<section class="py-5" style="background:var(--cream);">
-    <div class="container">
-        <div class="row g-4">
-            <div class="col-lg-5 reveal">
-                <div class="card-lift h-100">
-                    <div class="card-body p-4">
-                        <h5 class="fw-bold mb-4">Get in touch</h5>
-                        <ul class="list-unstyled mb-4">
-                            <li class="mb-3 d-flex align-items-center gap-3">
-                                <span class="icon-chip" style="width:46px;height:46px;"><i class="bi bi-envelope"></i></span>
-                                <span>hello@oweru.tech</span>
-                            </li>
-                            <li class="mb-3 d-flex align-items-center gap-3">
-                                <span class="icon-chip" style="width:46px;height:46px;"><i class="bi bi-telephone"></i></span>
-                                <span>+255 123 456 789</span>
-                            </li>
-                            <li class="mb-3 d-flex align-items-center gap-3">
-                                <span class="icon-chip" style="width:46px;height:46px;background:rgba(37,211,102,.12);color:#1da851;"><i class="bi bi-whatsapp"></i></span>
-                                <a href="{% wa_chat_link 'Hello Oweru! I have a question about your services.' %}" class="text-decoration-none" style="color:var(--ink);"><strong>Chat on WhatsApp</strong> ({{ wa_number }})</a>
-                            </li>
-                            <li class="mb-4 d-flex align-items-center gap-3">
-                                <span class="icon-chip" style="width:46px;height:46px;"><i class="bi bi-geo-alt"></i></span>
-                                <span>Dar es Salaam, Tanzania</span>
-                            </li>
-                        </ul>
-                        <h6 class="fw-bold mb-3">Popular solutions</h6>
+<section style="padding:64px 0;position:relative;background:url('{% static "images/team-studio-v2.jpg" %}') center 30% / cover no-repeat;">
+    <div style="position:absolute;inset:0;background:linear-gradient(120deg, rgba(8,12,32,.92) 0%, rgba(10,15,38,.86) 100%);z-index:1;"></div>
+    <div class="container" style="position:relative;z-index:2;">
+        <div class="row g-4 align-items-stretch">
+            <div class="col-lg-6 reveal">
+                <div class="ct-panel h-100 d-flex flex-column">
+                    <div class="ct-hero-media" style="border-radius:20px 20px 0 0;">
+                        <img src="{% static 'images/contact-hero.jpg' %}" alt="Oweru Tech Solutions team ready to talk to you" loading="lazy">
+                        <span class="ct-hero-badge"><i class="bi bi-headset" style="color:#25d366;"></i> Real people, not a bot</span>
+                    </div>
+                    <div class="ct-panel__body flex-grow-1">
+                        <h5 class="fw-bold mb-1">Get in touch</h5>
+                        <p class="small mb-4" style="color:var(--muted);">Pick whichever channel suits you. They all reach the same team.</p>
+                        <div class="d-flex flex-column gap-2 mb-4">
+                            <a href="mailto:hello@oweru.tech" class="ct-line">
+                                <span class="ct-line__icon"><i class="bi bi-envelope"></i></span>
+                                <span class="ct-line__txt"><span class="ct-line__lab">Email</span><span class="ct-line__val">hello@oweru.tech</span></span>
+                            </a>
+                            <a href="tel:+255123456789" class="ct-line">
+                                <span class="ct-line__icon"><i class="bi bi-telephone"></i></span>
+                                <span class="ct-line__txt"><span class="ct-line__lab">Phone</span><span class="ct-line__val">+255 123 456 789</span></span>
+                            </a>
+                            <a href="{% wa_chat_link 'Hello Oweru! I have a question about your services.' %}" class="ct-line">
+                                <span class="ct-line__icon wa"><i class="bi bi-whatsapp"></i></span>
+                                <span class="ct-line__txt"><span class="ct-line__lab">WhatsApp</span><span class="ct-line__val">{{ wa_number }}</span></span>
+                            </a>
+                            <div class="ct-line">
+                                <span class="ct-line__icon"><i class="bi bi-geo-alt"></i></span>
+                                <span class="ct-line__txt"><span class="ct-line__lab">Office</span><span class="ct-line__val">Dar es Salaam, Tanzania</span></span>
+                            </div>
+                        </div>
+                        <h6 class="fw-bold mb-3" style="color:#0c1230;">Popular solutions</h6>
                         <div class="d-flex flex-column gap-2">
                             {% for p in packages %}
-                            <a href="{% url 'core:enquiry_new' %}?package={{ p.slug }}" class="btn btn-outline-primary btn-sm text-start">
-                                <i class="bi bi-arrow-right me-2" style="color:#e6b44a;"></i>{{ p.name }}
-                            </a>
+                            <a href="{% url 'core:enquiry_new' %}?package={{ p.slug }}" class="ct-pick"><span class="ct-pick__num">{{ forloop.counter }}</span>{{ p.name }}</a>
                             {% endfor %}
-                            <a href="{% url 'core:enquiry_new' %}" class="btn btn-primary btn-sm text-start">Something else / not sure yet</a>
+                            <a href="{% url 'core:enquiry_new' %}" class="ct-pick"><span class="ct-pick__num"><i class="bi bi-three-dots"></i></span>Something else / not sure yet</a>
                         </div>
+                        <div class="ct-note mt-4"><i class="bi bi-shield-check"></i><span>We reply within one working day. Your details stay private and are never sold or shared.</span></div>
                     </div>
                 </div>
             </div>
-            <div class="col-lg-7 reveal">
-                <div class="card-lift h-100">
-                    <div class="card-body p-4">
-                        <h5 class="fw-bold mb-3">Request a solution</h5>
-                        <p class="text-muted small mb-4">
-                            Fill in this short form and one of our team will call you within one working
-                            day to understand your needs and prepare a fixed quote. You'll receive a
-                            personal link to follow your project and payments.
-                        </p>
-                        <a href="{% url 'core:enquiry_new' %}" class="btn btn-champagne btn-sheen btn-lg w-100 mb-4">Start Your Enquiry Form</a>
-                        <a href="{% wa_chat_link 'Hello Oweru! I have a question about your services.' %}" class="btn btn-lg w-100 mb-4" style="background:#25d366;border-color:#25d366;color:#fff;">
-                            <i class="bi bi-whatsapp me-2"></i>Chat with us on WhatsApp
-                        </a>
-                        <div class="d-flex align-items-center gap-2 small text-muted">
-                            <i class="bi bi-broadcast"></i>
-                            <span>Prefer to talk now? Call us: <a href="tel:+255123456789" class="text-decoration-none" style="color:#c08a1f;">+255 123 456 789</a></span>
-                        </div>
-                        <hr style="border-color:var(--line);">
-                        <div class="small text-muted">
-                            <i class="bi bi-shield-check me-1" style="color:#e6b44a;"></i>
-                            We reply within one working day. Your details stay private.
-                        </div>
+
+            <div class="col-lg-6 reveal">
+                <div class="position-relative" style="background:url('{% static "images/contact-hero.jpg" %}') center 25% / cover no-repeat; border-radius:20px; overflow:hidden; min-height:480px;">
+                    <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,12,32,0.4) 0%,rgba(8,12,32,0.7) 100%);"></div>
+                    <div class="position-relative d-flex flex-column justify-content-end h-100 p-4 p-md-5" style="z-index:2;">
+                        <h5 class="fw-bold text-white mb-2">Send us a message</h5>
+                        <p class="small mb-4" style="color:rgba(255,255,255,.82);">Fill this short form and we'll get back to you within one working day.</p>
+                        <form method="post" action="{% url 'core:contact' %}" class="row g-3">
+                            {% csrf_token %}
+                            <div class="col-md-6"><input type="text" name="name" class="form-control bg-white border-0" placeholder="Your name" required></div>
+                            <div class="col-md-6"><input type="email" name="email" class="form-control bg-white border-0" placeholder="you@example.com" required></div>
+                            <div class="col-12"><input type="tel" name="phone" class="form-control bg-white border-0" placeholder="Phone number"></div>
+                            <div class="col-12"><textarea name="message" class="form-control bg-white border-0" rows="3" placeholder="Tell us about your project" required></textarea></div>
+                            <div class="col-12"><button type="submit" class="ct-action ct-action--gold justify-content-center w-100 border-0"><i class="bi bi-send"></i> Send</button></div>
+                        </form>
                     </div>
                 </div>
             </div>

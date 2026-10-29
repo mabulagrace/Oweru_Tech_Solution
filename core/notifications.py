@@ -206,11 +206,9 @@ def notify_request_approved(enquiry):
             f'Great news - we have reviewed your request for '
             f'{enquiry.package_name or "our services"} and it is approved.\n\n'
             f'Your project reference: {enquiry.reference}\n'
-            f'Follow your project and next steps here:\n'
-            f'{settings.BASE_URL}/my-project/{enquiry.reference}/\n\n'
-            'Next, our team will prepare your fixed quote. Once you approve it and '
-            'pay the 50% deposit, your project moves into production.\n\n'
-            'If this service is not what you need, choose another service anytime:\n'
+            f'Next, our team will prepare your fixed quote. Once you approve it and '
+            f'pay the 50% deposit, your project moves into production.\n'
+            f'If this service is not what you need, choose another service anytime:\n'
             f'{settings.BASE_URL}/services/\n\n'
             'Warm regards,\nOweru Tech Solutions\nDar es Salaam, Tanzania\nhello@oweru.tech'
         )
@@ -225,7 +223,6 @@ def notify_customer_response(enquiry, message):
         subject = f'Response to Your Request (Ref {enquiry.reference}) - Oweru Tech Solutions'
         follow_up = (
             f'\n\nYour project reference: {enquiry.reference}\n'
-            f'Open your project here: {settings.BASE_URL}/my-project/{enquiry.reference}/\n'
             f'Or choose another service: {settings.BASE_URL}/services/\n\n'
             'Warm regards,\nOweru Tech Solutions\nhello@oweru.tech'
         )
@@ -314,7 +311,6 @@ def notify_payment_confirmed(payment):
             f'Your payment of {payment.currency} {payment.amount:,.2f} '
             f'({payment.get_method_display()}, ref {payment.reference}) has been confirmed.\n\n'
             f'Project reference: {enquiry.reference}\n'
-            f'Track your project here: {settings.BASE_URL}/my-project/{enquiry.reference}/\n\n'
             'Thank you for working with Oweru Tech Solutions.\n'
             'Dar es Salaam, Tanzania\nhello@oweru.tech'
         )
@@ -329,6 +325,7 @@ def notify_proposal_sent(proposal):
         enquiry = proposal.enquiry
         if not enquiry:
             return
+        payment_url = settings.BASE_URL + reverse('core:payment_claim', args=[proposal.payment_token or ''])
         subject = f'Your Quote - {proposal.title} (Ref {proposal.reference})'
         body = (
             f'Dear {enquiry.name},\n\n'
@@ -336,10 +333,42 @@ def notify_proposal_sent(proposal):
             f'Proposal reference: {proposal.reference}\n'
             f'Total: {proposal.currency} {proposal.total_amount:,.2f}\n'
             f'Deposit to start: {proposal.currency} {proposal.deposit_amount():,.2f}\n\n'
-            f'View and pay here: {settings.BASE_URL}/my-project/{enquiry.reference}/\n\n'
+            f'Pay your deposit securely now: {payment_url}\n\n'
+            'On the secure page choose M-Pesa, Tigo Pesa, Airtel Money, HaloPesa '
+            'or bank transfer, enter your transaction reference after paying, and '
+            'optionally attach a screenshot. Our team confirms within one working day.\n\n'
             'Warm regards,\nOweru Tech Solutions\nhello@oweru.tech'
         )
         email_customer(subject, body, enquiry.email)
+    except Exception:
+        pass
+
+
+def notify_payment_request_sent(proposal):
+    """Email the customer a reminder with their secure payment link."""
+    try:
+        enquiry = proposal.enquiry
+        if not enquiry:
+            return
+        payment_url = settings.BASE_URL + reverse('core:payment_claim', args=[proposal.payment_token or ''])
+        subject = f'Payment Reminder - {proposal.reference} - Oweru Tech Solutions'
+        body = (
+            f'Dear {enquiry.name},\n\n'
+            f'We are ready to start once the deposit for {proposal.title} is paid.\n'
+            f'Proposal: {proposal.reference}\n'
+            f'Deposit due: {proposal.currency} {proposal.deposit_amount():,.2f} ({proposal.deposit_percent}%)\n\n'
+            f'Pay securely now: {payment_url}\n\n'
+            'Still have a question? Reply to this email and we will help.\n\n'
+            'Warm regards,\nOweru Tech Solutions\nhello@oweru.tech'
+        )
+        email_customer(subject, body, enquiry.email)
+        dispatch_webhook('payment.requested', {
+            'proposal_reference': proposal.reference,
+            'enquiry_id': str(enquiry.id),
+            'deposit_amount': str(proposal.deposit_amount()),
+            'currency': proposal.currency,
+            'payment_url': payment_url,
+        })
     except Exception:
         pass
 

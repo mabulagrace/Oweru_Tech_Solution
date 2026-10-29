@@ -45,17 +45,11 @@ urlpatterns = [
     path('services/', views.services, name='services'),
     path('services/<slug:slug>/', views.package_detail, name='package_detail'),
     path('enquiry/', views.enquiry_new, name='enquiry_new'),
-    path('form-test/', views.form_probe, name='form_probe'),
     path('enquiry/thanks/<uuid:enquiry_id>/', views.enquiry_thanks, name='enquiry_thanks'),
 
-    # Customer portal (reference-code based)
-    path('customer-login/', views.customer_login, name='customer_login'),
-    path('my-project/<str:reference>/', views.customer_home, name='customer_tracking'),
-    path('my-project/<str:reference>/services/', views.customer_services, name='customer_services'),
-    path('my-project/<str:reference>/proposals/', views.customer_proposals, name='customer_proposals'),
-    path('my-project/<str:reference>/payments/', views.customer_payments_list, name='customer_payments'),
-    path('my-project/<str:reference>/support/', views.customer_support, name='customer_support'),
-    path('my-project/<str:reference>/pay/', views.customer_pay, name='customer_pay'),
+    # Customer payments (secure deposit pages)
+    path('pay/<str:token>/', views.payment_claim, name='payment_claim'),
+    path('pay/<uuid:payment_id>/done', views.payment_done, name='payment_done'),
 
     # Scanner
     path('scan/', views.scanner_home, name='scanner_home'),

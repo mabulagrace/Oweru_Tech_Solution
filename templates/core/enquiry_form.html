@@ -1,74 +1,357 @@
 {% extends 'base.html' %}
 {% load humanize %}
+{% load static %}
 
-{% block title %}Request a Service - Oweru Tech Solutions{% endblock %}
+{% block title %}Get a Free Quote - Oweru Tech Solutions{% endblock %}
+{% block meta_description %}Request a fixed quote from Oweru. Tell us your problem and one of our engineers replies within one working day with a fixed price and timeline.{% endblock %}
+
+{% block extra_css %}
+<style>
+.qt-band,
+.qt-form-band{
+    position:relative;
+    overflow:hidden;
+    background:#0b1026;
+    padding:70px 0 66px;
+}
+.qt-form-band{padding:64px 0 76px;}
+
+.qt-band__photo,
+.qt-form-band__photo{
+    position:absolute;
+    inset:0;
+    overflow:hidden;
+}
+.qt-band__photo img,
+.qt-form-band__photo img{
+    width:100%;height:100%;
+    object-fit:cover;
+    object-position:center 30%;
+    filter:saturate(1.05) contrast(1.02);
+    transform:scale(1.03);
+}
+.qt-band__photo img{object-position:center 26%;}
+.qt-form-band__photo img{object-position:center 40%;}
+
+.qt-band__veil,
+.qt-form-band__veil{
+    position:absolute;inset:0;
+    pointer-events:none;
+}
+.qt-band__veil{
+    background:linear-gradient(100deg,
+        rgba(8,12,32,.97) 0%,
+        rgba(8,12,32,.94) 34%,
+        rgba(10,15,38,.80) 58%,
+        rgba(10,15,38,.58) 100%),
+        radial-gradient(circle at 88% -10%, rgba(255,212,113,.16), transparent 46%);
+}
+.qt-form-band__veil{
+    background:linear-gradient(100deg,
+        rgba(8,12,32,.96) 0%,
+        rgba(8,12,32,.94) 45%,
+        rgba(8,12,32,.90) 72%,
+        rgba(10,15,38,.86) 100%),
+        radial-gradient(circle at 92% -6%, rgba(255,212,113,.12), transparent 48%);
+}
+
+.qt-band::after,
+.qt-form-band::after{
+    content:"";
+    position:absolute;
+    left:0;bottom:0;
+    width:42%;height:6px;
+    background:linear-gradient(90deg,#ffd471,#e6b44a 55%,transparent);
+    pointer-events:none;
+}
+
+/* ---------- hero ---------- */
+.qt-hero h1{
+    color:#fff;
+    font-weight:800;
+    letter-spacing:-.02em;
+    line-height:1.12;
+    margin:0 0 14px;
+}
+.qt-hero__lede{
+    color:rgba(255,255,255,.82);
+    font-size:1.02rem;
+    line-height:1.65;
+    max-width:600px;
+    margin:0;
+}
+.qt-chip{
+    display:inline-flex;align-items:center;gap:9px;
+    background:linear-gradient(120deg,#ffd471,#e6b44a);
+    color:#3a2a06;font-size:.74rem;font-weight:700;
+    letter-spacing:.09em;text-transform:uppercase;
+    border-radius:999px;padding:8px 17px;
+    box-shadow:0 12px 28px rgba(192,138,31,.28);
+}
+.qt-steps{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:12px;
+    margin-top:28px;max-width:640px;
+}
+.qt-step{
+    background:rgba(255,255,255,.07);
+    border:1px solid rgba(255,255,255,.16);
+    border-radius:15px;
+    padding:15px 16px;
+    backdrop-filter:blur(6px);
+}
+.qt-step b{
+    display:flex;align-items:center;gap:8px;
+    font-size:.82rem;color:#fff;font-weight:700;
+    margin-bottom:5px;
+}
+.qt-step b em{
+    font-style:normal;
+    flex:0 0 auto;
+    width:22px;height:22px;border-radius:7px;
+    background:linear-gradient(135deg,#ffd471,#e6b44a);
+    color:#3a2a06;font-size:.68rem;font-weight:800;
+    display:flex;align-items:center;justify-content:center;
+}
+.qt-step span{
+    font-size:.75rem;color:rgba(255,255,255,.74);
+    line-height:1.45;display:block;
+}
+
+/* ---------- "what you get back" card ---------- */
+.qt-chosen{
+    position:relative;
+    overflow:hidden;
+    display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+    background:linear-gradient(120deg,rgba(28,37,71,.96) 0%,rgba(12,18,48,.97) 58%,rgba(20,27,52,.96) 100%);
+    border:1px solid rgba(255,212,113,.30);
+    border-radius:18px;
+    box-shadow:0 22px 44px rgba(4,7,20,.45);
+    padding:20px 22px;
+}
+.qt-chosen__bg{
+    position:absolute;inset:0;
+    background-image:url('{% static "images/qf-docs.jpg" %}');
+    background-size:cover;
+    background-position:center 40%;
+    opacity:.20;
+}
+.qt-chosen__bg::after{
+    content:"";
+    position:absolute;inset:0;
+    background:linear-gradient(100deg,rgba(12,18,48,.94) 0%,rgba(12,18,48,.74) 55%,rgba(20,27,52,.58) 100%);
+}
+.qt-chosen > *{position:relative;z-index:2;}
+.qt-chosen__lab{
+    font-size:.64rem;font-weight:700;letter-spacing:.10em;
+    text-transform:uppercase;color:#ffd471;margin-bottom:4px;
+}
+.qt-chosen h3{color:#fff;font-weight:700;font-size:1.06rem;margin:0 0 5px;}
+.qt-chosen__price{color:#fff;font-weight:700;font-size:1.05rem;}
+.qt-chosen__price span{color:rgba(255,255,255,.68);font-weight:400;font-size:.8rem;}
+.qt-chosen__photo{
+    width:78px;height:78px;border-radius:14px;overflow:hidden;flex:0 0 auto;
+    border:2px solid rgba(255,212,113,.6);
+}
+.qt-chosen__photo img{width:100%;height:100%;object-fit:cover;}
+
+/* ---------- form card ---------- */
+.qt-form-card{
+    position:relative;
+    background:#ffffff;
+    border:1px solid rgba(255,212,113,.55);
+    border-radius:20px;
+    box-shadow:0 28px 60px rgba(4,7,20,.42);
+    overflow:hidden;
+    height:100%;
+}
+.qt-form-card__bar{height:5px;background:linear-gradient(90deg,#ffd471,#e6b44a 50%,#c08a1f);}
+.qt-form-card__body{padding:30px 30px 32px;}
+
+/* ---------- side panels ---------- */
+.qt-side{
+    background:rgba(255,255,255,.06);
+    border:1px solid rgba(255,255,255,.16);
+    backdrop-filter:blur(8px);
+    border-radius:18px;
+    padding:24px 22px;
+    box-shadow:0 18px 40px rgba(4,7,20,.32);
+}
+.qt-side h5{color:#fff;font-weight:700;}
+.qt-side p{color:rgba(255,255,255,.78);font-size:.86rem;line-height:1.6;}
+.qt-side__list{list-style:none;margin:0;padding:0;}
+.qt-side__list li{
+    display:flex;gap:9px;align-items:flex-start;
+    color:rgba(255,255,255,.84);font-size:.84rem;line-height:1.55;
+    padding:6px 0;
+}
+.qt-side__list i{color:#ffd471;font-size:.95rem;margin-top:1px;flex:0 0 auto;}
+.qt-side__contact{font-size:.86rem;color:rgba(255,255,255,.84);line-height:1.9;}
+.qt-side__contact i{color:#ffd471;width:18px;}
+.qt-side__note{
+    margin-top:16px;padding-top:14px;
+    border-top:1px solid rgba(255,255,255,.14);
+    color:rgba(255,255,255,.68);font-size:.78rem;line-height:1.6;
+}
+.qt-side__note a{color:#ffd471;text-decoration:none;}
+.qt-side__note a:hover{text-decoration:underline;}
+
+.qt-btn{
+    display:flex;align-items:center;justify-content:center;gap:9px;
+    width:100%;border-radius:13px;padding:.8rem 1rem;
+    font-weight:700;font-size:.9rem;text-decoration:none;
+    border:1px solid transparent;
+    transition:transform .2s ease, box-shadow .2s ease, background .2s ease;
+}
+.qt-btn:hover{transform:translateY(-2px);}
+.qt-btn--gold{
+    background:linear-gradient(135deg,#ffd471,#e6b44a);
+    color:#3a2a06;
+    box-shadow:0 12px 26px rgba(230,180,74,.34);
+}
+.qt-btn--gold:hover{color:#3a2a06;box-shadow:0 18px 34px rgba(230,180,74,.46);}
+
+@media (max-width: 991px){
+    .qt-steps{grid-template-columns:1fr;max-width:100%;}
+    .qt-band,.qt-form-band{padding:52px 0 56px;}
+    .qt-form-card__body{padding:24px 20px 26px;}
+}
+</style>
+{% endblock %}
 
 {% block content %}
-
-{% if selected_package %}
-<section class="py-3" style="background:var(--cream);">
-    <div class="container">
-        <div class="card-lift" style="border-left:4px solid #e6b44a !important;">
-            <div class="card-body d-flex justify-content-between align-items-center flex-wrap gap-3">
-                <div>
-                    <div class="text-muted small text-uppercase" style="letter-spacing:.08em;">You chose</div>
-                    <h3 class="fw-bold mb-1">{{ selected_package.name }}</h3>
-                    <div class="fw-bold" style="font-size:1.25rem;color:var(--ink);">
-                        {% if selected_package.price_tzs_min %}
-                            TZS {{ selected_package.price_tzs_min|floatformat:0|intcomma }}
-                            {% if selected_package.price_tzs_max %}- {{ selected_package.price_tzs_max|floatformat:0|intcomma }}{% endif %}
-                        {% elif selected_package.price_usd_min %}
-                            USD {{ selected_package.price_usd_min }}
-                            {% if selected_package.price_usd_max %}- {{ selected_package.price_usd_max }}{% endif %}
-                        {% else %}
-                            Custom quote
-                        {% endif %}
-                        {% if selected_package.timeline %}
-                        <span class="text-muted small fw-normal"><i class="bi bi-clock ms-2 me-1"></i>{{ selected_package.timeline }}</span>
-                        {% endif %}
+<section class="qt-band">
+    <div class="qt-band__photo">
+        <img src="{% static 'images/qc-meet.jpg' %}" alt="Oweru team in a working session with a client" loading="eager">
+    </div>
+    <div class="qt-band__veil"></div>
+    <div class="container position-relative" style="z-index:2;">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-7 qt-hero">
+                <span class="qt-chip mb-3"><i class="bi bi-file-earmark-text"></i>Get a free quote</span>
+                <h1>
+                    {% if selected_package %}Request {{ selected_package.name }}{% else %}Tell us what you need{% endif %}
+                </h1>
+                <p class="qt-hero__lede">
+                    One short form. A real engineer reads it and replies within one working day
+                    with a fixed price and timeline. No obligation to go ahead.
+                </p>
+                <div class="qt-steps">
+                    <div class="qt-step">
+                        <b><em>1</em> You describe the problem</b>
+                        <span>Plain language, no technical terms needed.</span>
+                    </div>
+                    <div class="qt-step">
+                        <b><em>2</em> We review and price it</b>
+                        <span>An engineer reads it, not a bot.</span>
+                    </div>
+                    <div class="qt-step">
+                        <b><em>3</em> Fixed quote in 1 day</b>
+                        <span>Price and timeline before you commit.</span>
                     </div>
                 </div>
-                <a href="{% url 'core:package_detail' selected_package.slug %}" class="btn btn-outline-primary">
-                    View details
-                </a>
             </div>
+            <div class="col-lg-5">
+                <div class="qt-chosen reveal">
+                    <span class="qt-chosen__bg"></span>
+                    <span class="qt-chosen__photo">
+                        <img src="{% static 'images/qf-tablet.jpg' %}" alt="Oweru engineer reviewing a project brief on a tablet" loading="lazy">
+                    </span>
+                    <div>
+                        <div class="qt-chosen__lab">What you get back</div>
+                        <h3>A fixed price and timeline</h3>
+                        <div class="qt-chosen__price">
+                            Written, agreed scope
+                            <span class="d-block">plus a named contact</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% if selected_package %}
+<section class="py-4" style="background:#0b1026;">
+    <div class="container">
+        <div class="qt-chosen reveal">
+            <span class="qt-chosen__bg"></span>
+            <span class="qt-chosen__photo">
+                {% if 'website' in selected_package.slug %}{% static 'images/hero-slide-web.jpg' as ch_img %}
+                {% elif 'application' in selected_package.slug %}{% static 'images/hero-slide-mobile.jpg' as ch_img %}
+                {% elif 'crm' in selected_package.slug %}{% static 'images/hero-slide-crm.jpg' as ch_img %}
+                {% elif 'network' in selected_package.slug %}{% static 'images/hero-slide-network.jpg' as ch_img %}
+                {% else %}{% static 'images/hero-slide-ecommerce.jpg' as ch_img %}{% endif %}
+                <img src="{{ ch_img }}" alt="{{ selected_package.name }}" loading="lazy">
+            </span>
+            <div>
+                <div class="qt-chosen__lab">You chose</div>
+                <h3>{{ selected_package.name }}</h3>
+                <div class="qt-chosen__price">
+                    {% if selected_package.price_tzs_min %}
+                        TZS {{ selected_package.price_tzs_min|floatformat:0|intcomma }}
+                        {% if selected_package.price_tzs_max %}- {{ selected_package.price_tzs_max|floatformat:0|intcomma }}{% endif %}
+                    {% elif selected_package.price_usd_min %}
+                        USD {{ selected_package.price_usd_min }}
+                        {% if selected_package.price_usd_max %}- {{ selected_package.price_usd_max }}{% endif %}
+                    {% else %}
+                        Custom quote
+                    {% endif %}
+                    {% if selected_package.timeline %}
+                    <span class="d-block"><i class="bi bi-clock me-1"></i>{{ selected_package.timeline }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            <a href="{% url 'core:package_detail' selected_package.slug %}" class="btn btn-outline-light ms-auto">
+                View details <i class="bi bi-arrow-right"></i>
+            </a>
         </div>
     </div>
 </section>
 {% endif %}
 
-<section class="py-5" style="background:var(--cream);">
-    <div class="container">
-        <div class="row g-4">
-            <div class="col-lg-8">
-                <div class="card-lift">
-                    <div class="card-body p-4">
+<section class="qt-form-band">
+    <div class="qt-form-band__photo">
+        <img src="{% static 'images/about-team.jpg' %}" alt="Oweru engineers reviewing a project together" loading="lazy">
+    </div>
+    <div class="qt-form-band__veil"></div>
+    <div class="container position-relative" style="z-index:2;">
+        <div class="row g-4 align-items-start">
+            <div class="col-lg-8 reveal">
+                <div class="qt-form-card">
+                    <div class="qt-form-card__bar"></div>
+                    <div class="qt-form-card__body">
                         {% include 'core/partials/_enquiry_form.html' %}
                     </div>
                 </div>
             </div>
-
-            <div class="col-lg-4">
-                <div class="card-lift mb-4">
-                    <div class="card-body text-center p-4">
-                        <span class="icon-chip mx-auto mb-3"><i class="bi bi-headset"></i></span>
-                        <h5 class="fw-bold">Prefer to talk to us?</h5>
-                        <p class="text-muted small">Skip the form and contact Oweru directly. We answer within 1 working day.</p>
-                        <a href="{% url 'core:contact' %}" class="btn btn-outline-primary w-100 mb-3">Contact Oweru</a>
-                        <div class="small text-muted">
-                            <div><i class="bi bi-telephone me-1"></i>+255 123 456 789</div>
-                            <div><i class="bi bi-envelope me-1"></i>hello@oweru.tech</div>
-                        </div>
-                        <hr style="border-color:var(--line);">
-                        <div class="small text-start">
-                            <div class="fw-semibold mb-1" style="color:var(--ink);"><i class="bi bi-envelope-paper me-1"></i>Or request by email:</div>
-                            <p class="mb-1">Send your <b>name</b>, <b>phone</b>, the <b>package</b> you want, and a short note about the <b>problem</b> to <b>hello@oweru.tech</b>. We reply within 1 working day.</p>
-                        </div>
+            <div class="col-lg-4 reveal">
+                <div class="qt-side">
+                    <h5 class="mb-2"><i class="bi bi-headset me-2" style="color:#ffd471;"></i>Prefer to talk?</h5>
+                    <p class="mb-3">Skip the form entirely. We answer within one working day either way.</p>
+                    <a href="{% url 'core:contact' %}" class="qt-btn qt-btn--gold mb-3">
+                        <i class="bi bi-telephone"></i> Contact Oweru
+                    </a>
+                    <div class="qt-side__contact">
+                        <div><i class="bi bi-telephone"></i> +255 123 456 789</div>
+                        <div><i class="bi bi-envelope"></i> hello@oweru.tech</div>
+                        <div><i class="bi bi-geo-alt"></i> Dar es Salaam, Tanzania</div>
+                    </div>
+                </div>
+                <div class="qt-side mt-4">
+                    <h5 class="mb-3">What happens next</h5>
+                    <ul class="qt-side__list">
+                        <li><i class="bi bi-check2"></i><span>An engineer reads your request, not an auto-reply.</span></li>
+                        <li><i class="bi bi-check2"></i><span>You get a fixed price and timeline in writing.</span></li>
+                        <li><i class="bi bi-check2"></i><span>50% deposit books your slot. The rest is on delivery.</span></li>
+                        <li><i class="bi bi-check2"></i><span>You get a personal link to follow progress and payments.</span></li>
+                    </ul>
+                    <div class="qt-side__note">
+                        Prefer email? Send your <b>name</b>, <b>phone</b>, the <b>package</b> and a short note
+                        about the <b>problem</b> to <a href="mailto:hello@oweru.tech">hello@oweru.tech</a>.
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </section>
-
 {% endblock %}

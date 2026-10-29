@@ -19,12 +19,18 @@
                class="btn btn-sm {% if current_status == 'rejected' %}pill-gold{% else %}pill-line{% endif %}">Rejected</a>
         </div>
 
+        <p class="small" style="color:var(--muted);">
+            These are customer-requested reports only &mdash; scraped/auto-scanned sites never appear here.
+            For scraped scans use <a href="{% url 'core:admin_scans' %}?scan_type=batch">Scans → Scraped</a>.
+        </p>
+
         <div class="table-responsive">
             <table class="table table-hover align-middle">
                 <thead class="thead-navy">
                     <tr>
                         <th>Website</th>
                         <th>Client</th>
+                        <th>Source</th>
                         <th class="text-center">Score</th>
                         <th>Status</th>
                         <th>Requested</th>
@@ -47,6 +53,7 @@
                             <span class="text-muted">-</span>
                             {% endif %}
                         </td>
+                        <td><span class="badge bg-info text-dark">Customer</span></td>
                         <td class="text-center">
                             <span class="badge {% if report.score >= 80 %}bg-success{% elif report.score >= 50 %}bg-warning text-dark{% else %}bg-danger{% endif %}">
                                 {{ report.score }}/100
@@ -84,7 +91,7 @@
                         </td>
                     </tr>
                     {% empty %}
-                    <tr><td colspan="6" class="text-center text-muted py-5">No report requests found.</td></tr>
+                    <tr><td colspan="7" class="text-center text-muted py-5">No report requests found.</td></tr>
                     {% endfor %}
                 </tbody>
             </table>

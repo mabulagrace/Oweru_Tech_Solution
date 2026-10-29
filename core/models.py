@@ -55,6 +55,19 @@ class Package(models.Model):
     price_usd_min = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
     price_usd_max = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
 
+    price_tzs = models.DecimalField(
+        max_digits=12, decimal_places=2, null=True, blank=True,
+        help_text='Fixed price in TZS for book-now packages. Leave blank for quote-based packages.',
+    )
+    price_usd = models.DecimalField(
+        max_digits=12, decimal_places=2, null=True, blank=True,
+        help_text='Fixed price in USD for book-now packages.',
+    )
+    book_now = models.BooleanField(
+        default=False,
+        help_text='Customers can pay a deposit immediately from the enquiry thanks page.',
+    )
+
     timeline = models.CharField(max_length=100, blank=True)
     sort_order = models.IntegerField(default=0)
     is_active = models.BooleanField(default=True)
@@ -236,6 +249,7 @@ class Enquiry(models.Model):
     consent_date = models.DateTimeField(null=True, blank=True)
 
     reference = models.CharField(max_length=20, blank=True)
+    payment_token = models.CharField(max_length=12, blank=True)
     agreed_amount = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
     agreed_currency = models.CharField(max_length=3, choices=CURRENCY_CHOICES, default='TZS')
     payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='none')
@@ -257,7 +271,27 @@ class Enquiry(models.Model):
     def save(self, *args, **kwargs):
         if not self.reference:
             self.reference = self.make_reference()
+        # Book-now packages get a payment token so the enquiry thanks page can
+        # offer an immediate deposit link.
+        if self.package_id and not self.payment_token:
+            package = Package.objects.filter(id=self.package_id).first()
+            if package and package.book_now:
+                self.payment_token = self.make_payment_token()
         super().save(*args, **kwargs)
+
+    def make_payment_token(self):
+        alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+        token = ''.join(secrets.choice(alphabet) for _ in range(12))
+        while (Enquiry.objects.filter(payment_token=token).exists()
+               or Proposal.objects.filter(payment_token=token).exists()):
+            token = ''.join(secrets.choice(alphabet) for _ in range(12))
+        return token
+
+    def book_now_deposit(self):
+        """Deposit due for a book-now package (50% of its fixed price)."""
+        if self.package and self.package.book_now and self.package.price_tzs:
+            return (self.package.price_tzs * Decimal('0.50')).quantize(Decimal('1'))
+        return None
 
     def make_reference(self):
         alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
@@ -355,6 +389,7 @@ class Proposal(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     reference = models.CharField(max_length=20, blank=True)
+    payment_token = models.CharField(max_length=12, blank=True)
     enquiry = models.ForeignKey(Enquiry, on_delete=models.SET_NULL, null=True, blank=True, related_name='proposals')
     customer = models.ForeignKey(Customer, on_delete=models.SET_NULL, null=True, blank=True, related_name='proposals')
 
@@ -387,6 +422,8 @@ class Proposal(models.Model):
     def save(self, *args, **kwargs):
         if not self.reference:
             self.reference = 'PROP-' + ''.join(secrets.choice('ABCDEFGHJKLMNPQRSTUVWXYZ23456789') for _ in range(5))
+        if not self.payment_token:
+            self.payment_token = ''.join(secrets.choice('ABCDEFGHJKLMNPQRSTUVWXYZ23456789') for _ in range(12))
         super().save(*args, **kwargs)
 
     def deposit_amount(self):
@@ -442,6 +479,7 @@ class Payment(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     enquiry = models.ForeignKey(Enquiry, on_delete=models.CASCADE, related_name='payments')
+    proposal = models.ForeignKey(Proposal, on_delete=models.SET_NULL, null=True, blank=True, related_name='payments')
     customer = models.ForeignKey(Customer, on_delete=models.SET_NULL, null=True, blank=True, related_name='payments')
 
     amount = models.DecimalField(max_digits=12, decimal_places=2)
@@ -449,6 +487,8 @@ class Payment(models.Model):
     method = models.CharField(max_length=50, choices=METHOD_CHOICES)
     reference = models.CharField(max_length=255)
     kind = models.CharField(max_length=20, choices=KIND_CHOICES, default='deposit')
+    paid_by = models.CharField(max_length=255, blank=True)
+    proof_image = models.ImageField(upload_to='payment_proofs/', blank=True)
 
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     notes = models.TextField(blank=True)

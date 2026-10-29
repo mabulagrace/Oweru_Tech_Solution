@@ -1,158 +1,489 @@
-{% extends 'base.html' %}
-{% load humanize %}
-{% load static %}
-
-{% block title %}Solutions & Packages - Oweru Tech Solutions{% endblock %}
-{% block meta_description %}Explore Oweru's solutions: mobile & web systems, CRM platforms and network design. Clear prices, timelines and what's included - final quotes confirmed in a free consultation.{% endblock %}
-
-{% block content %}
-
-<section class="hero" style="padding:84px 0;background:linear-gradient(90deg, rgba(8,12,32,.92) 0%, rgba(20,27,52,.72) 52%, rgba(20,27,52,.28) 100%),url('{% static "images/hero-dashboard.jpg" %}') center 40% cover no-repeat;">
-    <div class="aurora" style="width:500px;height:500px;background:radial-gradient(circle,rgba(240,191,77,.16),transparent 65%);top:-150px;right:-60px;"></div>
-    <div class="container position-relative" style="z-index:2;">
-        <div class="row align-items-center">
-            <div class="col-lg-8">
-                <span class="eyebrow mb-3"><span class="d-inline-block me-2" style="width:30px;height:2px;border-radius:99px;background:#e6b44a;"></span>Our solutions</span>
-                <h1 class="fw-bold text-white mb-3">Fixed prices, clear timelines</h1>
-                <p class="text-white-50 mb-0" style="max-width:640px;">
-                    Three practice areas. The final quote depends on your exact scope of work,
-                    which we confirm together in a free consultation.
-                </p>
-            </div>
-        </div>
-    </div>
-</section>
-
-<div class="py-3" style="background:#fff;border-bottom:1px solid var(--line);">
-    <div class="container d-flex align-items-center gap-2 flex-wrap">
-        <span class="small text-muted me-1">Show prices in:</span>
-        <div class="btn-group btn-group-sm" role="group" aria-label="Display currency">
-            <a href="?currency=TZS" class="btn {% if display_currency == 'TZS' %}btn-primary{% else %}btn-outline-primary{% endif %}">TZS</a>
-            <a href="?currency=USD" class="btn {% if display_currency == 'USD' %}btn-primary{% else %}btn-outline-primary{% endif %}">USD</a>
-        </div>
-    </div>
-</div>
-
-{% for group in groups %}
-<section id="group-{{ group.slug }}" class="py-5" style="background:{% if forloop.counter|divisibleby:2 %}var(--cream){% else %}#fff{% endif %};">
-    <div class="container">
-        <div class="mb-4 reveal">
-            <span class="eyebrow mb-2"><i class="bi bi-gem me-1"></i>{{ group.label }}</span>
-            <h2 class="fw-bold mb-0">{{ group.label }}</h2>
-        </div>
-        <div class="row g-4">
-            {% for pkg in group.packages %}
-            <div class="col-md-6 reveal">
-                <div class="card-lift h-100">
-                    {% if 'website' in pkg.slug %}{% static 'images/hero-slide-web.jpg' as pkg_img %}
-                    {% elif 'application' in pkg.slug %}{% static 'images/hero-slide-mobile.jpg' as pkg_img %}
-                    {% elif 'crm' in pkg.slug %}{% static 'images/hero-slide-crm.jpg' as pkg_img %}
-                    {% elif 'network' in pkg.slug %}{% static 'images/hero-slide-network.jpg' as pkg_img %}
-                    {% else %}{% static 'images/hero-slide-ecommerce.jpg' as pkg_img %}{% endif %}
-                    <div class="pkg-img-wrap d-none d-md-block">
-                        <img src="{{ pkg_img }}" alt="{{ pkg.name }}" loading="lazy">
-                    </div>
-                    <div class="card-body p-4">
-                        <h5 class="fw-bold mb-2">{{ pkg.name }}</h5>
-                        <p class="text-muted small mb-3">{{ pkg.description }}</p>
-                        <ul class="list-unstyled mb-4">
-                            {% for item in pkg.included %}
-                            <li class="py-1 small"><i class="bi bi-check-circle-fill me-2" style="color:#e6b44a;"></i>{{ item }}</li>
-                            {% endfor %}
-                        </ul>
-                        <div class="d-flex justify-content-between align-items-center border-top pt-3" style="border-color:var(--line) !important;">
-                            <div>
-                                <div class="small text-muted">Starting price</div>
-                                <div class="fw-bold mb-1">
-                                    {% if display_currency == 'USD' and pkg.price_usd_min %}
-                                        USD {{ pkg.price_usd_min }}
-                                        {% if pkg.price_usd_max %} - {{ pkg.price_usd_max }}{% endif %}
-                                        <span class="small text-muted fw-normal">(TZS {{ pkg.price_tzs_min|floatformat:0|intcomma }}{% if pkg.price_tzs_max %} - {{ pkg.price_tzs_max|floatformat:0|intcomma }}{% endif %})</span>
-                                    {% elif pkg.price_tzs_min %}
-                                        TZS {{ pkg.price_tzs_min|floatformat:0|intcomma }}
-                                        {% if pkg.price_tzs_max %} - {{ pkg.price_tzs_max|floatformat:0|intcomma }}{% endif %}
-                                        <span class="small text-muted fw-normal">(USD {{ pkg.price_usd_min }}{% if pkg.price_usd_max %} - {{ pkg.price_usd_max }}{% endif %})</span>
-                                    {% elif pkg.price_usd_min %}
-                                        USD {{ pkg.price_usd_min }}
-                                        {% if pkg.price_usd_max %} - {{ pkg.price_usd_max }}{% endif %}
-                                    {% else %}
-                                        Custom quote
-                                    {% endif %}
-                                </div>
-                                <div class="small text-muted"><i class="bi bi-clock me-1"></i>{{ pkg.timeline }}</div>
-                            </div>
-                            <a href="{% url 'core:package_detail' pkg.slug %}" class="btn btn-primary">Details &amp; Price</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-</section>
-{% endfor %}
-
-<!-- Care plans -->
-<section class="py-5" style="background:var(--cream);">
-    <div class="container">
-        <div class="text-center reveal">
-            <span class="eyebrow mb-2"><span class="d-inline-block me-2" style="width:30px;height:2px;border-radius:99px;background:#e6b44a;"></span>Care plans</span>
-            <h2 class="fw-bold mb-2">Monthly care plans</h2>
-            <p class="text-muted mb-5">One-off projects end. Good companies don't. Keep your systems healthy.</p>
-        </div>
-        <div class="row g-4">
-            {% for plan in care_plans %}
-            <div class="col-md-4 reveal">
-                <div class="card-lift h-100">
-                    <div class="card-body text-center p-4">
-                        <span class="icon-chip mx-auto mb-3"><i class="bi bi-shield-plus"></i></span>
-                        <h5 class="fw-bold">{{ plan.name }}</h5>
-                        <p class="text-muted small">{{ plan.description }}</p>
-                        <ul class="list-unstyled text-start my-4">
-                            {% for item in plan.included %}
-                            <li class="py-1 small"><i class="bi bi-check-circle-fill me-2" style="color:#e6b44a;"></i>{{ item }}</li>
-                            {% endfor %}
-                        </ul>
-                        {% if display_currency == 'USD' %}
-                            <div class="fw-bold mb-1" style="font-size:1.4rem;">USD {{ plan.monthly_usd }}/mo</div>
-                            <div class="small text-muted mb-3">TZS {{ plan.monthly_tzs|floatformat:0|intcomma }}/mo for local clients</div>
-                        {% else %}
-                            <div class="fw-bold mb-1" style="font-size:1.4rem;">TZS {{ plan.monthly_tzs|floatformat:0|intcomma }}/mo</div>
-                            <div class="small text-muted mb-3">USD {{ plan.monthly_usd }}/mo for international clients</div>
-                        {% endif %}
-                        <a href="{% url 'core:enquiry_new' %}" class="btn btn-outline-primary w-100">Enquire Now</a>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-</section>
-
-<!-- Exclusions -->
-<section class="py-5" style="background:#fff;">
-    <div class="container">
-        <div class="reveal">
-            <span class="eyebrow mb-2">What's excluded</span>
-            <h2 class="fw-bold mb-3">Clear about what is included</h2>
-            <p class="text-muted mb-4">So you always know exactly what you are buying.</p>
-        </div>
-        <div class="row g-3 reveal">
-            {% for exclusion in exclusions %}
-            <div class="col-md-6">
-                <div class="d-flex align-items-start">
-                    <i class="bi bi-x-circle me-2 mt-1 text-muted"></i>
-                    <span class="small">{{ exclusion.description }}</span>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-        <div class="mt-5 reveal">
-            <div class="text-center">
-                <a href="{% url 'core:enquiry_new' %}" class="btn btn-champagne btn-sheen btn-lg px-5">Get a Free Quote</a>
-            </div>
-        </div>
-    </div>
-</section>
-
+{% extends 'base.html' %}
+{% load humanize %}
+{% load static %}
+
+{% block title %}Solutions & Packages - Oweru Tech Solutions{% endblock %}
+{% block meta_description %}Explore Oweru's solutions: mobile & web systems, CRM platforms and network design. Clear prices, timelines and what's included - final quotes confirmed in a free consultation.{% endblock %}
+
+{% block content %}
+
+{% block extra_css %}
+<style>
+.svc-group{
+    position:relative;
+    background-size:cover;
+    background-position:center;
+    overflow:hidden;
+}
+.svc-group::before{
+    content:"";
+    position:absolute;inset:0;
+    background:linear-gradient(180deg,rgba(8,12,32,.90) 0%,rgba(10,15,38,.84) 45%,rgba(8,12,32,.92) 100%);
+}
+.svc-group__inner{position:relative;z-index:2;}
+.svc-head{
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    background:linear-gradient(120deg,rgba(255,212,113,.18),rgba(230,180,74,.08));
+    border:1px solid rgba(255,212,113,.42);
+    color:#ffd471;
+    border-radius:999px;
+    padding:7px 16px;
+    font-size:.74rem;
+    font-weight:700;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+}
+.svc-count{
+    font-family:Georgia,serif;
+    font-size:clamp(2.6rem,6vw,4rem);
+    font-weight:700;
+    color:rgba(255,212,113,.16);
+    line-height:1;
+}
+.pkg-float{
+    position:relative;
+    background:#fff;
+    border-radius:20px;
+    overflow:hidden;
+    box-shadow:0 28px 64px rgba(4,7,20,.42);
+    transition:transform .3s ease, box-shadow .3s ease;
+}
+.pkg-float:hover{
+    transform:translateY(-6px);
+    box-shadow:0 38px 80px rgba(4,7,20,.55);
+}
+
+.pkg-float__photo{
+    position:relative;
+    height:240px;
+    overflow:hidden;
+}
+.pkg-float__photo img{
+    position:absolute;inset:0;
+    width:100%;height:100%;
+    object-fit:cover;
+    transition:transform .5s ease;
+}
+.pkg-float:hover .pkg-float__photo img{transform:scale(1.07);}
+.pkg-float__photo::after{
+    content:"";
+    position:absolute;inset:0;
+    background:linear-gradient(180deg,rgba(8,12,32,.10) 0%,rgba(8,12,32,.50) 100%);
+}
+.pkg-float__tag{
+    position:absolute;
+    left:16px;bottom:-15px;
+    z-index:3;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    background:linear-gradient(135deg,#ffd471,#e6b44a);
+    color:#141b34;
+    font-size:.68rem;
+    font-weight:700;
+    border-radius:999px;
+    padding:6px 12px;
+    border:3px solid #fff;
+    box-shadow:0 10px 22px rgba(4,7,20,.32);
+}
+.pkg-float__body{padding:26px 20px 18px;}
+.pkg-float__body h5{color:#0c1230;font-size:1.02rem;margin-bottom:.35rem !important;}
+.pkg-float__body .desc{
+    color:#6b7280;
+    font-size:.79rem;
+    line-height:1.5;
+    margin-bottom:.7rem;
+    display:-webkit-box;
+    -webkit-line-clamp:2;
+    -webkit-box-orient:vertical;
+    overflow:hidden;
+}
+.pkg-float__body ul{margin-bottom:.85rem !important;}
+.pkg-float__body li{font-size:.79rem !important;padding:.12rem 0 !important;line-height:1.45;}
+.pkg-float__body .btn{font-size:.8rem;padding:.42rem .85rem;}
+.pkg-float__foot{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    margin-top:.35rem;
+    padding:11px 12px;
+    border-radius:14px;
+    background:linear-gradient(125deg,#1c2547 0%,#0c1230 58%,#141b34 100%);
+    box-shadow:inset 0 0 0 1px rgba(255,212,113,.32), 0 10px 22px rgba(8,12,32,.22);
+}
+.pkg-float__price{min-width:0;}
+.pkg-float__price .lab{
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+    font-size:.64rem;
+    font-weight:700;
+    letter-spacing:.10em;
+    text-transform:uppercase;
+    color:#ffd471;
+    margin-bottom:2px;
+}
+.pkg-float__price .val{
+    font-size:.98rem;
+    font-weight:700;
+    color:#fff;
+    line-height:1.25;
+    word-break:break-word;
+}
+.pkg-float__price .sub{font-size:.71rem;color:rgba(255,255,255,.62);}
+.pkg-float__go{
+    flex:0 0 auto;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    background:linear-gradient(135deg,#ffd471,#e6b44a);
+    color:#141b34;
+    font-size:.78rem;
+    font-weight:700;
+    border-radius:999px;
+    padding:.44rem .9rem;
+    white-space:nowrap;
+    box-shadow:0 8px 18px rgba(230,180,74,.34);
+    transition:transform .2s ease, box-shadow .2s ease;
+}
+.pkg-float__go:hover{
+    color:#141b34;
+    transform:translateY(-1px);
+    box-shadow:0 12px 24px rgba(230,180,74,.48);
+}
+
+.excl-chip{
+    display:inline-flex;
+    align-items:center;
+    gap:9px;
+    background:linear-gradient(120deg,#ffd471,#e6b44a);
+    color:#3a2a06;
+    font-size:.74rem;
+    font-weight:700;
+    letter-spacing:.09em;
+    text-transform:uppercase;
+    border-radius:999px;
+    padding:8px 17px;
+    box-shadow:0 12px 28px rgba(192,138,31,.30);
+}
+.excl-photo{
+    position:relative;
+    border-radius:20px;
+    overflow:hidden;
+    border:1px solid rgba(230,180,74,.55);
+    box-shadow:0 26px 60px rgba(120,92,20,.24);
+}
+.excl-photo img{
+    display:block;
+    width:100%;
+    aspect-ratio:3/2;
+    object-fit:cover;
+    object-position:center 35%;
+    transition:transform .5s ease;
+}
+.excl-photo:hover img{transform:scale(1.05);}
+.excl-photo::after{
+    content:"";
+    position:absolute;inset:0;
+    background:linear-gradient(180deg,rgba(8,12,32,0) 40%,rgba(8,12,32,.55) 100%);
+}
+.excl-photo__badge{
+    position:absolute;
+    left:18px;bottom:18px;
+    z-index:2;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    background:rgba(255,255,255,.94);
+    color:#0c1230;
+    font-size:.78rem;
+    font-weight:700;
+    border-radius:999px;
+    padding:8px 15px;
+    box-shadow:0 12px 26px rgba(8,12,32,.30);
+}
+.excl-item{
+    position:relative;
+    display:flex;
+    gap:11px;
+    align-items:flex-start;
+    background:rgba(255,255,255,.88);
+    border:1px solid rgba(230,180,74,.48);
+    border-radius:15px;
+    padding:14px 15px 14px 16px;
+    box-shadow:0 10px 26px rgba(120,92,20,.10);
+    transition:transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+}
+.excl-item:hover{
+    transform:translateY(-3px);
+    border-color:#e6b44a;
+    box-shadow:0 18px 36px rgba(120,92,20,.18);
+}
+.excl-item__num{
+    flex:0 0 auto;
+    font-family:Georgia,serif;
+    font-size:.86rem;
+    font-weight:700;
+    color:#c08a1f;
+    line-height:1.5;
+}
+.excl-item__icon{
+    flex:0 0 auto;
+    font-size:1.02rem;
+    color:#d99a2b;
+    line-height:1.35;
+}
+.excl-item__text{
+    font-size:.84rem;
+    line-height:1.5;
+    color:#3f4759;
+}
+</style>
+{% endblock %}
+
+<section class="position-relative" style="background:linear-gradient(120deg, #0c1230 0%, #141b34 55%, #1c2547 100%);padding:72px 0;overflow:hidden;">
+    <div class="aurora" style="width:520px;height:520px;background:radial-gradient(circle,rgba(240,191,77,.18),transparent 65%);top:-160px;left:-80px;"></div>
+    <div class="container position-relative" style="z-index:2;">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6">
+                <span class="eyebrow mb-3"><span class="d-inline-block me-2" style="width:30px;height:2px;border-radius:99px;background:#e6b44a;"></span>Our solutions</span>
+                <h1 class="fw-bold text-white mb-3">Fixed prices, clear timelines</h1>
+                <p class="mb-4" style="max-width:520px;color:rgba(255,255,255,.82);">
+                    Three practice areas. The final quote depends on your exact scope of work,
+                    which we confirm together in a free consultation.
+                </p>
+                <div class="row g-3 mb-4" style="max-width:520px;">
+                    <div class="col-sm-6">
+                        <div class="d-flex gap-2 align-items-start">
+                            <i class="bi bi-check-circle-fill" style="color:#ffd471;font-size:1.05rem;"></i>
+                            <span class="small fw-semibold text-white">Fixed price before we start</span>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="d-flex gap-2 align-items-start">
+                            <i class="bi bi-check-circle-fill" style="color:#ffd471;font-size:1.05rem;"></i>
+                            <span class="small fw-semibold text-white">You own the code and data</span>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="d-flex gap-2 align-items-start">
+                            <i class="bi bi-check-circle-fill" style="color:#ffd471;font-size:1.05rem;"></i>
+                            <span class="small fw-semibold text-white">Written weekly progress</span>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="d-flex gap-2 align-items-start">
+                            <i class="bi bi-check-circle-fill" style="color:#ffd471;font-size:1.05rem;"></i>
+                            <span class="small fw-semibold text-white">On-time delivery</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex flex-wrap gap-3">
+                    <a href="#care-plans" class="btn btn-champagne btn-sheen px-4">See care plans</a>
+                    <a href="{% url 'core:enquiry_new' %}" class="btn btn-outline-light px-4">Get a quote</a>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="position-relative reveal">
+                    <div style="border-radius:20px;overflow:hidden;border:1px solid rgba(230,180,74,.5);box-shadow:0 30px 70px rgba(0,0,0,.5);">
+                        <img src="{% static 'images/services-hero.jpg' %}" alt="Oweru team reviewing project data with a client"
+                             style="width:100%;display:block;aspect-ratio:4/3;object-fit:cover;object-position:center 30%;">
+                    </div>
+                    <div class="d-flex align-items-center gap-2"
+                         style="position:absolute;bottom:-20px;left:22px;background:#0c1230;color:#ffd471;border-radius:99px;padding:10px 18px;box-shadow:0 12px 28px rgba(0,0,0,.45);font-size:.78rem;font-weight:600;">
+                        <i class="bi bi-shield-check"></i> Built in Tanzania ÃÂ· Delivered worldwide
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="py-3" style="background:#fff;border-bottom:1px solid var(--line);">
+    <div class="container d-flex align-items-center gap-2 flex-wrap">
+        <span class="small text-muted me-1">Show prices in:</span>
+        <div class="btn-group btn-group-sm" role="group" aria-label="Display currency">
+            <a href="?currency=TZS" class="btn {% if display_currency == 'TZS' %}btn-primary{% else %}btn-outline-primary{% endif %}">TZS</a>
+            <a href="?currency=USD" class="btn {% if display_currency == 'USD' %}btn-primary{% else %}btn-outline-primary{% endif %}">USD</a>
+        </div>
+    </div>
+</div>
+
+{% for group in groups %}
+{% if group.slug == 'mobile-web' %}{% static 'images/grp-mobile-web.jpg' as grp_img %}
+{% elif group.slug == 'crm' %}{% static 'images/grp-crm.jpg' as grp_img %}
+{% elif group.slug == 'network' %}{% static 'images/grp-network.jpg' as grp_img %}
+{% else %}{% static 'images/grp-mobile-web.jpg' as grp_img %}{% endif %}
+<section id="group-{{ group.slug }}" class="svc-group py-5"
+         style="background-image:url('{{ grp_img }}');">
+    <div class="container svc-group__inner">
+        <div class="row align-items-end g-4 mb-5 reveal">
+            <div class="col-lg-8">
+                <span class="svc-head mb-3">
+                    {% if group.slug == 'mobile-web' %}<i class="bi bi-window-stack"></i>
+                    {% elif group.slug == 'crm' %}<i class="bi bi-people"></i>
+                    {% else %}<i class="bi bi-router"></i>{% endif %}
+                    Solution area {{ forloop.counter|stringformat:'02d' }}
+                </span>
+                <h2 class="fw-bold text-white mb-2">{{ group.label }}</h2>
+                <p class="mb-0" style="color:rgba(255,255,255,.76);max-width:640px;">
+                    {% if group.slug == 'mobile-web' %}Websites and applications your customers can actually use on a phone, built to load fast and stay easy to update.
+                    {% elif group.slug == 'crm' %}Systems that keep your leads, customers and follow-ups in one place, so nothing falls through the gaps.
+                    {% else %}Structured cabling, wireless coverage and server rooms designed and installed properly the first time.{% endif %}
+                </p>
+            </div>
+            <div class="col-lg-4 text-lg-end">
+                <span class="svc-count d-inline-block">{{ group.packages|length }}</span>
+                <span class="d-block small" style="color:rgba(255,255,255,.60);letter-spacing:.14em;text-transform:uppercase;">
+                    Package{% if group.packages|length > 1 %}s{% endif %} available
+                </span>
+            </div>
+        </div>
+        <div class="row g-4">
+            {% for pkg in group.packages %}
+            <div class="col-md-6 reveal">
+                <div class="pkg-float h-100">
+                    {% if 'website' in pkg.slug %}{% static 'images/hero-slide-web.jpg' as pkg_img %}
+                    {% elif 'application' in pkg.slug %}{% static 'images/hero-slide-mobile.jpg' as pkg_img %}
+                    {% elif 'crm' in pkg.slug %}{% static 'images/hero-slide-crm.jpg' as pkg_img %}
+                    {% elif 'network' in pkg.slug %}{% static 'images/hero-slide-network.jpg' as pkg_img %}
+                    {% else %}{% static 'images/hero-slide-ecommerce.jpg' as pkg_img %}{% endif %}
+                    <div class="pkg-float__photo">
+                        <img src="{{ pkg_img }}" alt="{{ pkg.name }}" loading="lazy">
+                        <span class="pkg-float__tag">
+                            {% if 'website' in pkg.slug %}<i class="bi bi-globe2"></i>Web
+                            {% elif 'application' in pkg.slug %}<i class="bi bi-phone"></i>Application
+                            {% elif 'crm' in pkg.slug %}<i class="bi bi-people"></i>CRM
+                            {% elif 'network' in pkg.slug %}<i class="bi bi-hdd-network"></i>Network
+                            {% else %}<i class="bi bi-bag"></i>E-commerce{% endif %}
+                        </span>
+                    </div>
+                    <div class="pkg-float__body">
+                        <h5 class="fw-bold">{{ pkg.name }}</h5>
+                        <p class="desc">{{ pkg.description }}</p>
+                        <ul class="list-unstyled">
+                            {% for item in pkg.included %}
+                            <li><i class="bi bi-check-circle-fill me-2" style="color:#e6b44a;"></i>{{ item }}</li>
+                            {% endfor %}
+                        </ul>
+                        <div class="pkg-float__foot">
+                            <div class="pkg-float__price">
+                                <div class="lab"><i class="bi bi-tag"></i>Starting price</div>
+                                <div class="val">
+                                    {% if display_currency == 'USD' and pkg.price_usd_min %}
+                                        USD {{ pkg.price_usd_min }}
+                                        {% if pkg.price_usd_max %} - {{ pkg.price_usd_max }}{% endif %}
+                                    {% elif pkg.price_tzs_min %}
+                                        TZS {{ pkg.price_tzs_min|floatformat:0|intcomma }}
+                                        {% if pkg.price_tzs_max %} - {{ pkg.price_tzs_max|floatformat:0|intcomma }}{% endif %}
+                                    {% elif pkg.price_usd_min %}
+                                        USD {{ pkg.price_usd_min }}
+                                        {% if pkg.price_usd_max %} - {{ pkg.price_usd_max }}{% endif %}
+                                    {% else %}
+                                        Custom quote
+                                    {% endif %}
+                                </div>
+                                {% if pkg.timeline %}
+                                <div class="sub"><i class="bi bi-clock me-1"></i>{{ pkg.timeline }}</div>
+                                {% endif %}
+                            </div>
+                            <a href="{% url 'core:package_detail' pkg.slug %}" class="pkg-float__go">
+                                Details <i class="bi bi-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endfor %}
+
+<!-- Care plans -->
+<section id="care-plans" class="position-relative" style="background:url('{% static "images/care-bg.jpg" %}') center 35% / cover no-repeat,linear-gradient(180deg, rgba(8,12,32,.93) 0%, rgba(10,15,38,.88) 100%);padding:72px 0;">
+    <div class="container position-relative" style="z-index:2;">
+        <div class="text-center mb-4 reveal">
+            <span class="eyebrow mb-2 justify-content-center"><span class="d-inline-block me-2" style="width:30px;height:2px;border-radius:99px;background:#e6b44a;"></span>Care plans</span>
+            <h2 class="fw-bold text-white mb-2">Monthly care plans</h2>
+            <p class="text-white-50 mb-0">One-off projects end. Good companies don't. Keep your systems healthy.</p>
+        </div>
+        <div class="row g-4">
+            {% for plan in care_plans %}
+            <div class="col-md-4 reveal">
+                <div class="card-lift h-100 overflow-hidden">
+                    {% if forloop.counter == 1 %}{% static 'images/care-basic.jpg' as plan_img %}
+                    {% elif forloop.counter == 2 %}{% static 'images/care-standard.jpg' as plan_img %}
+                    {% else %}{% static 'images/care-priority.jpg' as plan_img %}{% endif %}
+                    <div class="pkg-img-wrap">
+                        <img src="{{ plan_img }}" alt="{{ plan.name }} care plan" loading="lazy">
+                    </div>
+                    <div class="card-body text-center p-4">
+                        <span class="icon-chip mx-auto mb-3"><i class="bi bi-shield-plus"></i></span>
+                        <h5 class="fw-bold">{{ plan.name }}</h5>
+                        <p class="text-muted small">{{ plan.description }}</p>
+                        <ul class="list-unstyled text-start my-4">
+                            {% for item in plan.included %}
+                            <li class="py-1 small"><i class="bi bi-check-circle-fill me-2" style="color:#e6b44a;"></i>{{ item }}</li>
+                            {% endfor %}
+                        </ul>
+                        {% if display_currency == 'USD' %}
+                            <div class="fw-bold mb-1" style="font-size:1.4rem;">USD {{ plan.monthly_usd }}/mo</div>
+                            <div class="small text-muted mb-3">TZS {{ plan.monthly_tzs|floatformat:0|intcomma }}/mo for local clients</div>
+                        {% else %}
+                            <div class="fw-bold mb-1" style="font-size:1.4rem;">TZS {{ plan.monthly_tzs|floatformat:0|intcomma }}/mo</div>
+                            <div class="small text-muted mb-3">USD {{ plan.monthly_usd }}/mo for international clients</div>
+                        {% endif %}
+                        <a href="{% url 'core:enquiry_new' %}" class="btn btn-outline-primary w-100">Enquire Now</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Exclusions -->
+<section class="position-relative" style="padding:72px 0;overflow:hidden;background:linear-gradient(140deg,#fffdf8 0%,#fdf6e6 55%,#fbf1d8 100%);">
+    <div class="container position-relative" style="z-index:2;">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-5">
+                <div class="reveal">
+                    <span class="excl-chip mb-3">
+                        <i class="bi bi-check2-square"></i>What's excluded
+                    </span>
+                    <h2 class="fw-bold mb-3" style="color:#0c1230;">Clear about what is included</h2>
+                    <p class="mb-4" style="color:#6b7280;">
+                        No vague scope, no surprise invoices. We list everything that is
+                        <strong>not</strong> part of your quote so there are no arguments later.
+                    </p>
+                    <div class="excl-photo">
+                        <img src="{% static 'images/excl-bg.jpg' %}" alt="Agreement being signed after a project review" loading="lazy">
+                        <span class="excl-photo__badge"><i class="bi bi-patch-check"></i>Fixed scope, agreed up front</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-7">
+                <div class="row g-3">
+                    {% for exclusion in exclusions %}
+                    <div class="col-md-6 reveal">
+                        <div class="excl-item h-100">
+                            <span class="excl-item__num">{{ forloop.counter|stringformat:'02d' }}</span>
+                            <i class="bi bi-dash-circle excl-item__icon"></i>
+                            <span class="excl-item__text">{{ exclusion.description }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="mt-4 reveal">
+                    <a href="{% url 'core:enquiry_new' %}" class="btn btn-champagne btn-sheen btn-lg px-5">Get a Free Quote</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
 {% endblock %}

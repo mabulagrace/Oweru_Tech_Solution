@@ -1,120 +1,539 @@
 {% extends 'base.html' %}
 {% load static %}
 
+{% block extra_css %}
+<style>
+/* ============ Hero ============ */
+.ab-hero {
+    position: relative; overflow: hidden;
+    padding: 78px 0 104px;
+    background:
+        radial-gradient(900px 480px at 88% -12%, rgba(230,180,74,.16), transparent 62%),
+        radial-gradient(760px 460px at -12% 112%, rgba(56,86,214,.18), transparent 66%),
+        linear-gradient(102deg, rgba(8,12,32,.97) 0%, rgba(10,15,40,.94) 45%, rgba(15,22,56,.84) 72%, rgba(22,31,72,.68) 100%),
+        url("{% static 'images/hero-team.jpg' %}") center 35% / cover no-repeat,
+        #0a0f28;
+}
+.ab-hero::after {
+    content: ""; position: absolute; right: -140px; top: -140px;
+    width: 420px; height: 420px; border-radius: 50%;
+    border: 1px solid rgba(230,180,74,.18); pointer-events: none;
+}
+.ab-hero-grid { display: grid; grid-template-columns: 1.05fr .95fr; gap: 52px; align-items: center; }
+.ab-eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: .72rem; font-weight: 700; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--champagne);
+}
+.ab-eyebrow::before { content: ""; display: inline-block; width: 30px; height: 2px; border-radius: 99px; background: #e6b44a; }
+body:not(.admin-body) .ab-hero h1 { font-size: 2.3rem; font-weight: 800; color: #fff; line-height: 1.16; letter-spacing: -.4px; margin: 16px 0 18px; }
+.ab-hero h1 .gold { color: var(--champagne); }
+body:not(.admin-body) .ab-hero .lead { color: rgba(255,255,255,.78); font-size: .98rem; line-height: 1.72; max-width: 560px; margin: 0; }
+.ab-chips { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
+.ab-chips span {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-size: .75rem; font-weight: 600; color: #ffe9bd;
+    background: rgba(230,180,74,.10); border: 1px solid rgba(230,180,74,.34);
+    padding: 7px 13px; border-radius: 99px;
+}
+.ab-hero .hero-btns { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+
+.ab-hero-media { position: relative; padding-top: 16px; padding-right: 16px; }
+.ab-hero-media::before {
+    content: ""; position: absolute; top: 0; right: 0;
+    width: 68%; height: 66%; border: 2px solid rgba(230,180,74,.55);
+    border-radius: 22px; pointer-events: none;
+}
+.ab-hero-media .shot {
+    position: relative; border-radius: 20px; overflow: hidden;
+    box-shadow: 0 44px 84px -44px rgba(0,0,0,.85);
+}
+.ab-hero-media .shot img { width: 100%; height: 420px; object-fit: cover; display: block; }
+.ab-hero-card {
+    position: absolute; left: -16px; bottom: 24px;
+    background: rgba(255,255,255,.97); border: 1px solid rgba(230,180,74,.55);
+    border-radius: 14px; padding: 13px 18px;
+    box-shadow: 0 22px 46px -22px rgba(8,12,32,.75);
+}
+.ab-hero-card b { display: block; font-size: 1.45rem; font-weight: 800; color: var(--ink); line-height: 1.1; }
+.ab-hero-card span { font-size: .68rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; }
+
+/* ============ Section heads ============ */
+.ab-sec-head { text-align: center; max-width: 700px; margin: 0 auto 34px; }
+.ab-sec-head .ab-eyebrow { justify-content: center; }
+body:not(.admin-body) .ab-sec-head h2 { font-size: 1.55rem; font-weight: 800; color: var(--ink); margin: 12px 0 10px; letter-spacing: -.3px; }
+.ab-sec-head p { font-size: .92rem; color: #565f7d; line-height: 1.65; margin: 0; }
+body:not(.admin-body) .ab-sec-head.on-dark h2 { color: #fff; }
+body:not(.admin-body) .ab-sec-head.on-dark p { color: rgba(255,255,255,.75); }
+
+/* ============ Who we are (dark blue) ============ */
+.ab-who {
+    padding: 0 0 72px;
+    background:
+        linear-gradient(115deg, rgba(8,12,32,.96) 0%, rgba(9,14,36,.94) 35%, rgba(12,18,46,.9) 55%, rgba(14,21,54,.85) 63%, rgba(18,27,68,.62) 80%, rgba(22,32,80,.46) 100%),
+        url("{% static 'images/about-approach.jpg' %}") center 60% / cover no-repeat,
+        #0a0f28;
+}
+body:not(.admin-body) .ab-who .who-checks li small { color: rgba(255,255,255,.68); }
+.ab-who .ab-values { border-top-color: rgba(255,255,255,.16); }
+.ab-who .ab-values-head .btn-dark {
+    background: var(--champagne); border-color: var(--champagne); color: #221d10;
+}
+.ab-who .ab-values-head .btn-dark:hover {
+    background: #d9a63f; border-color: #d9a63f; color: #221d10;
+}
+.ab-stats {
+    position: relative; z-index: 6; margin: -60px auto 0;
+    width: min(1040px, 94%);
+    background: linear-gradient(135deg, #ffffff, #fdf8ec);
+    border: 1px solid rgba(230,180,74,.5); border-radius: 18px;
+    box-shadow: 0 34px 66px -34px rgba(8,12,32,.55);
+    display: grid; grid-template-columns: repeat(4, 1fr); overflow: hidden;
+}
+.ab-stats .cell { padding: 22px 12px; text-align: center; border-right: 1px solid var(--line); }
+.ab-stats .cell:last-child { border-right: 0; }
+.ab-stats .stat-value { font-size: 1.7rem; font-weight: 800; color: var(--ink); line-height: 1; }
+.ab-stats .stat-label { margin-top: 8px; font-size: .68rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+
+.ab-who .ab-sec-head { padding-top: 56px; }
+.who-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 46px; align-items: center; }
+body:not(.admin-body) .who-text h3 { font-size: 1.3rem; font-weight: 800; color: #fff; margin: 0 0 12px; letter-spacing: -.2px; }
+.who-text > p { font-size: .9rem; line-height: 1.7; color: rgba(255,255,255,.76); margin: 0 0 20px; }
+
+.who-bento { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+.who-bento-item {
+    background: rgba(255,255,255,.048); border: 1px solid rgba(255,255,255,.12);
+    border-radius: 16px; overflow: hidden; display: flex; flex-direction: column;
+    backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px);
+    box-shadow: 0 20px 40px -30px rgba(8,12,32,.85);
+    transition: transform .25s ease, border-color .25s ease, background .25s ease;
+}
+.who-bento-item:hover { transform: translateY(-4px); border-color: rgba(230,180,74,.7); background: rgba(255,255,255,.07); }
+.who-bento-media { position: relative; height: 110px; }
+.who-bento-media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.who-bento-num {
+    position: absolute; left: 10px; bottom: -12px;
+    width: 28px; height: 28px; border-radius: 9px;
+    display: grid; place-items: center; font-size: .76rem; font-weight: 800; color: #221d10;
+    background: linear-gradient(135deg, var(--champagne-2), var(--champagne));
+    box-shadow: 0 8px 16px -8px rgba(230,180,74,.8);
+}
+.who-bento-body { padding: 20px 14px 14px; }
+body:not(.admin-body) .who-bento-body h5 { font-size: .95rem; font-weight: 700; color: #fff; margin: 0 0 6px; }
+.who-bento-body p { font-size: .8rem; line-height: 1.56; color: rgba(255,255,255,.72); margin: 0; }
+.who-tag {
+    display: inline-flex; align-items: center; gap: 9px;
+    background: linear-gradient(135deg, var(--champagne-2), var(--champagne)); color: #221d10;
+    border-radius: 99px; padding: 9px 16px; font-size: .76rem; font-weight: 700;
+    box-shadow: 0 14px 30px -16px rgba(230,180,74,.7);
+}
+.who-collage { position: relative; }
+.who-collage .big { border-radius: 20px; overflow: hidden; box-shadow: 0 34px 64px -34px rgba(20,27,52,.6); border: 1px solid rgba(230,180,74,.35); }
+    .who-collage .big img { width: 100%; height: 420px; object-fit: cover; display: block; }
+.who-collage .float {
+    position: absolute; right: -14px; bottom: -22px;
+    background: linear-gradient(135deg, var(--champagne-2), var(--champagne));
+    color: #221d10; border-radius: 14px; padding: 14px 18px; max-width: 230px;
+    box-shadow: 0 22px 44px -22px rgba(230,180,74,.8);
+}
+.who-collage .float b { display: block; font-size: .92rem; font-weight: 800; }
+.who-collage .float span { font-size: .76rem; opacity: .82; }
+
+/* ============ Values ============ */
+.ab-values { margin-top: 58px; padding-top: 42px; border-top: 1px solid var(--line); }
+.ab-values-head { display: flex; align-items: end; justify-content: space-between; gap: 18px; margin-bottom: 22px; flex-wrap: wrap; }
+body:not(.admin-body) .ab-values-head h3 { font-size: 1.2rem; font-weight: 800; color: #fff; margin: 8px 0 0; }
+.val-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.val-card {
+    background: #fff; border: 1px solid var(--line); border-radius: 16px;
+    padding: 22px 20px; box-shadow: 0 16px 32px -28px rgba(20,27,52,.5);
+    transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease;
+}
+.val-card:hover { transform: translateY(-5px); border-color: rgba(230,180,74,.8); box-shadow: 0 26px 48px -28px rgba(20,27,52,.55); }
+.val-ico {
+    width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center;
+    background: linear-gradient(135deg, var(--champagne-2), var(--champagne));
+    color: #221d10; font-size: 1.15rem; margin-bottom: 14px;
+}
+body:not(.admin-body) .val-card h5 { font-size: .98rem; font-weight: 700; color: var(--ink); margin: 0 0 7px; }
+.val-card p { font-size: .82rem; line-height: 1.58; color: #565f7d; margin: 0; }
+
+/* ============ Approach (dark) ============ */
+.ab-approach {
+    position: relative; overflow: hidden; padding: 74px 0;
+    background:
+        radial-gradient(720px 380px at 12% 0%, rgba(230,180,74,.16), transparent 60%),
+        linear-gradient(180deg, rgba(8,12,32,.96) 0%, rgba(10,14,38,.94) 100%),
+        url("{% static 'images/about-team.jpg' %}") center 30% / cover no-repeat,
+        #0a0f28;
+}
+.step-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; align-items: center; max-width: 960px; margin: 0 auto; }
+.step-card {
+    background: rgba(8,12,32,.66); border: 1px solid rgba(255,255,255,.16);
+    border-radius: 16px; overflow: hidden; display: flex; flex-direction: column;
+    backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
+    transition: transform .25s ease, border-color .25s ease, background .25s ease;
+}
+.step-card:hover { transform: translateY(-5px); border-color: rgba(230,180,74,.8); background: rgba(8,12,32,.78); }
+.step-card .thumb { position: relative; }
+.step-card .thumb img { width: 100%; height: 140px; object-fit: cover; display: block; }
+.step-card .num {
+    position: absolute; left: 12px; bottom: -14px;
+    width: 34px; height: 34px; border-radius: 10px;
+    display: grid; place-items: center; font-size: .82rem; font-weight: 800; color: #221d10;
+    background: linear-gradient(135deg, var(--champagne-2), var(--champagne));
+    box-shadow: 0 10px 20px -8px rgba(230,180,74,.75);
+}
+.step-card .body { padding: 24px 16px 18px; }
+body:not(.admin-body) .step-card h5 { font-size: .95rem; font-weight: 700; color: #fff; margin: 0 0 7px; }
+.step-card p { font-size: .8rem; line-height: 1.58; color: rgba(255,255,255,.72); margin: 0; }
+.ab-approach .approach-cta { text-align: center; margin-top: 34px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+/* ============ Why choose us ============ */
+.ab-why { position: relative; overflow: hidden; padding: 74px 0; background-size: cover; background-position: center; }
+.ab-why .bg-shade { position: absolute; inset: 0; z-index: 1; }
+.ab-why .container.z-2 { position: relative; z-index: 2; }
+.ab-why-head { display: flex; align-items: end; justify-content: space-between; gap: 20px; flex-wrap: wrap; margin-bottom: 30px; }
+body:not(.admin-body) .ab-why-head h2 { font-size: 1.5rem; font-weight: 800; color: var(--ink); margin: 12px 0 0; letter-spacing: -.3px; }
+.ab-why-head .pill {
+    display: inline-block; background: var(--ink); color: #ffd471; border-radius: 99px;
+    padding: 8px 15px; font-size: .78rem; font-weight: 600;
+}
+.ab-why-head .pill i { color: var(--champagne); }
+.ab-card-media {
+    background: rgba(8,12,32,.68); border: 1px solid rgba(255,255,255,.14); border-radius: 16px; overflow: hidden; height: 100%;
+    display: flex; flex-direction: column; backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px);
+    box-shadow: 0 16px 34px -26px rgba(8,12,32,.9);
+}
+.ab-card-media:hover { transform: translateY(-5px); border-color: rgba(230,180,74,.85); box-shadow: 0 26px 50px -26px rgba(20,27,52,.55); }
+.ab-media { position: relative; }
+.ab-media img { width: 100%; display: block; aspect-ratio: 16/8; object-fit: cover; }
+.ab-media .ab-num {
+    position: absolute; bottom: 10px; left: 10px;
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 30px; height: 30px; border-radius: 10px;
+    font-weight: 800; font-size: .8rem; color: #221d10;
+    background: linear-gradient(135deg, var(--champagne-2), var(--champagne));
+    box-shadow: 0 8px 18px -8px rgba(230,180,74,.7);
+}
+.ab-body { padding: 15px 17px 17px; }
+body:not(.admin-body) .ab-body h5 { font-weight: 700; color: #fff; margin: 0 0 6px; font-size: 1rem; }
+.ab-body p { font-size: .82rem; line-height: 1.58; color: rgba(255,255,255,.78); margin: 0; }
+
+/* ============ Trust (dark photo) ============ */
+.bg-block { position: relative; background-position: center; background-size: cover; }
+.bg-shade { position: absolute; inset: 0; }
+.z-2 { position: relative; z-index: 2; }
+.ab-glass {
+    height: 100%; display: flex; flex-direction: column;
+    padding: 20px; border-radius: 16px;
+    background: rgba(12,18,48,.86);
+    border: 1px solid rgba(230,180,74,.3);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    transition: transform .25s ease, border-color .25s ease;
+}
+.ab-glass:hover { transform: translateY(-5px); border-color: rgba(230,180,74,.75); }
+.ab-glass .cr-icon {
+    width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center;
+    background: linear-gradient(135deg, var(--champagne-2), var(--champagne));
+    color: #221d10; font-size: 1.1rem; margin-bottom: 14px;
+}
+body:not(.admin-body) .ab-glass h5 { font-size: .96rem; font-weight: 700; color: #fff; margin: 0 0 7px; }
+.ab-glass p { font-size: .82rem; line-height: 1.58; color: rgba(255,255,255,.72); margin: 0; }
+
+/* ============ CTA band ============ */
+.ab-cta-band { background: var(--cream); padding: 62px 0; }
+.ab-cta {
+    background: linear-gradient(120deg, #ffd471, #e6b44a 58%, #c9993a);
+    border-radius: 20px; padding: 34px 38px;
+    display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap;
+    box-shadow: 0 30px 60px -34px rgba(201,153,58,.9);
+}
+body:not(.admin-body) .ab-cta h3 { font-size: 1.35rem; font-weight: 800; color: #221d10; margin: 0 0 6px; letter-spacing: -.3px; }
+.ab-cta p { font-size: .9rem; color: rgba(34,29,16,.78); margin: 0; }
+.ab-cta .cta-btns { display: flex; gap: 12px; flex-wrap: wrap; }
+
+/* ============ Responsive ============ */
+@media (max-width: 991.98px) {
+    .ab-hero-grid { grid-template-columns: 1.1fr .9fr; gap: 24px; }
+    body:not(.admin-body) .ab-hero h1 { font-size: 1.7rem; }
+    body:not(.admin-body) .ab-hero .lead { font-size: .92rem; }
+    .ab-hero-media .shot img { height: 330px; }
+    .ab-hero-card { left: 10px; }
+    .who-grid { grid-template-columns: 1.1fr .9fr; gap: 26px; }
+    .who-collage .float { right: 12px; bottom: -18px; }
+    .val-grid { grid-template-columns: repeat(2, 1fr); }
+    .ab-who .ab-sec-head { padding-top: 48px; }
+}
+@media (max-width: 767.98px) {
+    .ab-hero { padding: 54px 0 84px; }
+    .ab-hero-grid { grid-template-columns: 1.2fr .8fr; gap: 14px; }
+    body:not(.admin-body) .ab-hero h1 { font-size: 1.2rem; margin: 10px 0 12px; }
+    body:not(.admin-body) .ab-hero .lead { font-size: .78rem; line-height: 1.6; }
+    .ab-chips { gap: 6px; margin-top: 14px; }
+    .ab-chips span { font-size: .66rem; padding: 5px 9px; gap: 5px; }
+    .ab-hero .hero-btns { margin-top: 18px; gap: 8px; }
+    .ab-hero .hero-btns .btn { font-size: .74rem; padding: .4rem .8rem; }
+    .ab-hero-media { padding-top: 0; padding-right: 0; }
+    .ab-hero-media::before { display: none; }
+    .ab-hero-media .shot img { height: 210px; }
+    .ab-hero-media .shot { border-radius: 14px; }
+    .ab-hero-card { left: 6px; bottom: 8px; padding: 8px 12px; }
+    .ab-hero-card b { font-size: 1.05rem; }
+    .ab-hero-card span { font-size: .58rem; }
+    .ab-stats { margin-top: -44px; grid-template-columns: 1fr 1fr; }
+    .ab-stats .cell:nth-child(2n) { border-right: 0; }
+    .ab-stats .cell:nth-child(-n+2) { border-bottom: 1px solid var(--line); }
+    body:not(.admin-body) .ab-sec-head h2, body:not(.admin-body) .ab-why-head h2 { font-size: 1.3rem; }
+    .who-grid { grid-template-columns: 1.2fr .8fr; gap: 14px; align-items: center; }
+    body:not(.admin-body) .who-text h3 { font-size: 1.05rem; }
+    .who-text > p { font-size: .8rem; line-height: 1.6; margin-bottom: 14px; }
+    .who-checks { gap: 9px; margin-bottom: 18px; }
+    .who-checks li { font-size: .78rem; gap: 8px; }
+    .who-checks li i { width: 19px; height: 19px; font-size: .62rem; border-radius: 6px; }
+    .who-checks li small { font-size: .72rem; }
+    .who-tag { font-size: .68rem; padding: 7px 12px; gap: 7px; }
+    .who-collage .big img { height: 340px; }
+    .who-collage .float { position: static; margin-top: 14px; max-width: none; box-shadow: none; padding: 11px 14px; }
+    .who-collage .float b { font-size: .82rem; }
+    .who-collage .float span { font-size: .7rem; }
+    .ab-who {
+        background:
+            linear-gradient(rgba(8,12,32,.93), rgba(10,15,40,.88)),
+            url("{% static 'images/about-approach.jpg' %}") center 60% / cover no-repeat,
+            #0a0f28;
+    }
+    .ab-approach {
+        background:
+            linear-gradient(rgba(8,12,32,.94), rgba(10,14,38,.9)),
+            url("{% static 'images/about-team.jpg' %}") center 25% / cover no-repeat,
+            #0a0f28;
+    }
+    .step-grid { grid-template-columns: 1fr; gap: 16px; }
+    .ab-cta { padding: 26px 22px; text-align: center; justify-content: center; }
+    .ab-cta .cta-btns { justify-content: center; }
+}
+</style>
+{% endblock %}
+
 {% block title %}About Us - Oweru Tech Solutions{% endblock %}
-{% block meta_description %}Oweru is a Tanzanian software house building mobile apps, web platforms, CRM systems and networks for growing businesses - fixed prices and on-time delivery.{% endblock %}
+{% block meta_description %}Oweru Tech Solutions is a software house building web platforms, mobile apps, CRM systems and networks for growing businesses worldwide - fixed prices, clear ownership and on-time delivery.{% endblock %}
 
 {% block content %}
 
-<section class="hero" style="padding:96px 0;background:linear-gradient(90deg, rgba(8,12,32,.86) 0%, rgba(20,27,52,.58) 42%, rgba(20,27,52,.14) 100%),url('{% static "images/hero-team.jpg" %}') center 40% cover no-repeat;">
-    <div class="aurora" style="width:500px;height:500px;background:radial-gradient(circle,rgba(240,191,77,.18),transparent 65%);top:-160px;right:-80px;"></div>
-    <div class="container position-relative" style="z-index:2;">
-        <div class="row align-items-center">
-            <div class="col-lg-8">
-                <span class="eyebrow mb-3"><span class="d-inline-block me-2" style="width:30px;height:2px;border-radius:99px;background:#e6b44a;"></span>About us</span>
-                <h1 class="fw-bold text-white mb-3">We build what small businesses actually need</h1>
-                <p class="text-white-50 mb-0" style="max-width:600px;">
-                    Oweru is a Tanzanian software house. We build the systems your business runs
-                    on — a fixed price before we start, and delivery on the day we promise.
+<!-- ============ HERO ============ -->
+<section class="ab-hero">
+    <div class="container">
+        <div class="ab-hero-grid">
+            <div class="reveal">
+                <span class="ab-eyebrow">About Oweru Tech</span>
+                <h1>A grown-up software house for <span class="gold">growing businesses</span></h1>
+                <p class="lead">
+                    Oweru Tech Solutions builds the software your business runs on — web platforms,
+                    mobile apps, CRM systems and networks. We work in Tanzania and for clients
+                    anywhere in the world: a fixed price before we start, and delivery on the day
+                    we promise.
                 </p>
+                <div class="ab-chips">
+                    <span><i class="bi bi-check-circle-fill"></i> Fixed price</span>
+                    <span><i class="bi bi-check-circle-fill"></i> On-time delivery</span>
+                    <span><i class="bi bi-check-circle-fill"></i> You own the code</span>
+                </div>
+                <div class="hero-btns">
+                    <a href="{% url 'core:enquiry_new' %}" class="btn btn-champagne btn-sheen px-4">Get a free quote</a>
+                    <a href="{% url 'core:services' %}" class="btn btn-outline-light px-4">Explore services</a>
+                </div>
+            </div>
+            <div class="ab-hero-media reveal">
+                <div class="shot">
+                    <img src="{% static 'images/about-team.jpg' %}" alt="The Oweru Tech Solutions team at work">
+                </div>
+                <div class="ab-hero-card">
+                    <b>50+</b>
+                    <span>Projects delivered</span>
+                </div>
             </div>
         </div>
     </div>
 </section>
 
-<section class="py-5" style="background:var(--cream);">
+<!-- ============ WHO WE ARE ============ -->
+<section class="ab-who">
     <div class="container">
-        <div class="row g-4">
-            <div class="col-md-4 reveal">
-                <div class="card-lift h-100">
-                    <div class="card-body p-4">
-                        <span class="icon-chip mb-3"><i class="bi bi-bullseye"></i></span>
-                        <h5 class="fw-bold">Our purpose</h5>
-                        <p class="text-muted small mb-0">
-                            Most Tanzanian businesses still run on manual, outdated ways of working.
-                            We build reliable systems that remove wasted time and win back lost
-                            revenue — at prices local businesses can afford.
-                        </p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4 reveal">
-                <div class="card-lift h-100">
-                    <div class="card-body p-4">
-                        <span class="icon-chip mb-3"><i class="bi bi-people"></i></span>
-                        <h5 class="fw-bold">Who we serve</h5>
-                        <p class="text-muted small mb-0">
-                            Restaurants, retail shops, schools, clinics, transport firms and growing
-                            service businesses that want their sales and records handled properly.
-                        </p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4 reveal">
-                <div class="card-lift h-100">
-                    <div class="card-body p-4">
-                        <span class="icon-chip mb-3"><i class="bi bi-clipboard-check"></i></span>
-                        <h5 class="fw-bold">How we work</h5>
-                        <p class="text-muted small mb-0">
-                            Fixed-price proposals, written progress every week and milestone
-                            sign-off. You always know where your project stands.
-                        </p>
-                    </div>
-                </div>
-            </div>
+        <div class="ab-stats">
+            <div class="cell"><div class="stat-value" data-count="50" data-suffix="+">0+</div><div class="stat-label">Projects delivered</div></div>
+            <div class="cell"><div class="stat-value" data-count="22" data-suffix="+">0+</div><div class="stat-label">Local businesses served</div></div>
+            <div class="cell"><div class="stat-value" data-count="99" data-suffix="%">0%</div><div class="stat-label">On-time delivery</div></div>
+            <div class="cell"><div class="stat-value">3+</div><div class="stat-label">Years of experience</div></div>
         </div>
-        <div class="text-center mt-5 reveal">
-            <a href="{% url 'core:services' %}" class="btn btn-champagne btn-sheen btn-lg px-5">View Our Packages</a>
+
+        <div class="ab-sec-head on-dark reveal">
+            <span class="ab-eyebrow">Who we are</span>
+            <h2>Software built to help your business grow stronger</h2>
+            <p>
+                Oweru Tech Solutions is a professional team of engineers, designers and problem-solvers delivering scalable,
+                secure and business-ready software. We turn your ideas into reliable tools that save time, cut costs and drive results.
+            </p>
+        </div>
+
+        <div class="who-grid">
+            <div class="who-text reveal">
+                <h3>Technology that delivers real business value</h3>
+                <p>
+                    Whether you're based in Dar es Salaam, Nairobi, Lagos, London or Houston, we partner with ambitious businesses to build software that solves real problems.
+                    At Oweru Tech Solutions, we combine deep technical expertise with a client-first mindset to deliver solutions that are practical, secure and built to scale.
+                </p>
+                <p class="mt-2">
+                    We believe trust is earned through transparency. From first consultation to final handover, we keep you informed, meet our deadlines and ensure you fully own everything we build.
+                </p>
+                <span class="who-tag mt-3"><i class="bi bi-globe2"></i> Based in Tanzania &middot; Working worldwide</span>
+            </div>
+            <div class="who-collage reveal">
+                <div class="big">
+                    <img src="{% static 'images/hero-team.jpg' %}" alt="Professional tech team working together on computers" loading="lazy">
+                </div>
+                <div class="float">
+                    <b>Professional team &middot; Proven results</b>
+                    <span>Technology you can trust. Support you can count on.</span>
+                </div>
+            </div>
         </div>
     </div>
 </section>
 
-<section class="py-5" style="background:#fff;">
+<!-- ============ APPROACH ============ -->
+<section class="ab-approach">
     <div class="container">
-        <div class="row mb-5 reveal">
-            <div class="col-lg-6">
-                <span class="eyebrow mb-2"><span class="d-inline-block me-2" style="width:30px;height:2px;border-radius:99px;background:#e6b44a;"></span>Meet the team</span>
-                <h2 class="fw-bold mb-2">The people behind your project</h2>
-                <p class="text-muted mb-0">A small, senior team. You work with the same people from quote to delivery.</p>
+        <div class="ab-sec-head on-dark reveal">
+            <span class="ab-eyebrow">Our approach</span>
+            <h2>Four steps, zero guesswork</h2>
+            <p>A simple, proven way of working — for a client next door or twelve time zones away.</p>
+        </div>
+        <div class="step-grid">
+            <div class="step-card reveal">
+                <div class="thumb"><img src="{% static 'images/ap-1-listen.jpg' %}" alt="Listening session with a client" loading="lazy"><span class="num">01</span></div>
+                <div class="body"><h5>Listen &amp; scope</h5><p>We start with your business, not the technology — your customers, workflow and the problem you want solved.</p></div>
+            </div>
+            <div class="step-card reveal">
+                <div class="thumb"><img src="{% static 'images/ap-2-proposal.jpg' %}" alt="Writing a fixed-price proposal" loading="lazy"><span class="num">02</span></div>
+                <div class="body"><h5>Proposal &amp; fixed price</h5><p>Within days you get a written scope, a clear timeline and a fixed price. No hourly surprises.</p></div>
+            </div>
+            <div class="step-card reveal">
+                <div class="thumb"><img src="{% static 'images/ap-3-build.jpg' %}" alt="Engineers building the software" loading="lazy"><span class="num">03</span></div>
+                <div class="body"><h5>Build &amp; weekly updates</h5><p>We build in phases with a short written update each week and milestone sign-off.</p></div>
+            </div>
+            <div class="step-card reveal">
+                <div class="thumb"><img src="{% static 'images/ap-4-launch.jpg' %}" alt="Launching the finished system" loading="lazy"><span class="num">04</span></div>
+                <div class="body"><h5>Launch &amp; handover</h5><p>We test, deploy and train your team, hand over clear code — and show you how to own it.</p></div>
             </div>
         </div>
-        <div class="row g-4">
-            {% for member in team %}
-            <div class="col-md-6 col-lg-3 reveal">
-                <div class="card-lift h-100 text-center">
-                    <div class="card-body p-4">
-                        <div class="mx-auto mb-3 d-flex align-items-center justify-content-center fw-bold"
-                             style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#1c2547,#26315e);color:#ffd471;font-size:1.2rem;">
-                            {{ member.initials }}
-                        </div>
-                        <h5 class="fw-bold mb-0">{{ member.name }}</h5>
-                        <div class="small fw-semibold mb-2" style="color:#c08a1f;">{{ member.role }}</div>
-                        <p class="text-muted small mb-0">{{ member.bio }}</p>
+        <div class="approach-cta reveal">
+            <a href="{% url 'core:enquiry_new' %}" class="btn btn-champagne btn-sheen px-4">Start a project</a>
+            <a href="{% url 'core:services' %}" class="btn btn-outline-light px-4">See our services</a>
+        </div>
+    </div>
+</section>
+
+<!-- ============ WHY CHOOSE US ============ -->
+<section class="ab-why" style="background-image:url('{% static "images/about-team.jpg" %}');">
+    <div class="bg-shade" style="background:linear-gradient(120deg, rgba(8,12,32,.94) 0%, rgba(20,27,52,.86) 50%, rgba(28,37,71,.8) 100%);"></div>
+    <div class="container z-2" style="padding-top:70px;padding-bottom:70px;">
+        <div class="ab-sec-head on-dark reveal">
+            <span class="ab-eyebrow">Why choose us</span>
+            <h2>A software house you can hold us to</h2>
+            <p>
+                Oweru Tech Solutions is an independent engineering company registered in Tanzania.
+                We measure ourselves on whether it works in your business — not on how impressive
+                it looks in a demo.
+            </p>
+        </div>
+        <div class="row g-3">
+            <div class="col-md-4 reveal">
+                <div class="ab-card-media">
+                    <div class="ab-media">
+                        <img src="{% static 'images/why-purpose.jpg' %}" alt="Business partners sealing an agreement" loading="lazy">
+                        <span class="ab-num">01</span>
+                    </div>
+                    <div class="ab-body">
+                        <h5>Our purpose</h5>
+                        <p>Manual, outdated ways of working cost you time and revenue. We build reliable systems that fix both — at prices local businesses can afford.</p>
                     </div>
                 </div>
             </div>
-            {% endfor %}
-        </div>
-    </div>
-</section>
-
-<section class="py-0">
-    <div class="position-relative reveal" style="background:linear-gradient(120deg, rgba(10,15,38,.88) 0%, rgba(20,27,52,.66) 55%, rgba(20,27,52,.20) 100%),url('{% static "images/hero-dashboard.jpg" %}') center 45% cover no-repeat; padding:88px 0;">
-        <div class="container position-relative" style="z-index:2;">
-            <div class="row justify-content-center text-center">
-                <div class="col-lg-8">
-                    <span class="eyebrow mb-2 justify-content-center"><i class="bi bi-cup-hot me-1"></i>Our promise</span>
-                    <h2 class="fw-bold text-white mb-3">No hidden fees. No missed deadlines.</h2>
-                    <p class="text-white-50 mb-4" style="max-width:620px;margin:0 auto;">
-                        Every Oweru project comes with a fixed price agreed before we start, a written
-                        progress update every week, and delivery on the day we promise. That is how we
-                        built the projects we are proud of today.
-                    </p>
-                    <div class="d-flex justify-content-center"><span class="accent-bar"></span></div>
+            <div class="col-md-4 reveal">
+                <div class="ab-card-media">
+                    <div class="ab-media">
+                        <img src="{% static 'images/why-serve.jpg' %}" alt="Restaurant owner working on a laptop" loading="lazy">
+                        <span class="ab-num">02</span>
+                    </div>
+                    <div class="ab-body">
+                        <h5>Who we serve</h5>
+                        <p>Restaurants, retail shops, schools, clinics, transport firms and growing service businesses that want their sales and records handled properly.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 reveal">
+                <div class="ab-card-media">
+                    <div class="ab-media">
+                        <img src="{% static 'images/why-work.jpg' %}" alt="Team planning a project together" loading="lazy">
+                        <span class="ab-num">03</span>
+                    </div>
+                    <div class="ab-body">
+                        <h5>How we work</h5>
+                        <p>Fixed-price proposals, written progress every week and milestone sign-off. You always know where your project stands.</p>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
+<!-- ============ CTA ============ -->
+<section class="ab-cta-band">
+    <div class="container">
+        <div class="ab-cta reveal">
+            <div>
+                <h3>Ready to feel the difference?</h3>
+                <p>Book a free consultation — honest advice, no commitment.</p>
+            </div>
+            <div class="cta-btns">
+                <a href="{% url 'core:enquiry_new' %}" class="btn btn-dark btn-sheen px-4">Get a free consultation</a>
+                <a href="{% url 'core:contact' %}" class="btn btn-light px-4">Talk to us</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var cells = document.querySelectorAll('.stat-value[data-count]');
+    function setFinal() {
+        cells.forEach(function (el) {
+            el.textContent = el.getAttribute('data-count') + (el.getAttribute('data-suffix') || '');
+        });
+    }
+    if (!cells.length || !('IntersectionObserver' in window)) { setFinal(); return; }
+    var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+            if (!e.isIntersecting) return;
+            var el = e.target;
+            io.unobserve(el);
+            var target = parseInt(el.getAttribute('data-count'), 10) || 0;
+            var suffix = el.getAttribute('data-suffix') || '';
+            var start = null, dur = 1300;
+            function step(ts) {
+                if (!start) start = ts;
+                var p = Math.min((ts - start) / dur, 1);
+                el.textContent = Math.round(target * (1 - Math.pow(1 - p, 3))) + suffix;
+                if (p < 1) requestAnimationFrame(step);
+            }
+            requestAnimationFrame(step);
+        });
+    }, { threshold: .4 });
+    cells.forEach(function (el) { io.observe(el); });
+});
+</script>
 {% endblock %}

@@ -1,4 +1,4 @@
-{% load core_filters %}
+﻿{% load core_filters %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,6 +12,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet">
     {% load static %}
+    <link rel="icon" type="image/jpeg" href="{% static 'images/oweru-logo.jpg' %}">
     {% block extra_css %}{% endblock %}
     <style>
         :root {
@@ -38,6 +39,43 @@
             color: var(--text);
             background: #ffffff;
         }
+        /* Public pages: minimized font size (admin body keeps its larger size) */
+        body:not(.admin-body) {
+            font-size: .83rem;
+            line-height: 1.55;
+            zoom: .92;
+        }
+        body:not(.admin-body) h1 { font-size: 1.3rem; }
+        body:not(.admin-body) h2 { font-size: 1.12rem; }
+        body:not(.admin-body) h3 { font-size: .97rem; }
+        body:not(.admin-body) h4 { font-size: .92rem; }
+        body:not(.admin-body) h5 { font-size: .88rem; }
+        body:not(.admin-body) .display-4 { font-size: 1.4rem !important; }
+        body:not(.admin-body) .display-6 { font-size: 1.15rem !important; }
+        body:not(.admin-body) .lead { font-size: .95rem; }
+        body:not(.admin-body) .hero { padding: 48px 0; }
+        body:not(.admin-body) .hero h1 { font-size: 1.5rem; }
+        body:not(.admin-body) .btn { font-size: .82rem; padding: .48rem 1.05rem; }
+        body:not(.admin-body) .pkg-img-wrap { height: 130px; }
+        body:not(.admin-body) .brand-logo { height: 46px; }
+        body:not(.admin-body) .navbar-brand-logo { height: 30px; }
+        body:not(.admin-body) .footer-logo { height: 46px; }
+        body:not(.admin-body) img { max-width: 100%; height: auto; }
+        body:not(.admin-body) .hero img { max-height: 300px; width: auto; }
+        body:not(.admin-body) .step-number { width: 50px; height: 50px; font-size: 1.15rem; }
+        body:not(.admin-body) .icon-chip { width: 44px; height: 44px; font-size: 1rem; }
+        body:not(.admin-body) .glass, body:not(.admin-body) .card-lift, body:not(.admin-body) .stat-box, body:not(.admin-body) .module-card {
+            border-radius: 13px;
+        }
+        body:not(.admin-body) .glass { padding: 16px; }
+        body:not(.admin-body) .stat-box { padding: 12px 14px; }
+        body:not(.admin-body) .card, body:not(.admin-body) .card-lift, body:not(.admin-body) .stat-box, body:not(.admin-body) .module-card, body:not(.admin-body) .glass { font-size: .85rem; }
+        body:not(.admin-body) .score-circle { width: 100px; height: 100px; font-size: 1.6rem; }
+        /* Public nav: always show the full words, never collapse to the hamburger */
+        body:not(.admin-body) .navbar .navbar-toggler { display: none !important; }
+        body:not(.admin-body) .navbar .navbar-collapse { display: flex !important; flex-basis: auto; }
+        body:not(.admin-body) .navbar .navbar-nav { flex-direction: row; align-items: center; }
+        body:not(.admin-body) .navbar .nav-item .dropdown-menu { position: absolute; }
         h1, h2, h3, h4, h5, .heading {
             font-family: 'Sora', 'Segoe UI', sans-serif;
             color: var(--ink);
@@ -322,6 +360,61 @@
         .module-card .module-count { background: var(--champagne-soft); color: #c08a1f; font-size: .75rem; font-weight: 700; padding: 2px 9px; border-radius: 999px; }
         .section-title { font-size: .78rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #8a8f9e; margin: 18px 8px 10px; }
         .offcanvas-admin { width: 340px !important; }
+        .admin-menu-link.is-active {
+            background: linear-gradient(120deg, #fff8e8, #fdf1d6);
+            border-left-color: var(--champagne);
+            color: #8a6a12;
+        }
+        .admin-menu-link.is-active .mi { background: linear-gradient(135deg, #ffd471, #e6b44a); color: #221d10; }
+
+        /* Fixed admin sidebar (desktop) */
+        .admin-sidebar { display: none; }
+        .admin-sidebar__brand {
+            display: flex; align-items: center; gap: 10px;
+            padding: 18px 18px 14px;
+            border-bottom: 1px solid rgba(230,180,74,.22);
+        }
+        .admin-sidebar__brand img { height: 40px; width: auto; border-radius: 8px; background: #fff; padding: 4px 6px; }
+        .admin-sidebar__brand b { display: block; font-family: 'Sora', sans-serif; font-size: .95rem; color: #fff; line-height: 1.2; }
+        .admin-sidebar__brand span { font-size: .7rem; letter-spacing: .14em; text-transform: uppercase; color: #ffd471; }
+        .admin-sidebar__user {
+            display: flex; align-items: center; gap: 10px;
+            margin: 14px 14px 4px; padding: 10px 12px;
+            border-radius: 12px;
+            background: rgba(255,255,255,.07);
+            border: 1px solid rgba(230,180,74,.22);
+        }
+        .admin-sidebar__user .ava {
+            width: 36px; height: 36px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            background: linear-gradient(135deg, #ffd471, #e6b44a);
+            color: #221d10; font-weight: 700;
+        }
+        .admin-sidebar__user b { display: block; font-size: .84rem; color: #fff; line-height: 1.2; }
+        .admin-sidebar__user span { font-size: .72rem; color: rgba(255,255,255,.62); }
+        .admin-sidebar__nav { flex: 1 1 auto; overflow-y: auto; padding: 4px 12px 18px; }
+        .admin-sidebar .section-title { color: rgba(255,255,255,.45); margin: 16px 8px 8px; }
+        .admin-sidebar .admin-menu-link { color: rgba(255,255,255,.82); }
+        .admin-sidebar .admin-menu-link .mi { background: rgba(255,255,255,.09); color: #ffd471; }
+        .admin-sidebar .admin-menu-link .text-muted { color: rgba(255,255,255,.55) !important; }
+        .admin-sidebar .admin-menu-link:hover { background: rgba(255,255,255,.08); color: #fff; }
+        .admin-sidebar .admin-menu-link.is-active { background: rgba(230,180,74,.16); color: #fff; }
+        .admin-sidebar .admin-menu-link.is-active .mi { background: linear-gradient(135deg, #ffd471, #e6b44a); color: #221d10; }
+        .admin-sidebar__foot {
+            padding: 12px; border-top: 1px solid rgba(230,180,74,.22);
+        }
+        .admin-sidebar__foot .btn { width: 100%; }
+        @media (min-width: 1200px) {
+            .admin-sidebar {
+                display: flex; flex-direction: column;
+                position: fixed; top: 0; left: 0; bottom: 0;
+                width: 268px; z-index: 1040;
+                background: linear-gradient(180deg, #0c1230 0%, #141b34 55%, #1c2547 100%);
+                box-shadow: 6px 0 28px rgba(8,12,32,.18);
+            }
+            .admin-body { padding-left: 268px; }
+            .admin-nav-toggle { display: none !important; }
+        }
         .admin-menu-link {
             display: flex; align-items: center; gap: 12px;
             text-decoration: none; color: #33405e;
@@ -377,6 +470,318 @@
         .enquiry-card .card-header { border-bottom: 1px solid var(--line); background: #fff; padding: .9rem 1.1rem; }
         .stage-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
         .table thead th { font-size: .74rem; text-transform: uppercase; letter-spacing: .05em; color: #7d8297; border-bottom: 0; font-weight: 700; }
+
+        /* ---------- Admin data tables ---------- */
+        .ow-table-wrap {
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 20px;
+            box-shadow: 0 18px 44px -26px rgba(12,18,48,.45);
+            overflow: hidden;
+        }
+        .ow-table-wrap > .table-responsive { margin: 0; }
+        .ow-table {
+            width: 100%;
+            margin: 0;
+            border-collapse: separate;
+            border-spacing: 0;
+            --ow-rail: 4px;
+        }
+        .ow-table > thead > tr > th {
+            background: linear-gradient(135deg, var(--navy-deep) 0%, var(--ink-2) 52%, #6b3a4d 128%);
+            color: #fff;
+            font-family: 'Sora', sans-serif;
+            font-size: .68rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .1em;
+            white-space: nowrap;
+            padding: 15px 16px;
+            border: 0;
+            vertical-align: middle;
+            box-shadow: inset 0 -3px 0 0 #ffd471, inset 0 -5px 0 0 rgba(200,120,40,.55);
+        }
+        .ow-table > thead > tr > th:first-child { padding-left: 22px; }
+        .ow-table > thead > tr > th:last-child { padding-right: 22px; }
+        .ow-table > thead > tr > th .ow-th { display: flex; align-items: center; gap: 7px; }
+        .ow-table > thead > tr > th .ow-th i { color: var(--champagne-2); font-size: .82rem; }
+
+        .ow-table > tbody > tr {
+            --ow-row: rgba(28,37,71,.18);
+            background-color: #fff;
+            background-image: linear-gradient(90deg,
+                            var(--ow-row) 0%,
+                            rgba(230,180,74,.42) 24%,
+                            rgba(28,37,71,.14) 58%,
+                            rgba(233,227,212,0) 100%);
+            background-repeat: no-repeat;
+            background-size: 100% 1px;
+            background-position: 0 0;
+            transition: background-color .18s ease, box-shadow .18s ease;
+        }
+        .ow-table > tbody > tr:nth-child(even) { background-color: #fcfaf4; }
+        .ow-table > tbody > tr:hover {
+            background-color: #fff9ea;
+            box-shadow: inset var(--ow-rail) 0 0 var(--ow-row);
+        }
+        .ow-table > tbody > tr > td {
+            padding: 13px 16px;
+            vertical-align: middle;
+            font-size: .9rem;
+        }
+        .ow-table > tbody > tr > td:first-child {
+            padding-left: 22px;
+            box-shadow: inset 3px 0 0 0 var(--ow-row);
+        }
+        .ow-table > tbody > tr > td:last-child { padding-right: 22px; }
+        .ow-table > thead > tr > th + th,
+        .ow-table > tbody > tr > td + td { border-left: 1px solid rgba(28,37,71,.07); }
+        .ow-table > thead > tr > th:first-child,
+        .ow-table > tbody > tr > td:first-child { border-left: 0; }
+
+        .ow-row--new { --ow-row: rgba(200,120,40,.62); }
+        .ow-row--pro { --ow-row: rgba(38,49,94,.5); }
+        .ow-row--won { --ow-row: rgba(46,125,79,.6); }
+        .ow-row--lost { --ow-row: rgba(178,59,106,.55); }
+        .ow-row--teal { --ow-row: rgba(19,128,138,.55); }
+        .ow-row--mute { --ow-row: rgba(150,143,122,.5); }
+
+        .ow-strong { display: block; font-weight: 600; color: var(--ink); line-height: 1.3; }
+        .ow-meta { display: block; font-size: .78rem; color: var(--muted); line-height: 1.35; }
+        .ow-ava {
+            width: 34px; height: 34px; border-radius: 11px; flex: 0 0 34px;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-family: 'Sora', sans-serif; font-size: .8rem; font-weight: 600;
+            color: var(--ink-2);
+            background: linear-gradient(135deg, #f7efdd, #e2dccb);
+            box-shadow: inset 0 0 0 1px rgba(20,27,52,.07);
+        }
+        .ow-ava--g { background: linear-gradient(135deg, #fceec9, #f3dca4); color: #7a5a10; }
+        .ow-ava--p { background: linear-gradient(135deg, #f6e4ea, #e9cdd8); color: #7c3550; }
+        .ow-ava--n { background: linear-gradient(135deg, #eef1fa, #dbe1f2); color: #26315e; }
+        .ow-cell-id { display: flex; align-items: center; gap: 11px; min-width: 0; }
+
+        .ow-num {
+            display: inline-flex; align-items: center; justify-content: center;
+            min-width: 30px; padding: 3px 10px; border-radius: 999px;
+            font-size: .8rem; font-weight: 700;
+            background: var(--tint-navy); color: var(--ink-2);
+        }
+        .ow-num--0 { background: #f4f2ec; color: #a8a394; }
+        .ow-num--hi { background: linear-gradient(135deg, #ffd471, #e6b44a); color: #221d10; }
+        .ow-amount { font-weight: 700; color: var(--ink); white-space: nowrap; font-variant-numeric: tabular-nums; }
+        .ow-amount small { display: block; font-weight: 500; font-size: .72rem; color: var(--muted); }
+
+        .ow-chip {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 4px 11px; border-radius: 999px;
+            font-size: .74rem; font-weight: 600; white-space: nowrap;
+            border: 1px solid transparent;
+        }
+        .ow-chip i { font-size: .72rem; }
+        .ow-chip--new { background: #fdf0e3; color: #a35d17; border-color: #f3d7b2; }
+        .ow-chip--pro { background: var(--tint-navy); color: #26315e; border-color: #dbe1f2; }
+        .ow-chip--won { background: var(--tint-green); color: #22694a; border-color: #cbe6d7; }
+        .ow-chip--lost { background: var(--tint-rose); color: #9c2b4c; border-color: #f2d3dc; }
+        .ow-chip--mute { background: #f4f2ec; color: #76705f; border-color: #e6e1d3; }
+        .ow-chip--gold { background: linear-gradient(135deg, #ffd471, #e6b44a); color: #221d10; }
+        .ow-chip--teal { background: #e4f4f5; color: #14636c; border-color: #c9e6e9; }
+        .ow-chip--violet { background: #eeeaf8; color: #4a3b86; border-color: #ddd5f0; }
+
+        .ow-toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 16px; }
+        .ow-search {
+            display: flex; gap: 8px; align-items: center; flex: 1 1 260px;
+            background: #fff; border: 1px solid var(--line); border-radius: 14px;
+            padding: 5px 5px 5px 14px;
+            box-shadow: 0 6px 18px -12px rgba(12,18,48,.4);
+        }
+        .ow-search i { color: var(--muted); font-size: .95rem; }
+        .ow-search input {
+            flex: 1 1 auto; min-width: 0; border: 0; outline: 0; background: transparent;
+            font-size: .9rem; padding: 7px 0; color: var(--text);
+        }
+        .ow-search input::placeholder { color: #a9a596; }
+        .ow-search:focus-within { border-color: var(--champagne); box-shadow: 0 0 0 3px rgba(230,180,74,.18); }
+        .ow-empty { padding: 46px 20px; text-align: center; color: var(--muted); }
+        .ow-empty i { display: block; font-size: 1.7rem; color: #d8d1bd; margin-bottom: 10px; }
+
+        @media (max-width: 991.98px) {
+            .ow-table > thead > tr > th,
+            .ow-table > tbody > tr > td { padding: 11px 12px; }
+            .ow-table > thead > tr > th:first-child,
+            .ow-table > tbody > tr > td:first-child { padding-left: 16px; }
+            .ow-table > thead > tr > th:last-child,
+            .ow-table > tbody > tr > td:last-child { padding-right: 16px; }
+            .ow-hide-md { display: none !important; }
+        }
+        @media (max-width: 575.98px) {
+            .ow-table { --ow-rail: 3px; }
+            .ow-hide-sm { display: none !important; }
+            .ow-table > tbody > tr > td { font-size: .85rem; }
+        }
+
+        /* ---------- Admin forms ---------- */
+        .ow-card {
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 20px;
+            box-shadow: 0 18px 44px -26px rgba(12,18,48,.45);
+            overflow: hidden;
+            position: relative;
+        }
+        .ow-card::before {
+            content: "";
+            position: absolute; top: 0; left: 0; right: 0; height: 2px; z-index: 3;
+            background: linear-gradient(90deg,
+                            rgba(230,180,74,0) 0%, rgba(255,212,113,.95) 20%,
+                            #fff 36%, rgba(255,212,113,.9) 52%, rgba(230,180,74,0) 100%);
+            background-size: 220% 100%;
+            animation: owShineSweep 6s linear infinite;
+            pointer-events: none;
+        }
+        .ow-card::after {
+            content: "";
+            position: absolute; top: -70px; right: -70px;
+            width: 180px; height: 180px; border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,212,113,.24), rgba(255,212,113,0) 70%);
+            pointer-events: none; z-index: 0;
+        }
+        @keyframes owShineSweep {
+            0% { background-position: 220% 0; }
+            100% { background-position: -120% 0; }
+        }
+        @keyframes owSheen {
+            0% { left: -130%; }
+            55% { left: 135%; }
+            100% { left: 135%; }
+        }
+        @keyframes owPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(230,180,74,.28); }
+            50% { box-shadow: 0 0 0 9px rgba(230,180,74,0); }
+        }
+        .ow-card + .ow-card { margin-top: 20px; }
+        .ow-card__head {
+            display: flex; align-items: center; gap: 12px;
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--line);
+            background: linear-gradient(180deg, #fffdf8, #fff);
+            position: relative; z-index: 1;
+        }
+        .ow-card__icon {
+            width: 38px; height: 38px; border-radius: 12px; flex: 0 0 38px;
+            display: flex; align-items: center; justify-content: center;
+            background: linear-gradient(135deg, #f7efdd, #e2dccb);
+            color: #26315e; font-size: 1.02rem;
+            box-shadow: inset 0 0 0 1px rgba(20,27,52,.06), 0 4px 14px -8px rgba(230,180,74,.9);
+            position: relative; overflow: hidden;
+        }
+        .ow-card__icon::after {
+            content: "";
+            position: absolute; top: 0; left: -130%; width: 62%; height: 100%;
+            background: linear-gradient(120deg, transparent, rgba(255,255,255,.9), transparent);
+            transform: skewX(-20deg);
+            animation: owSheen 4.4s ease-in-out infinite;
+            pointer-events: none;
+        }
+        .ow-card__icon i { position: relative; z-index: 1; }
+        .ow-card__title { font-family: 'Sora', sans-serif; font-weight: 600; color: var(--ink); font-size: .98rem; line-height: 1.2; }
+        .ow-card__sub { font-size: .77rem; color: var(--muted); line-height: 1.3; }
+        .ow-card__body { padding: 20px; position: relative; z-index: 1; }
+        .ow-card__body > .ow-label:first-child { margin-top: 0; }
+
+        .ow-label {
+            display: flex; align-items: center; gap: 7px;
+            font-size: .71rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: .08em; color: #6f7590; margin-bottom: 7px;
+        }
+        .ow-label i { color: var(--champagne); }
+        .ow-req { color: #c87828; }
+
+        .ow-input, .ow-input:focus {
+            width: 100%; border: 1px solid var(--line); border-radius: 12px;
+            background: #fdfcf8; padding: 11px 13px;
+            font-size: .92rem; color: var(--text); outline: 0;
+            transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
+        }
+        .ow-input:focus { border-color: var(--champagne); background: #fff; box-shadow: 0 0 0 3px rgba(230,180,74,.18), 0 10px 26px -14px rgba(230,180,74,.75); }
+        .ow-input::placeholder { color: #b3ae9d; }
+        textarea.ow-input { min-height: 104px; resize: vertical; line-height: 1.55; }
+        select.ow-input {
+            appearance: none; -webkit-appearance: none; padding-right: 36px;
+            background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%237b8398'%3E%3Cpath d='M4.5 6.5 8 10l3.5-3.5z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: right 12px center;
+        }
+        .ow-money { position: relative; }
+        .ow-money__tag {
+            position: absolute; left: 11px; top: 50%; transform: translateY(-50%);
+            font-size: .68rem; font-weight: 700; letter-spacing: .07em; color: #8a8371;
+            background: #f0ebdd; padding: 3px 8px; border-radius: 7px; pointer-events: none;
+        }
+        .ow-money .ow-input { padding-left: 56px; font-variant-numeric: tabular-nums; }
+        .ow-help { font-size: .76rem; color: var(--muted); margin-top: 6px; line-height: 1.45; }
+
+        .ow-switch {
+            display: flex; align-items: center; gap: 13px; cursor: pointer;
+            padding: 13px 15px; border: 1px solid var(--line); border-radius: 14px;
+            background: #fdfcf8; transition: border-color .18s ease, background .18s ease;
+        }
+        .ow-switch:hover { border-color: #dcd4bd; background: #fffdf8; }
+        .ow-switch input { position: absolute; opacity: 0; width: 0; height: 0; }
+        .ow-switch__track {
+            width: 44px; height: 25px; border-radius: 999px; background: #ded8c8;
+            position: relative; flex: 0 0 44px; transition: background .2s ease;
+        }
+        .ow-switch__track::after {
+            content: ""; position: absolute; top: 3px; left: 3px;
+            width: 19px; height: 19px; border-radius: 50%; background: #fff;
+            box-shadow: 0 2px 6px rgba(12,18,48,.32); transition: transform .2s ease;
+        }
+        .ow-switch input:checked + .ow-switch__track {
+            background: linear-gradient(135deg, #2f8f5f, #57b37e);
+            box-shadow: 0 0 14px rgba(87,179,126,.6);
+        }
+        .ow-switch input:checked + .ow-switch__track::after { transform: translateX(19px); }
+        .ow-switch input:focus-visible + .ow-switch__track { box-shadow: 0 0 0 3px rgba(230,180,74,.4); }
+        .ow-switch__txt b { display: block; font-size: .88rem; font-weight: 600; color: var(--ink); }
+        .ow-switch__txt span { font-size: .76rem; color: var(--muted); }
+
+        .ow-inc { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+        .ow-inc__n {
+            width: 26px; height: 26px; border-radius: 8px; flex: 0 0 26px;
+            display: flex; align-items: center; justify-content: center;
+            background: var(--tint-navy); color: #26315e; font-size: .74rem; font-weight: 700;
+        }
+
+        .ow-actions {
+            position: sticky; bottom: 0; z-index: 5;
+            display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+            margin-top: 20px; padding: 14px 20px;
+            background: rgba(255,255,255,.93); backdrop-filter: blur(8px);
+            border: 1px solid var(--line); border-radius: 16px;
+            box-shadow: 0 -8px 26px -16px rgba(12,18,48,.42);
+        }
+        .ow-actions__grow { flex: 1 1 auto; }
+
+        .ow-preview {
+            border: 1px dashed #ddd5bd; border-radius: 16px; padding: 18px;
+            background: linear-gradient(180deg, #fffdf8, #fff);
+            position: sticky; top: 20px;
+            animation: owPulse 3.6s ease-in-out infinite;
+        }
+        .ow-preview__lab { font-size: .68rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #8a8371; }
+        .ow-preview__name { font-family: 'Sora', sans-serif; font-weight: 600; font-size: 1.12rem; color: var(--ink); line-height: 1.25; }
+        .ow-preview__price { font-size: 1.3rem; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
+        .ow-preview__desc { font-size: .85rem; color: var(--text); line-height: 1.55; }
+        .ow-preview ul { list-style: none; padding: 0; margin: 12px 0 0; }
+        .ow-preview li { font-size: .84rem; color: var(--text); padding: 4px 0; line-height: 1.4; }
+        .ow-preview li i { color: var(--champagne); margin-right: 7px; }
+
+        @media (prefers-reduced-motion: reduce) {
+            .ow-card::before,
+            .ow-card__icon::after,
+            .ow-preview,
+            .btn-sheen::after { animation: none !important; }
+        }
     </style>
 <link rel="canonical" href="{{ request.build_absolute_uri }}">
     <meta name="author" content="Oweru Tech Solutions">
@@ -417,7 +822,36 @@
     }
     </script>
 </head>
-<body>
+<body class="{% if request.admin_area %}admin-body{% endif %}">
+    {% if request.admin_area %}
+    <aside class="admin-sidebar" aria-label="Admin navigation">
+        <div class="admin-sidebar__brand">
+            <img src="{% static 'images/oweru-logo.jpg' %}" alt="Oweru Tech Solutions">
+            <div>
+                <b>Control Center</b>
+                <span>Oweru Admin</span>
+            </div>
+        </div>
+        <div class="admin-sidebar__user">
+            <span class="ava">{{ user.first_name|default:user.username|slice:":1"|upper }}</span>
+            <div>
+                <b>{{ user.first_name|default:user.username }}</b>
+                <span>Administrator</span>
+            </div>
+        </div>
+        <nav class="admin-sidebar__nav">
+            {% include 'core/admin/_admin_nav.html' %}
+        </nav>
+        <div class="admin-sidebar__foot">
+            <a class="btn btn-sm btn-outline-light" href="{% url 'core:home' %}">
+                <i class="bi bi-globe me-1"></i>View website
+            </a>
+            <a class="btn btn-sm btn-light mt-2" href="{% url 'core:staff_logout' %}">
+                <i class="bi bi-box-arrow-right me-1"></i>Sign out
+            </a>
+        </div>
+    </aside>
+    {% endif %}
     {% block nav %}
     {% if not request.admin_area %}
     <nav class="navbar navbar-expand-lg bg-white shadow-sm sticky-top">
@@ -460,19 +894,6 @@
                     </li>
                         <li class="nav-item"><a class="nav-link" href="{% url 'core:scanner_home' %}">Website Scanner</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'core:contact' %}">Contact</a></li>
-
-                    {% if request.session.enquiry_ref %}
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" role="button">My Project</a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{% url 'core:customer_tracking' request.session.enquiry_ref %}">My Enquiries</a></li>
-                            <li><a class="dropdown-item" href="{% url 'core:customer_services' request.session.enquiry_ref %}">My Services</a></li>
-                            <li><a class="dropdown-item" href="{% url 'core:customer_proposals' request.session.enquiry_ref %}">Proposals</a></li>
-                            <li><a class="dropdown-item" href="{% url 'core:customer_payments' request.session.enquiry_ref %}">Payments</a></li>
-                            <li><a class="dropdown-item" href="{% url 'core:customer_support' request.session.enquiry_ref %}">Support</a></li>
-                        </ul>
-                    </li>
-                    {% endif %}
 
                     <li class="nav-item ms-lg-2">
                         <a class="btn btn-primary" href="{% url 'core:enquiry_new' %}">Get a Quote</a>
@@ -534,7 +955,7 @@
                         <img src="{% static 'images/oweru-logo.jpg' %}" alt="Oweru Tech Solutions"
                              class="footer-logo">
                     </div>
-                    <p class="fw-semibold text-white-75 small mb-1">Established 2024 · Dar es Salaam, Tanzania</p>
+                    <p class="fw-semibold text-white-75 small mb-1">Established 2024 Â· Dar es Salaam, Tanzania</p>
                     <p class="text-white-50 small mb-2">
                         We build systems that grow your business. Fixed prices, on-time delivery,
                         local support across Tanzania.
@@ -616,7 +1037,8 @@
     {% endif %}
     {% endblock %}
 
-    <div class="offcanvas offcanvas-end offcanvas-admin" tabindex="-1" id="adminPanel" aria-labelledby="adminPanelLabel">
+    {% if request.admin_area %}
+    <div class="offcanvas offcanvas-end offcanvas-admin d-xl-none" tabindex="-1" id="adminPanel" aria-labelledby="adminPanelLabel">
         <div class="offcanvas-header" style="background:linear-gradient(135deg,#1f2750 0%,#2b3568 55%,#b07285 140%);">
             <div>
                 <div class="text-white-50" style="font-size:.72rem; letter-spacing:.1em; text-transform:uppercase;">OWERU</div>
@@ -625,108 +1047,25 @@
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
         </div>
         <div class="offcanvas-body p-3 soft-bg">
-            <div class="d-flex align-items-center gap-3 mb-3 p-3 rounded-4" style="background:#fff;">
-                <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:46px;height:46px;background:linear-gradient(135deg,#C87828,#C8A028);color:#fff;font-weight:700;">
-                    {{ user.first_name|default:user.username|slice:":1"|upper }}
-                </div>
-                <div class="lh-sm">
-                    <div class="fw-bold" style="color:#1f2750;">{{ user.first_name|default:user.username }}</div>
-                    <div class="small text-muted">Hello & welcome back</div>
-                </div>
-            </div>
-            {% if user.is_authenticated and user.role == 'admin' or user.is_superuser %}
-            <div class="section-title">Overview</div>
-            <a class="admin-menu-link" href="{% url 'core:admin_dashboard' %}">
-                <span class="mi"><i class="bi bi-grid-1x2-fill"></i></span>
-                <div class="lh-sm">
-                    <div class="fw-semibold">Dashboard</div>
-                    <div class="small text-muted">At-a-glance overview</div>
-                </div>
-            </a>
-            <div class="section-title">Leads & sales</div>
-            <a class="admin-menu-link" href="{% url 'core:admin_enquiries' %}">
-                <span class="mi"><i class="bi bi-inbox-fill"></i></span>
-                <div class="lh-sm">
-                    <div class="fw-semibold">Enquiries</div>
-                    <div class="small text-muted">Requests & pipeline</div>
-                </div>
-            </a>
-            <a class="admin-menu-link" href="{% url 'core:admin_customers' %}">
-                <span class="mi"><i class="bi bi-people-fill"></i></span>
-                <div class="lh-sm">
-                    <div class="fw-semibold">Customers</div>
-                    <div class="small text-muted">Your client base</div>
-                </div>
-            </a>
-            <a class="admin-menu-link" href="{% url 'core:admin_proposals' %}">
-                <span class="mi"><i class="bi bi-file-earmark-text-fill"></i></span>
-                <div class="lh-sm">
-                    <div class="fw-semibold">Proposals</div>
-                    <div class="small text-muted">Quotes & price lists</div>
-                </div>
-            </a>
-            <a class="admin-menu-link" href="{% url 'core:admin_payments' %}">
-                <span class="mi"><i class="bi bi-cash-coin"></i></span>
-                <div class="lh-sm">
-                    <div class="fw-semibold">Payments</div>
-                    <div class="small text-muted">Deposits & confirmations</div>
-                </div>
-            </a>
-            <a class="admin-menu-link" href="{% url 'core:admin_signals' %}">
-                <span class="mi"><i class="bi bi-radar"></i></span>
-                <div class="lh-sm">
-                    <div class="fw-semibold">Signals</div>
-                    <div class="small text-muted">Job posts, tenders & funding</div>
-                </div>
-            </a>
-            <div class="section-title">Operations</div>
-            <a class="admin-menu-link" href="{% url 'core:admin_packages' %}">
-                <span class="mi"><i class="bi bi-box-seam-fill"></i></span>
-                <div class="lh-sm">
-                    <div class="fw-semibold">Packages</div>
-                    <div class="small text-muted">Services on offer</div>
-                </div>
-            </a>
-            <a class="admin-menu-link" href="{% url 'core:admin_deliveries' %}">
-                <span class="mi"><i class="bi bi-truck"></i></span>
-                <div class="lh-sm">
-                    <div class="fw-semibold">Service Delivery</div>
-                    <div class="small text-muted">Jobs in progress</div>
-                </div>
-            </a>
-            <div class="section-title">Tools</div>
-            <a class="admin-menu-link" href="{% url 'core:admin_scans' %}">
-                <span class="mi"><i class="bi bi-search-heart-fill"></i></span>
-                <div class="lh-sm">
-                    <div class="fw-semibold">Scanner Logs</div>
-                    <div class="small text-muted">Website health checks</div>
-                </div>
-            </a>
-            <a class="admin-menu-link" href="{% url 'core:admin_scan_batch' %}">
-                <span class="mi"><i class="bi bi-stack"></i></span>
-                <div class="lh-sm">
-                    <div class="fw-semibold">Batch Scan</div>
-                    <div class="small text-muted">Scan many sites at once</div>
-                </div>
-            </a>
-            <a class="admin-menu-link" href="{% url 'core:admin_report_requests' %}">
-                <span class="mi"><i class="bi bi-envelope-check"></i></span>
-                <div class="lh-sm">
-                    <div class="fw-semibold">Report Requests</div>
-                    <div class="small text-muted">Approve before sending PDFs</div>
-                </div>
-            </a>
+            {% include 'core/admin/_admin_nav.html' %}
             <hr class="my-2">
+            <a class="admin-menu-link" href="{% url 'core:home' %}">
+                <span class="mi"><i class="bi bi-globe"></i></span>
+                <div class="lh-sm">
+                    <div class="fw-semibold">View website</div>
+                    <div class="small text-muted">Back to the public site</div>
+                </div>
+            </a>
             <a class="admin-menu-link" href="{% url 'core:staff_logout' %}">
                 <span class="mi"><i class="bi bi-box-arrow-right"></i></span>
                 <div class="lh-sm">
                     <div class="fw-semibold">Sign out</div>
-                    <div class="small text-muted">Back to the public site</div>
+                    <div class="small text-muted">End this session</div>
                 </div>
             </a>
-            {% endif %}
         </div>
     </div>
+    {% endif %}
 
     <script>
         // Global scroll-reveal
@@ -745,9 +1084,69 @@
         });
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<style>
+        /* Loading state for submit buttons (set by the global loader below). */
+        .btn.is-loading{opacity:.8;pointer-events:none;cursor:wait}
+        .btn.is-loading .btn-loading-label{white-space:nowrap}
+    </style>
     <script>
-    // ---------------------------------------------------------------------
-    // Show more / show less for long lists.
+    // -------------------------------------------------------------------------
+    // Global submit-button loading state.
+    //
+    // Every <form> submit gets its submit button disabled and swapped for a
+    // spinner + "Please wait..." so nothing can be double-submitted and the
+    // visitor always sees feedback. Behaviour notes:
+    //   - Add data-no-loading to a form or button to disable it entirely.
+    //   - Add data-loading-label="String..." to pick the busy text.
+    //   - AJAX code can restore a button with window.oweruLoading.reset(btn).
+    //   - Only the clicked submit button is affected (e.submitter).
+    (function () {
+        'use strict';
+
+        function loadingLabel(btn) {
+            return btn.getAttribute('data-loading-label') || 'Please wait\u2026';
+        }
+
+        function setLoading(btn) {
+            if (btn.getAttribute('aria-busy') === 'true') return; // already busy
+            btn.dataset.loadingHtml = btn.innerHTML;
+            btn.setAttribute('aria-busy', 'true');
+            btn.disabled = true;
+            btn.classList.add('is-loading');
+            btn.innerHTML =
+                '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>' +
+                '<span class="btn-loading-label">' + loadingLabel(btn) + '</span>';
+        }
+
+        function resetLoading(btn) {
+            if (!btn) return;
+            if (btn.dataset.loadingHtml) {
+                btn.innerHTML = btn.dataset.loadingHtml;
+                delete btn.dataset.loadingHtml;
+            }
+            btn.disabled = false;
+            btn.classList.remove('is-loading');
+            btn.removeAttribute('aria-busy');
+        }
+
+        window.oweruLoading = { reset: resetLoading };
+
+        document.addEventListener('submit', function (e) {
+            var form = e.target;
+            if (form && form.hasAttribute('data-no-loading')) return;
+            var btn = e.submitter || (form && form.querySelector('[type="submit"]'));
+            if (!btn) return;
+            if (btn.hasAttribute('data-no-loading')) return;
+            var tag = btn.tagName.toLowerCase();
+            if (tag === 'button' && (btn.type || 'submit') !== 'submit') return;
+            if (tag === 'input' && btn.type !== 'submit') return;
+            setLoading(btn);
+        }, true);
+    })();
+    </script>
+    <script>
+        // ---------------------------------------------------------------------
+        // Show more / show less for long lists.
     //
     // Add data-showmore="5" to any container. Children past the 5th are
     // hidden behind a "Show more" button. Add data-key="..." to keep the

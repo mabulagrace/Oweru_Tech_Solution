@@ -127,6 +127,89 @@
                 </div>
 
                 {% if proposal.enquiry %}
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white fw-bold">Customer Payment Link</div>
+                    <div class="card-body">
+                        <p class="small text-muted">
+                            Share this link with the customer so they can pay the deposit securely
+                            online ({{ proposal.currency }} {{ proposal.deposit_amount|floatformat:0|intcomma }}).
+                        </p>
+                        <input type="text" readonly class="form-control form-control-sm mb-2"
+                               id="payLinkBox" value="{{ payment_url }}">
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-outline-primary btn-sm"
+                                    onclick="var b=document.getElementById('payLinkBox');b.select();document.execCommand('copy');this.textContent='Copied!';">
+                                <i class="bi bi-clipboard me-1"></i>Copy payment link
+                            </button>
+                            <form method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="send_payment_link">
+                                <button class="btn btn-primary btn-sm w-100">
+                                    <i class="bi bi-send me-1"></i>Send payment reminder
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white fw-bold">
+                        Confirm Deposit Payment
+                        {% if deposit_confirmed %}
+                        <span class="badge bg-success ms-1">Confirmed</span>
+                        {% else %}
+                        <span class="badge bg-warning text-dark ms-1">Not yet</span>
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        {% if deposit_confirmed %}
+                        <p class="small text-muted mb-2">
+                            Deposit received:
+                            <strong>{{ deposit_confirmed.currency }} {{ deposit_confirmed.amount|floatformat:0|intcomma }}</strong>
+                            via {{ deposit_confirmed.get_method_display }}
+                            <span class="text-muted">({{ deposit_confirmed.reference }})</span>
+                            on {{ deposit_confirmed.date_confirmed|date:'d M Y' }}.
+                        </p>
+                        {% else %}
+                        {% for p in deposit_pending %}
+                        <p class="small text-muted mb-2">
+                            <span class="badge bg-warning text-dark">Pending</span>
+                            {{ p.get_method_display }} {{ p.reference }} reported by customer
+                            {% if p.proof_image %}- <a href="{{ p.proof_image.url }}" target="_blank">view proof</a>{% endif %}
+                            - confirm it below or reject it on the Payments page.
+                        </p>
+                        {% empty %}
+                        <p class="small text-muted mb-2">
+                            Money received outside the customer portal? Record it here in one click:
+                            {{ proposal.currency }} {{ proposal.deposit_amount|floatformat:0|intcomma }}
+                        </p>
+                        {% endfor %}
+                        <form method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="confirm_deposit">
+                            <div class="mb-2">
+                                <label class="form-label small fw-semibold">Method</label>
+                                <select name="method" class="form-select form-select-sm">
+                                    <option value="mpesa">M-Pesa</option>
+                                    <option value="tigo_pesa">Tigo Pesa</option>
+                                    <option value="airtel_money">Airtel Money</option>
+                                    <option value="halopesa">HaloPesa</option>
+                                    <option value="bank_transfer">Bank Transfer</option>
+                                    <option value="cash">Cash</option>
+                                </select>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small fw-semibold">Transaction reference (optional)</label>
+                                <input name="reference" class="form-control form-control-sm" placeholder="e.g. 4325G95...">
+                            </div>
+                            <button class="btn btn-success w-100">
+                                <i class="bi bi-check2-circle me-1"></i>Confirm deposit {{ proposal.currency }} {{ proposal.deposit_amount|floatformat:0|intcomma }}
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+
                 <div class="card border-0 shadow-sm">
                     <div class="card-header bg-white fw-bold">Linked Enquiry</div>
                     <div class="card-body">

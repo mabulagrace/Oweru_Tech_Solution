@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 
 {% block title %}Customers - Oweru Admin{% endblock %}
 
@@ -7,39 +7,77 @@
 
 <section class="py-4">
     <div class="container">
-        <form class="d-flex gap-2 mb-3" method="get">
-            <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Search name / email...">
-            <button class="btn btn-primary">Search</button>
+        <form class="ow-toolbar" method="get">
+            <label class="ow-search">
+                <i class="bi bi-search"></i>
+                <input type="text" name="q" value="{{ q }}" placeholder="Search business, contact or email...">
+                <button class="btn btn-sm btn-primary">Search</button>
+            </label>
+            {% if q %}
+            <a href="{% url 'core:admin_customers' %}" class="btn btn-sm pill-line">Clear</a>
+            {% endif %}
         </form>
-        <div class="table-responsive">
-            <table class="table table-hover align-middle">
-                <thead class="table-light">
+
+        <div class="ow-table-wrap">
+            <div class="table-responsive">
+            <table class="table ow-table align-middle">
+                <thead>
                     <tr>
-                        <th>Business</th>
-                        <th>Contact</th>
-                        <th>Industry</th>
-                        <th>Enquiries</th>
-                        <th>Proposals</th>
-                        <th>Paid</th>
-                        <th>Country</th>
+                        <th><span class="ow-th"><i class="bi bi-shop"></i>Business</span></th>
+                        <th><span class="ow-th"><i class="bi bi-person"></i>Contact</span></th>
+                        <th class="ow-hide-md"><span class="ow-th"><i class="bi bi-briefcase"></i>Industry</span></th>
+                        <th><span class="ow-th"><i class="bi bi-inbox"></i>Enquiries</span></th>
+                        <th class="ow-hide-sm"><span class="ow-th"><i class="bi bi-file-earmark-text"></i>Proposals</span></th>
+                        <th class="ow-hide-sm"><span class="ow-th"><i class="bi bi-cash-coin"></i>Paid</span></th>
+                        <th class="ow-hide-md"><span class="ow-th"><i class="bi bi-globe2"></i>Country</span></th>
                     </tr>
                 </thead>
                     <tbody data-showmore="10" data-key="customers-rows">
                     {% for customer in customers %}
-                    <tr style="cursor:pointer;" onclick="document.location='{% url 'core:admin_customer_detail' customer.id %}'">
-                        <td class="fw-semibold">{{ customer.business_name }}</td>
-                        <td>{{ customer.name }}<br><small class="text-muted">{{ customer.email }}</small></td>
-                        <td>{{ customer.industry|default:'—' }}</td>
-                        <td>{{ customer.enquiries.count }}</td>
-                        <td>{{ customer.proposals.count }}</td>
-                        <td>{{ customer.payments.count }}</td>
-                        <td>{{ customer.country }}</td>
+                    <tr class="{% if customer.payments.count %}ow-row--won{% elif customer.proposals.count %}ow-row--pro{% else %}ow-row--new{% endif %}" style="cursor:pointer;" onclick="document.location='{% url 'core:admin_customer_detail' customer.id %}'">
+                        <td>
+                            <div class="ow-cell-id">
+                                <span class="ow-ava ow-ava--g">{{ customer.business_name|slice:":1"|upper }}</span>
+                                <span style="min-width:0;">
+                                    <span class="ow-strong">{{ customer.business_name }}</span>
+                                    <span class="ow-meta">Client since {{ customer.date_created|date:'M Y'|default:'â€”' }}</span>
+                                </span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="ow-strong" style="font-weight:500;">{{ customer.name }}</span>
+                            <span class="ow-meta">{{ customer.email|default:'â€”' }}</span>
+                        </td>
+                        <td class="ow-hide-md">
+                            {% if customer.industry %}
+                            <span class="ow-chip ow-chip--violet">{{ customer.industry }}</span>
+                            {% else %}
+                            <span class="ow-chip ow-chip--mute">Not set</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% with n=customer.enquiries.count %}
+                            <span class="ow-num{% if not n %} ow-num--0{% endif %}">{{ n }}</span>
+                            {% endwith %}
+                        </td>
+                        <td class="ow-hide-sm">
+                            {% with n=customer.proposals.count %}
+                            <span class="ow-num{% if not n %} ow-num--0{% else %} ow-num--hi{% endif %}">{{ n }}</span>
+                            {% endwith %}
+                        </td>
+                        <td class="ow-hide-sm">
+                            {% with n=customer.payments.count %}
+                            <span class="ow-num{% if not n %} ow-num--0{% endif %}">{{ n }}</span>
+                            {% endwith %}
+                        </td>
+                        <td class="ow-hide-md"><span class="ow-meta">{{ customer.country|default:'â€”' }}</span></td>
                     </tr>
                     {% empty %}
-                    <tr><td colspan="7" class="text-center text-muted py-5">No customers yet. Convert an enquiry to create one.</td></tr>
+                    <tr><td colspan="7" class="ow-empty"><i class="bi bi-people"></i>No customers found. Convert an enquiry to create one.</td></tr>
                     {% endfor %}
                 </tbody>
-            </table>
+</table>
+            </div>
         </div>
     </div>
 </section>

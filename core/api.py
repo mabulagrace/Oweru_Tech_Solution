@@ -113,12 +113,17 @@ def _require_admin(view):
 
 
 def _normalize_url(url):
+    """Normalise and validate a website address.
+
+    Returns ``''`` when nothing was supplied (callers treat that as a
+    missing required field). Raises ``ValueError`` when a value *was*
+    supplied but cannot be a website, so callers can report precisely why.
+    """
     url = (url or '').strip()
     if not url:
         return ''
-    if not url.startswith(('http://', 'https://')):
-        url = f'https://{url}'
-    return url
+    from .scanner import normalize_scan_url
+    return normalize_scan_url(url)
 
 
 # ---------------------------------------------------------------------------
@@ -384,7 +389,10 @@ def quick_check(request):
     if request.method != 'POST':
         return _error('METHOD_NOT_ALLOWED', 'Use POST.', status=405)
     data = _body(request)
-    url = _normalize_url(data.get('url'))
+    try:
+        url = _normalize_url(data.get('url'))
+    except ValueError as exc:
+        return _error('VALIDATION_ERROR', str(exc), {'field': 'url'})
     if not url:
         return _error('VALIDATION_ERROR', 'The url field is required.', {'field': 'url'})
 
@@ -430,7 +438,10 @@ def full_report(request):
     if request.method != 'POST':
         return _error('METHOD_NOT_ALLOWED', 'Use POST.', status=405)
     data = _body(request)
-    url = _normalize_url(data.get('url'))
+    try:
+        url = _normalize_url(data.get('url'))
+    except ValueError as exc:
+        return _error('VALIDATION_ERROR', str(exc), {'field': 'url'})
     required = ('name', 'email', 'phone')
     missing = [f for f in required if not str(data.get(f, '')).strip()]
     if not url:
@@ -808,9 +819,19 @@ def create_scans(request):
     """POST /admin/scans - single or batch scan, run in the background."""
     data = _body(request)
     urls = [u for u in data.get('urls') or [] if str(u).strip()]
-    urls = [_normalize_url(u) for u in urls]
+
+    # Normalise, dropping anything that cannot be a website so one bad
+    # entry does not abort the whole batch.
+    valid = []
+    for raw in urls:
+        try:
+            valid.append(_normalize_url(raw))
+        except ValueError:
+            continue
+    urls = valid
+
     if not urls:
-        return _error('VALIDATION_ERROR', 'The urls field requires at least one URL.', {'field': 'urls'})
+        return _error('VALIDATION_ERROR', 'The urls field requires at least one valid URL.', {'field': 'urls'})
 
     scan_type = data.get('scan_type', 'internal')
 
@@ -926,7 +947,10 @@ def list_exclusions(request):
     """GET /admin/scans/exclusions - list. POST - add one exclusion."""
     if request.method == 'POST':
         data = _body(request)
-        url = _normalize_url(data.get('website_url'))
+        try:
+            url = _normalize_url(data.get('website_url'))
+        except ValueError as exc:
+            return _error('VALIDATION_ERROR', str(exc), {'field': 'website_url'})
         if not url:
             return _error('VALIDATION_ERROR', 'The website_url field is required.', {'field': 'website_url'})
         item = ScanExclusion.objects.create(

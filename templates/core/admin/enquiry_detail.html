@@ -36,8 +36,8 @@
                     </div>
                 </div>
                 <div class="d-flex flex-wrap gap-2" style="position:relative; z-index:2;">
-                    <button type="button" class="btn btn-sm btn-outline-light" data-bs-toggle="offcanvas" data-bs-target="#adminPanel" aria-controls="adminPanel">
-                        <i class="bi bi-grid me-1"></i>Control Center
+                    <button type="button" class="btn btn-sm btn-outline-light admin-nav-toggle" data-bs-toggle="offcanvas" data-bs-target="#adminPanel" aria-controls="adminPanel">
+                        <i class="bi bi-list me-1"></i>Menu
                     </button>
                     <a href="{% url 'core:admin_enquiries' %}" class="btn btn-sm" style="background:linear-gradient(135deg,#ffd471,#e6b44a);color:#221d10;border:none;">
                         <i class="bi bi-arrow-left me-1"></i>Back to Pipeline
@@ -70,14 +70,26 @@
                             <tr><th style="color:var(--muted);">Consent</th><td>{% if enquiry.consent_given %}<span class="badge bg-success-subtle text-success-emphasis">Given</span>{% else %}<span class="badge bg-secondary-subtle text-secondary-emphasis">Not given</span>{% endif %}</td></tr>
                             <tr><th style="color:var(--muted);">Created</th><td>{{ enquiry.date_created }}</td></tr>
                             <tr>
-                                <th style="color:var(--muted);">Customer link</th>
+                                <th style="color:var(--muted);">Reference</th>
                                 <td>
-                                    <a href="{% url 'core:customer_tracking' enquiry.reference %}">
-                                        /my-project/{{ enquiry.reference }}
-                                    </a>
-                                    <div class="text-muted small">Send this to the customer to follow their project and pay.</div>
+                                    <span class="badge pill-gold">{{ enquiry.reference }}</span>
+                                    <div class="text-muted small">Quote this code to the customer when you update them by WhatsApp/email.</div>
                                 </td>
                             </tr>
+                            {% if enquiry.payment_token %}
+                            <tr>
+                                <th style="color:var(--muted);">Payment link</th>
+                                <td>
+                                    <input type="text" readonly class="form-control form-control-sm mb-2" id="enqPayLink"
+                                           value="{% url 'core:payment_claim' enquiry.payment_token %}">
+                                    <button type="button" class="btn btn-sm btn-outline-primary"
+                                            onclick="var b=document.getElementById('enqPayLink');b.select();document.execCommand('copy');this.textContent='Copied!';">
+                                        <i class="bi bi-clipboard me-1"></i>Copy book-now payment link
+                                    </button>
+                                    <div class="text-muted small mt-1">Send this so the customer can pay the deposit to secure their spot.</div>
+                                </td>
+                            </tr>
+                            {% endif %}
                         </table>
                     </div>
                 </div>

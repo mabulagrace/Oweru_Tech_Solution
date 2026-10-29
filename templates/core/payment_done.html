@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% load core_filters %}
+{% load humanize %}
+
+{% block title %}Payment Received - Oweru Tech Solutions{% endblock %}
+
+{% block extra_css %}
+<style>
+    .pd-wrap{max-width:680px;margin:0 auto;}
+    .pd-hero{position:relative;overflow:hidden;border-radius:22px;text-align:center;color:#fff;
+        background:linear-gradient(135deg,#0c1230 0%,#1c2547 52%,#7a3f52 135%);
+        padding:34px 30px 32px;box-shadow:0 22px 55px rgba(20,27,52,.25);}
+    .pd-hero::before{content:'';position:absolute;inset:0;pointer-events:none;
+        background:radial-gradient(620px 250px at 50% -70px, rgba(230,180,74,.28), transparent 70%);}
+    .pd-hero__bar{position:absolute;top:0;left:0;right:0;height:4px;
+        background:linear-gradient(90deg,transparent,#e6b44a 28%,#ffd471 50%,#e6b44a 72%,transparent);}
+    .pd-hero .icon-chip{margin:0 auto 14px;width:78px;height:78px;border-radius:20px;
+        background:linear-gradient(135deg,#ffd471,#e6b44a);color:#3a2a06;font-size:2.1rem;
+        display:flex;align-items:center;justify-content:center;
+        box-shadow:0 14px 30px rgba(230,180,74,.4);}
+    .pd-eyebrow{font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;
+        color:rgba(255,255,255,.6);font-weight:700;margin-bottom:8px;}
+    .pd-hero h1{font-family:'Sora',sans-serif;font-weight:700;letter-spacing:-.02em;
+        font-size:clamp(1.45rem,4vw,2rem);margin:0;}
+    .pd-lead{color:rgba(255,255,255,.8);font-size:.92rem;max-width:520px;margin:10px auto 0;line-height:1.6;}
+    .pd-card{background:#fff;border:1px solid var(--line);border-radius:20px;
+        box-shadow:0 12px 34px rgba(20,27,52,.07);}
+    .pd-card__head{display:flex;align-items:center;gap:11px;padding:17px 22px;border-bottom:1px solid var(--line);}
+    .pd-card__head i{font-size:1rem;color:#c08a1f;background:rgba(230,180,74,.14);border-radius:10px;
+        width:35px;height:35px;display:flex;align-items:center;justify-content:center;}
+    .pd-card__head h2{font-family:'Sora',sans-serif;font-size:1rem;font-weight:700;color:var(--ink);margin:0;}
+    .pd-card__body{padding:22px;}
+    .pd-recap{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:18px 10px;}
+    .pd-recap__label{font-size:.66rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+        color:var(--muted);display:flex;align-items:center;gap:6px;}
+    .pd-recap__value{font-size:.92rem;font-weight:600;color:var(--ink);margin-top:4px;line-height:1.4;}
+    .pd-status{display:inline-flex;align-items:center;gap:8px;background:rgba(230,180,74,.16);
+        border:1px solid rgba(230,180,74,.45);color:#a5761a;border-radius:999px;
+        padding:8px 16px;font-size:.84rem;font-weight:600;}
+    .pd-note{display:flex;gap:10px;align-items:flex-start;background:#fbf7ee;
+        border-top:1px solid var(--line);border-radius:0 0 20px 20px;padding:14px 22px;font-size:.78rem;color:#6b6a5e;}
+    .pd-note i{color:#e6b44a;margin-top:1px;}
+    .pd-btns{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;}
+    .pd-btns .btn{border-radius:12px;font-weight:600;}
+    .btn-wa{background:#25d366;border-color:#25d366;color:#fff;box-shadow:0 10px 24px -10px rgba(37,211,102,.6);}
+    .btn-wa:hover{background:#1ebe5b;border-color:#1ebe5b;color:#fff;}
+    @media (max-width:640px){.pd-hero{padding:28px 20px 26px;}.pd-card__body,.pd-card__head{padding-left:18px;padding-right:18px;}.pd-note{padding-left:18px;padding-right:18px;}}
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="py-5" style="background:var(--cream);">
+    <div class="container">
+        <div class="pd-wrap">
+            <div class="pd-hero mb-4">
+                <div class="pd-hero__bar"></div>
+                <div class="icon-chip"><i class="bi bi-check-lg"></i></div>
+                <div class="pd-eyebrow">Payment received</div>
+                <h1>Thank You, {{ enquiry.name }}!</h1>
+                <p class="pd-lead">
+                    We have recorded your payment for <strong>{{ enquiry.business_name }}</strong>.
+                    Our team will verify the transaction and confirm it within
+                    <strong>one working day</strong>.
+                </p>
+            </div>
+
+            <div class="pd-card mb-4">
+                <div class="pd-card__head">
+                    <i class="bi bi-receipt"></i>
+                    <h2>Your payment</h2>
+                </div>
+                <div class="pd-card__body">
+                    <div class="pd-recap mb-3">
+                        <div>
+                            <span class="pd-recap__label"><i class="bi bi-cash-stack"></i>Amount</span>
+                            <div class="pd-recap__value">{{ payment.currency }} {{ payment.amount|floatformat:0|intcomma }}</div>
+                        </div>
+                        <div>
+                            <span class="pd-recap__label"><i class="bi bi-credit-card"></i>Method</span>
+                            <div class="pd-recap__value">{{ payment.get_method_display }}</div>
+                        </div>
+                        <div>
+                            <span class="pd-recap__label"><i class="bi bi-hash"></i>Reference</span>
+                            <div class="pd-recap__value">{{ payment.reference }}</div>
+                        </div>
+                        <div>
+                            <span class="pd-recap__label"><i class="bi bi-bookmark-star"></i>Enquiry ref</span>
+                            <div class="pd-recap__value">{{ enquiry.reference }}</div>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <span class="pd-status"><i class="bi bi-hourglass-split"></i>Awaiting confirmation</span>
+                    </div>
+                </div>
+                <div class="pd-note">
+                    <i class="bi bi-lightbulb"></i>
+                    <span>
+                        We confirm payments once the transaction is verified. You will receive a
+                        confirmation email and WhatsApp message when it goes through.
+                    </span>
+                </div>
+            </div>
+
+            <div class="pd-btns">
+                {% with msg="Hello Oweru! Payment ref "|add:payment.reference|add:" for enquiry "|add:enquiry.reference|add:". Please confirm it." %}
+                <a href="{% wa_chat_link msg %}" class="btn btn-wa">
+                    <i class="bi bi-whatsapp me-2"></i>Chat on WhatsApp
+                </a>
+                {% endwith %}
+                <a href="{% url 'core:home' %}" class="btn btn-outline-primary">Back to Home</a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

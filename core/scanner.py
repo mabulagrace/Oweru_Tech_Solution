@@ -72,7 +72,9 @@ def scan_website(url):
             page_texts[page_url] = page_resp.text
 
     # Run checks
-    check_results = _run_all_checks(url, soup, list(page_texts.keys()), response)
+    check_results = _run_all_checks(
+        url, soup, list(page_texts.keys()), response, crawl_log
+    )
 
     # Calculate score
     score, findings = calculate_score(check_results)
@@ -169,6 +171,40 @@ def is_scannable(url):
     if is_excluded(url):
         return False
     return not _is_government(_netloc_of(url))
+
+
+def normalize_scan_url(url):
+    """Return an absolute http/https URL, or raise ValueError.
+
+    Single source of truth for URL clean-up. Every public entry point (the
+    scanner form, the full-report form, the JSON API and batch scanning)
+    funnels through here so that an empty or malformed address can never
+    become a Scan row like ``https://``.
+    """
+    url = (url or '').strip()
+    if not url:
+        raise ValueError('Enter the website address you want to scan, e.g. example.com.')
+
+    # Reject obvious non-URLs early so we do not "normalise" them into junk.
+    if any(ch.isspace() for ch in url):
+        raise ValueError('A website address cannot contain spaces.')
+
+    if '://' not in url:
+        url = 'https://' + url
+
+    parsed = urlparse(url)
+    if parsed.scheme not in ('http', 'https'):
+        raise ValueError('The website address must start with http:// or https://.')
+
+    host = (parsed.hostname or '').lower()
+    if not host or '.' not in host:
+        raise ValueError('That does not look like a valid website address.')
+
+    # Rebuild without credentials, port or fragment.
+    netloc = parsed.hostname.lower()
+    if parsed.port and parsed.port not in (80, 443):
+        netloc = f'{netloc}:{parsed.port}'
+    return parsed._replace(netloc=netloc, params='', fragment='').geturl()
 
 
 def _detect_platform(soup, html):
@@ -352,6 +388,7 @@ def _robots_allowed(url, log=None):
     parsed = urlparse(url)
     robots_url = f'{parsed.scheme}://{parsed.netloc}/robots.txt'
     allowed = True
+    googlebot_allowed = True
     status = None
     try:
         resp = requests.get(robots_url, headers=_headers, timeout=5)
@@ -360,9 +397,13 @@ def _robots_allowed(url, log=None):
             rp = RobotFileParser()
             rp.parse(resp.text.splitlines())
             allowed = rp.can_fetch(USER_AGENT, url)
+            # A site may block our scanner while still welcoming search
+            # engines - the two must not be confused with each other.
+            googlebot_allowed = rp.can_fetch('Googlebot', url)
     except requests.RequestException:
         status = None
         allowed = True
+        googlebot_allowed = True
     if log is not None:
         log.append({
             'url': robots_url,
@@ -371,6 +412,7 @@ def _robots_allowed(url, log=None):
             'size_bytes': 0,
             'elapsed_ms': 0,
             'ok': allowed,
+            'googlebot_ok': googlebot_allowed,
             'note': 'Allowed' if allowed else 'Not allowed',
         })
     return allowed
@@ -408,15 +450,15 @@ def _collect_internal_pages(base_url, soup):
     return pages
 
 
-def _run_all_checks(url, soup, page_urls, home_response=None):
-    """Run all 22 health checks."""
+def _run_all_checks(url, soup, page_urls, home_response=None, crawl_log=None):
+    """Run all 23 health checks."""
     checks = {}
 
     checks.update(_check_security(url, home_response.text if home_response else ''))
     checks.update(_check_mobile(soup))
     checks.update(_check_speed(url, soup, home_response))
-    checks.update(_check_function(url, soup, page_urls))
-    checks.update(_check_findability(soup, page_urls, url))
+    checks.update(_check_function(soup, page_urls))
+    checks.update(_check_findability(soup, page_urls, url, crawl_log))
     checks.update(_check_trust(soup, page_urls))
     checks.update(_check_commerce(soup))
     checks.update(_check_freshness(soup, home_response))
@@ -472,9 +514,60 @@ def _check_mobile(soup):
 
     return {
         'responsive': bool(viewport and mobile_meta),
-        'readable_text': True,  # Assessed via viewport + font-size heuristics
-        'tappable_buttons': True,
+        'readable_text': _readable_text(soup),
+        'tappable_buttons': _tappable_buttons(soup),
     }
+
+
+def _embedded_css(soup):
+    """CSS we can actually see: inline <style> blocks and style="" attributes.
+
+    External stylesheets are deliberately not fetched - they are not needed
+    for these checks and would add a request per page to every scan.
+    """
+    parts = [tag.get_text() for tag in soup.find_all('style')]
+    for el in soup.find_all(attrs={'style': True}):
+        parts.append(el['style'])
+    return '\n'.join(parts)
+
+
+def _declared_values(css, pattern):
+    """All numeric values captured by `pattern`, as floats."""
+    return [float(v) for v in re.findall(pattern, css, re.I | re.S)]
+
+
+def _readable_text(soup):
+    """True unless the page clearly declares sub-16px body text.
+
+    We only fail on positive evidence: if the page declares no font sizes at
+    all (they live in an external stylesheet we cannot see), we give the site
+    the benefit of the doubt rather than punishing it for our blind spot.
+    """
+    css = _embedded_css(soup)
+    sizes = _declared_values(css, r'font-size\s*:\s*([0-9.]+)\s*px')
+    sizes += [v * 16 for v in _declared_values(css, r'font-size\s*:\s*([0-9.]+)\s*rem')]
+    if not sizes:
+        return True
+    return max(sizes) >= 16
+
+
+def _tappable_buttons(soup):
+    """True unless the page clearly declares cramped tap targets.
+
+    Same rule as `_readable_text`: fail only on positive evidence, so a site
+    that sizes its buttons in an external stylesheet is never penalised.
+    """
+    css = _embedded_css(soup)
+
+    declared_mins = _declared_values(css, r'min-(?:height|width)\s*:\s*([0-9.]+)\s*px')
+    if declared_mins and max(declared_mins) < 44:
+        return False  # explicitly sized, and too small to tap
+
+    paddings = _declared_values(css, r'padding(?:-[a-z]+)?\s*:\s*([0-9.]+)\s*px')
+    if paddings and max(paddings) < 6:
+        return False  # explicitly cramped
+
+    return True
 
 
 def _check_speed(url, soup=None, resp=None):
@@ -533,7 +626,7 @@ def _images_optimized(url, soup):
     return total <= 1_500_000
 
 
-def _check_function(url, soup, page_urls):
+def _check_function(soup, page_urls):
     """Functional checks."""
 
     return {
@@ -563,7 +656,7 @@ def _has_tappable_contacts(soup):
     )
 
 
-def _check_findability(soup, page_urls, base_url):
+def _check_findability(soup, page_urls, base_url, crawl_log=None):
     """Findability checks."""
     title = soup.find('title')
     meta_desc = soup.find('meta', attrs={'name': 'description'})
@@ -571,9 +664,59 @@ def _check_findability(soup, page_urls, base_url):
     return {
         'unique_titles': bool(title and title.text.strip()),
         'meta_descriptions': bool(meta_desc and meta_desc.get('content', '').strip()),
-        'indexed_by_google': True,  # Requires external call in production
-        'google_business_profile': False,
+        'indexed_by_google': _indexing_allowed(crawl_log),
+        'google_business_profile': _has_google_profile(soup),
     }
+
+
+def _indexing_allowed(crawl_log):
+    """True unless robots.txt positively stops search engines.
+
+    Deliberately checks robots.txt for Googlebot rather than assuming an
+    indexable site is indexed: it is the one verifiable signal we get for
+    free. Missing robots.txt, an unreadable file, or a parse failure all
+    count as allowed - we never deduct points for something we could not
+    confirm.
+    """
+    entry = next(
+        (e for e in (crawl_log or []) if e.get('type') == 'robots'),
+        None,
+    )
+    if entry is None or entry.get('status') != 200:
+        return True  # no robots.txt: crawlers are welcome
+    if 'googlebot_ok' not in entry:
+        return True  # older log row - do not penalise
+    return bool(entry.get('googlebot_ok'))
+
+
+GOOGLE_PROFILE_MARKERS = (
+    'google.com/maps',
+    'google.com/place',
+    'google.com/business',
+    'goo.gl/maps',
+    'maps.app.goo.gl',
+    'g.page/',
+    'maps.google.',
+)
+
+
+def _has_google_profile(soup):
+    """True when the page links to a Google Maps or Google Business listing.
+
+    The API cannot be queried for free, so a link out to the business's own
+    Google listing is used as the stand-in - it is the signal a business
+    with a profile normally carries.
+    """
+    for link in soup.find_all('a', href=True):
+        href = link['href'].lower()
+        if any(marker in href for marker in GOOGLE_PROFILE_MARKERS):
+            return True
+    # A Google Maps embed counts too.
+    for iframe in soup.find_all('iframe', src=True):
+        src = iframe['src'].lower()
+        if 'google.com/maps' in src or 'maps.google.' in src:
+            return True
+    return False
 
 
 def _check_trust(soup, page_urls):

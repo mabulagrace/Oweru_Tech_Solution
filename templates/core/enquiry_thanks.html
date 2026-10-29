@@ -1,58 +1,290 @@
 {% extends 'base.html' %}
 {% load core_filters %}
+{% load humanize %}
 
 {% block title %}Enquiry Received - Oweru Tech Solutions{% endblock %}
+
+{% block extra_css %}
+<style>
+    .con-wrap{max-width:760px;margin:0 auto;}
+
+    /* ---------- hero ---------- */
+    .con-hero{position:relative;overflow:hidden;border-radius:22px;text-align:center;color:#fff;
+        background:linear-gradient(135deg,#0c1230 0%,#1c2547 52%,#7a3f52 135%);
+        padding:34px 30px 32px;box-shadow:0 22px 55px rgba(20,27,52,.25);}
+    .con-hero::before{content:'';position:absolute;inset:0;pointer-events:none;
+        background:radial-gradient(620px 250px at 50% -70px, rgba(230,180,74,.28), transparent 70%);}
+    .con-hero__bar{position:absolute;top:0;left:0;right:0;height:4px;
+        background:linear-gradient(90deg,transparent,#e6b44a 28%,#ffd471 50%,#e6b44a 72%,transparent);}
+    .con-hero__glow{position:absolute;width:190px;height:190px;border-radius:50%;pointer-events:none;
+        background:radial-gradient(circle,rgba(230,180,74,.22),transparent 65%);bottom:-80px;right:-50px;}
+    .con-hero .icon-chip{margin:0 auto 14px;width:78px;height:78px;border-radius:20px;
+        background:linear-gradient(135deg,#ffd471,#e6b44a);color:#3a2a06;font-size:2.1rem;
+        display:flex;align-items:center;justify-content:center;
+        box-shadow:0 14px 30px rgba(230,180,74,.4);}
+    .con-eyebrow{font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;
+        color:rgba(255,255,255,.6);font-weight:700;margin-bottom:8px;}
+    .con-hero h1{font-family:'Sora',sans-serif;font-weight:700;letter-spacing:-.02em;
+        font-size:clamp(1.5rem,4vw,2.1rem);margin:0;}
+    .con-lead{color:rgba(255,255,255,.8);font-size:.94rem;max-width:520px;margin:10px auto 20px;line-height:1.6;}
+    .con-hero .con-lead strong{color:#ffd471;font-weight:700;}
+    .con-ref{display:inline-flex;align-items:center;gap:10px;background:rgba(255,255,255,.08);
+        border:1px solid rgba(255,255,255,.18);border-radius:999px;padding:9px 18px;font-size:.85rem;}
+    .con-ref i{color:#ffd471;font-size:.95rem;}
+    .con-ref span{color:rgba(255,255,255,.72);font-size:.74rem;letter-spacing:.05em;text-transform:uppercase;}
+    .con-ref b{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+        letter-spacing:.14em;color:#fff;font-weight:600;}
+
+    /* ---------- cards ---------- */
+    .con-card{background:#fff;border:1px solid var(--line);border-radius:20px;
+        box-shadow:0 12px 34px rgba(20,27,52,.07);}
+    .con-card__head{display:flex;align-items:center;gap:11px;padding:17px 22px;
+        border-bottom:1px solid var(--line);}
+    .con-card__head i{font-size:1rem;color:#c08a1f;background:rgba(230,180,74,.14);border-radius:10px;
+        width:35px;height:35px;display:flex;align-items:center;justify-content:center;}
+    .con-card__head h2{font-family:'Sora',sans-serif;font-size:1rem;font-weight:700;color:var(--ink);margin:0;}
+    .con-card__body{padding:22px;}
+
+    /* ---------- journey steps ---------- */
+    .con-steps{list-style:none;margin:0;padding:0;}
+    .con-step{display:flex;gap:16px;position:relative;padding-bottom:24px;}
+    .con-step:last-child{padding-bottom:0;}
+    .con-step__rail{flex:0 0 40px;position:relative;display:flex;justify-content:center;}
+    .con-step__dot{width:40px;height:40px;border-radius:12px;z-index:1;flex:0 0 40px;
+        display:flex;align-items:center;justify-content:center;font-size:1.05rem;
+        background:#eef0f6;color:#98a0b4;border:1px solid #e2e6ef;}
+    .con-step__line{position:absolute;top:46px;bottom:-6px;left:50%;width:2px;
+        transform:translateX(-50%);background:#ece3d2;}
+    .con-step:last-child .con-step__line{display:none;}
+    .con-step.is-done .con-step__line{background:linear-gradient(180deg,#e6b44a,#e6b44a);}
+    .con-step.is-done .con-step__dot{background:linear-gradient(135deg,#ffd471,#e6b44a);color:#3a2a06;border:none;
+        box-shadow:0 8px 18px -8px rgba(230,180,74,.85);}
+    .con-step.is-current .con-step__dot{background:linear-gradient(135deg,#2b3568,#1c2547);color:#ffd471;border:none;
+        box-shadow:0 0 0 5px rgba(230,180,74,.2);}
+    .con-step__body{flex:1;min-width:0;padding-top:1px;}
+    .con-step__body h3{font-size:.95rem;font-weight:700;color:var(--ink);margin:0 0 3px;
+        display:flex;align-items:center;gap:9px;flex-wrap:wrap;}
+    .con-step__body p{font-size:.82rem;color:var(--muted);margin:0;line-height:1.5;}
+    .con-step.is-pending .con-step__body h3{color:#98a0b4;}
+    .con-tag{font-size:.62rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;
+        border-radius:999px;padding:3px 9px;}
+    .con-tag--current{background:rgba(230,180,74,.2);color:#a5761a;}
+    .con-tag--done{background:rgba(37,135,80,.12);color:#1e7a4d;}
+
+    /* ---------- recap grid ---------- */
+    .con-recap{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:18px 10px;}
+    .con-recap__label{font-size:.66rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+        color:var(--muted);display:flex;align-items:center;gap:6px;}
+    .con-recap__label i{font-size:.8rem;color:#c08a1f;}
+    .con-recap__value{font-size:.92rem;font-weight:600;color:var(--ink);margin-top:4px;line-height:1.4;}
+
+    /* ---------- reference + progress ---------- */
+    .con-progress{display:flex;align-items:center;gap:18px;justify-content:space-between;flex-wrap:wrap;}
+    .con-progress__code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+        font-size:1.08rem;font-weight:700;letter-spacing:.16em;color:var(--ink);}
+    .con-progress__sub{font-size:.76rem;color:var(--muted);margin-top:3px;}
+    .con-note{display:flex;gap:10px;align-items:flex-start;background:#fbf7ee;
+        border-top:1px solid var(--line);border-radius:0 0 20px 20px;
+        padding:14px 22px;font-size:.78rem;color:#6b6a5e;}
+    .con-note i{color:#e6b44a;margin-top:1px;}
+
+    /* ---------- actions ---------- */
+    .con-btns{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;}
+    .con-btns .btn{border-radius:12px;font-weight:600;}
+    .btn-wa{background:#25d366;border-color:#25d366;color:#fff;box-shadow:0 10px 24px -10px rgba(37,211,102,.6);}
+    .btn-wa:hover{background:#1ebe5b;border-color:#1ebe5b;color:#fff;}
+
+    @media (max-width:640px){
+        .con-hero{padding:28px 20px 26px;}
+        .con-card__body,.con-card__head{padding-left:18px;padding-right:18px;}
+        .con-note{padding-left:18px;padding-right:18px;}
+    }
+</style>
+{% endblock %}
 
 {% block content %}
 <section class="py-5" style="background:var(--cream);">
     <div class="container">
         <div class="row justify-content-center">
-            <div class="col-lg-7 text-center">
-                <span class="icon-chip mx-auto mb-3" style="width:76px;height:76px;font-size:2rem;"><i class="bi bi-check-circle"></i></span>
-                <h1 class="fw-bold mb-3">Thank You, {{ enquiry.name }}!</h1>
-                <p class="lead mb-4" style="color:var(--muted);">
-                    Your enquiry{% if enquiry.package_name %} about
-                    <strong style="color:var(--ink);">{{ enquiry.package_name }}</strong>{% endif %}
-                    has been received.
-                </p>
-                <div class="card-lift mb-4" style="text-align:left;">
-                    <div class="card-body small">
-                        <h6 class="fw-bold">What happens next:</h6>
-                        <ol class="mb-0" style="padding-left:1.25rem;">
-                            <li style="margin-bottom:4px;">Our team receives your request instantly.</li>
-                            <li style="margin-bottom:4px;">We review it and email you a response (within 1 working day).</li>
-                            <li style="margin-bottom:4px;">If approved, you continue with the service — or choose another service anytime.</li>
-                            <li>You approve the fixed quote and pay the 50% deposit, then production begins.</li>
-                        </ol>
-                    </div>
-                </div>
-
-                <div class="card-lift mb-4" style="text-align:left;">
-                    <div class="card-body d-flex justify-content-between align-items-center flex-wrap gap-2">
-                        <div>
-                            <div class="text-muted small">Your personal progress link:</div>
-                            <div class="fw-bold">{{ enquiry.reference }}</div>
+            <div class="col-lg-8 col-xl-7">
+                <div class="con-wrap">
+                    <!-- hero -->
+                    <div class="con-hero mb-4">
+                        <div class="con-hero__bar"></div>
+                        <div class="con-hero__glow"></div>
+                        <div class="icon-chip"><i class="bi bi-check-lg"></i></div>
+                        <div class="con-eyebrow">Enquiry Received</div>
+                        <h1>Thank You, {{ enquiry.name }}!</h1>
+                        <p class="con-lead">
+                            Your enquiry{% if enquiry.package_name %} about
+                            <strong>{{ enquiry.package_name }}</strong>{% endif %}
+                            has been received. Our team will review it and reply within
+                            <strong>one working day</strong>.
+                        </p>
+                        <div class="con-ref">
+                            <i class="bi bi-bookmark-star"></i>
+                            <span>Your reference</span>
+                            <b>{{ enquiry.reference }}</b>
                         </div>
-                        <a href="{% url 'core:customer_tracking' enquiry.reference %}"
-                           class="btn btn-outline-primary">
-                            Follow your project
+                    </div>
+
+                    <!-- journey -->
+                    <div class="con-card mb-4">
+                        <div class="con-card__head">
+                            <i class="bi bi-diagram-3"></i>
+                            <h2>What happens next</h2>
+                        </div>
+                        <div class="con-card__body">
+                            <ul class="con-steps">
+                                {% for step in steps %}
+                                <li class="con-step is-{{ step.state }}">
+                                    <div class="con-step__rail">
+                                        <div class="con-step__dot">
+                                            {% if step.state == 'done' %}
+                                                <i class="bi bi-check-lg"></i>
+                                            {% elif step.key == 'enquiry' %}
+                                                <i class="bi bi-envelope-check"></i>
+                                            {% elif step.key == 'consultation' %}
+                                                <i class="bi bi-chat-square-text"></i>
+                                            {% elif step.key == 'agreement' %}
+                                                <i class="bi bi-wallet2"></i>
+                                            {% elif step.key == 'milestones' %}
+                                                <i class="bi bi-bar-chart-steps"></i>
+                                            {% elif step.key == 'delivery' %}
+                                                <i class="bi bi-rocket-takeoff"></i>
+                                            {% else %}
+                                                <span>{{ step.number }}</span>
+                                            {% endif %}
+                                        </div>
+                                        <div class="con-step__line"></div>
+                                    </div>
+                                    <div class="con-step__body">
+                                        <h3>
+                                            {{ step.title }}
+                                            {% if step.state == 'current' %}
+                                                <span class="con-tag con-tag--current">Next up</span>
+                                            {% elif step.state == 'done' %}
+                                                <span class="con-tag con-tag--done">Done</span>
+                                            {% endif %}
+                                        </h3>
+                                        <p>{{ step.text }}</p>
+                                    </div>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- recap -->
+                    <div class="con-card mb-4">
+                        <div class="con-card__head">
+                            <i class="bi bi-clipboard-check"></i>
+                            <h2>Your request at a glance</h2>
+                        </div>
+                        <div class="con-card__body">
+                            <div class="con-recap">
+                                <div>
+                                    <span class="con-recap__label"><i class="bi bi-box-seam"></i>Service</span>
+                                    <div class="con-recap__value">{{ enquiry.package_name|default:'Not sure yet' }}</div>
+                                </div>
+                                {% if enquiry.budget_range != 'prefer-not-to-say' %}
+                                <div>
+                                    <span class="con-recap__label"><i class="bi bi-wallet2"></i>Budget</span>
+                                    <div class="con-recap__value">{{ enquiry.get_budget_range_display }}</div>
+                                </div>
+                                {% endif %}
+                                {% if enquiry.timeline and enquiry.timeline != 'Flexible' %}
+                                <div>
+                                    <span class="con-recap__label"><i class="bi bi-calendar-event"></i>Timeline</span>
+                                    <div class="con-recap__value">{{ enquiry.timeline }}</div>
+                                </div>
+                                {% endif %}
+                                {% if enquiry.country and enquiry.country != 'Tanzania' %}
+                                <div>
+                                    <span class="con-recap__label"><i class="bi bi-globe2"></i>Country</span>
+                                    <div class="con-recap__value">{{ enquiry.country }}</div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if payment_link %}
+                    <!-- secure your spot -->
+                    <div class="con-card mb-4">
+                        <div class="con-card__head">
+                            <i class="bi bi-lock-fill"></i>
+                            <h2>Secure your spot</h2>
+                        </div>
+                        <div class="con-card__body">
+                            <p style="font-size:.86rem;color:var(--muted);margin:0 0 14px;line-height:1.6;">
+                                This package is a <strong>{{ enquiry.package_name }}</strong> —
+                                pay a deposit now and your project is booked before anyone else.
+                            </p>
+                            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                                {% if book_now_deposit %}
+                                <div>
+                                    <div class="con-recap__label"><i class="bi bi-wallet2"></i>Deposit to secure</div>
+                                    <div style="font-size:1.35rem;font-weight:700;color:var(--ink);">
+                                        TZS {{ book_now_deposit|floatformat:0|intcomma }}
+                                    </div>
+                                    <div class="con-recap__label mt-1">
+                                        <i class="bi bi-tag"></i>Full price: TZS {{ book_now_price|floatformat:0|intcomma }}
+                                    </div>
+                                </div>
+                                {% endif %}
+                                <a href="{{ payment_link }}" class="btn btn-primary btn-sheen btn-lg" style="border-radius:12px;">
+                                    <i class="bi bi-shield-check me-2"></i>Pay Deposit Securely
+                                </a>
+                            </div>
+                        </div>
+                        <div class="con-note">
+                            <i class="bi bi-lightbulb"></i>
+                            <span>No deposit card? Just send the amount to any of our numbers on
+                                <a href="{% url 'core:enquiry_new' %}">the package page</a> and quote
+                                <strong>{{ enquiry.reference }}</strong> on WhatsApp.</span>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- reference / progress -->
+                    <div class="con-card mb-4">
+                        <div class="con-card__body">
+                            <div class="con-progress">
+                                <div>
+                                    <div class="con-recap__label"><i class="bi bi-bookmark-star"></i>Your reference code</div>
+                                    <div class="con-progress__code">{{ enquiry.reference }}</div>
+                                    <div class="con-progress__sub">Save this code — quote this anytime you talk to our team.</div>
+                                </div>
+                                {% with msg="Hello Oweru! My enquiry reference is "|add:enquiry.reference|add:". Please update me." %}
+                                <a href="{% wa_chat_link msg %}" class="btn btn-champagne btn-sheen">
+                                    <i class="bi bi-whatsapp me-1"></i>Follow up on WhatsApp
+                                </a>
+                                {% endwith %}
+                            </div>
+                        </div>
+                        <div class="con-note">
+                            <i class="bi bi-lightbulb"></i>
+                            <span>
+                                <strong>Save this page</strong> — your reference code lets our team
+                                quickly find your project whenever you reach out.
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- actions -->
+                    <div class="con-btns">
+                        {% with msg="Hello Oweru! I just sent my enquiry (ref "|add:enquiry.reference|add:"). Please review it." %}
+                        <a href="{% wa_chat_link msg %}" class="btn btn-wa">
+                            <i class="bi bi-whatsapp me-2"></i>Chat on WhatsApp
                         </a>
+                        {% endwith %}
+                        <a href="{% url 'core:scanner_home' %}" class="btn btn-primary btn-sheen">
+                            <i class="bi bi-search-heart me-2"></i>Check Your Website Free
+                        </a>
+                        <a href="{% url 'core:services' %}" class="btn btn-outline-primary">Choose Another Service</a>
+                        <a href="{% url 'core:home' %}" class="btn btn-outline-primary">Back to Home</a>
                     </div>
-                    <div class="card-footer small text-muted" style="background:#fbf7ee;border-top:1px solid var(--line);border-radius:0 0 16px 16px;">
-                        <i class="bi bi-bookmark-star me-1"></i>
-                        Save this page. You will use it to follow your project, see your deposit
-                        due and make payments.
-                    </div>
-                </div>
-                <div class="d-flex justify-content-center gap-2 flex-wrap">
-                    {% with msg="Hello Oweru! I just sent my enquiry (ref "|add:enquiry.reference|add:"). Please review it." %}
-                    <a href="{% wa_chat_link msg %}" class="btn" style="background:#25d366;border-color:#25d366;color:#fff;">
-                        <i class="bi bi-whatsapp me-2"></i>Chat with us on WhatsApp
-                    </a>
-                    {% endwith %}
-                    <a href="{% url 'core:home' %}" class="btn btn-outline-primary">Back to Home</a>
-                    <a href="{% url 'core:services' %}" class="btn btn-outline-primary">Choose Another Service</a>
-                    <a href="{% url 'core:scanner_home' %}" class="btn btn-primary">Check Your Website Free</a>
                 </div>
             </div>
         </div>

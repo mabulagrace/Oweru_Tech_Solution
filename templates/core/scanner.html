@@ -1,36 +1,286 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Free Website Health Check - Oweru Tech Solutions{% endblock %}
 
+{% block meta_description %}Free website health check. Enter your website address and get an instant score out of 100 across speed, mobile, security and findability. No sign-up needed.{% endblock %}
+
+{% block extra_css %}
+<style>
+.scan-card{
+    background:#fff;
+    border:1px solid rgba(230,180,74,.45);
+    border-radius:22px;
+    box-shadow:0 26px 60px rgba(8,12,32,.22);
+    overflow:hidden;
+}
+.scan-card__bar{
+    height:6px;
+    background:linear-gradient(90deg,#ffd471,#e6b44a 45%,#c08a1f);
+}
+.scan-card__head{
+    position:relative;
+    background:linear-gradient(150deg,#0c1230 0%,#1c2547 55%,#2a3568 100%);
+    padding:22px 28px;
+    overflow:hidden;
+}
+.scan-card__head::after{
+    content:"";
+    position:absolute;
+    right:-60px;top:-70px;
+    width:220px;height:220px;
+    border-radius:50%;
+    background:radial-gradient(circle,rgba(240,191,77,.30),transparent 68%);
+}
+.scan-side{
+    position:relative;
+    border-radius:20px;
+    overflow:hidden;
+    border:1px solid rgba(230,180,74,.45);
+    box-shadow:0 22px 50px rgba(8,12,32,.22);
+    min-height:290px;
+    display:flex;
+    align-items:flex-end;
+}
+.scan-side img{
+    position:absolute;inset:0;
+    width:100%;height:100%;
+    object-fit:cover;
+    transition:transform .5s ease;
+}
+.scan-side:hover img{transform:scale(1.06);}
+.scan-side__cap{
+    position:relative;z-index:2;
+    width:100%;
+    padding:20px 22px;
+    background:linear-gradient(180deg,transparent 0%,rgba(8,12,32,.86) 55%,rgba(8,12,32,.96) 100%);
+}
+.scan-badge{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    background:linear-gradient(120deg,#ffd471,#e6b44a);
+    color:#141b34;
+    font-weight:700;
+    font-size:.78rem;
+    border-radius:999px;
+    padding:7px 14px;
+    box-shadow:0 10px 22px rgba(230,180,74,.35);
+}
+.scan-field{
+    border:1px solid rgba(20,27,52,.14);
+    border-radius:14px;
+    padding:.85rem 1.1rem;
+    font-size:1rem;
+    box-shadow:none;
+}
+.scan-field:focus{
+    border-color:#e6b44a;
+    box-shadow:0 0 0 4px rgba(230,180,74,.20);
+}
+.scan-pill{
+    position:relative;
+    display:flex;
+    flex-direction:column;
+    background:#fff;
+    border:1px solid rgba(230,180,74,.35);
+    border-radius:18px;
+    overflow:hidden;
+    height:100%;
+    box-shadow:0 14px 32px rgba(8,12,32,.10);
+    transition:transform .3s ease, box-shadow .3s ease;
+}
+.scan-pill:hover{
+    transform:translateY(-5px);
+    box-shadow:0 22px 44px rgba(8,12,32,.18);
+}
+.scan-pill__photo{
+    position:relative;
+    height:158px;
+    overflow:hidden;
+}
+.scan-pill__photo img{
+    position:absolute;inset:0;
+    width:100%;height:100%;
+    object-fit:cover;
+    transition:transform .5s ease;
+}
+.scan-pill:hover .scan-pill__photo img{transform:scale(1.07);}
+.scan-pill__photo::after{
+    content:"";
+    position:absolute;inset:0;
+    background:linear-gradient(180deg,rgba(8,12,32,.18) 0%,rgba(8,12,32,.55) 100%);
+}
+/* Security graphic tile (vector, no photo) */
+.scan-pill__graphic{
+    position:relative;
+    height:158px;
+    overflow:hidden;
+    background:
+        radial-gradient(circle at 78% 18%, rgba(230,180,74,.28), transparent 58%),
+        linear-gradient(140deg,#0c1230 0%,#1c2547 55%,#26315e 100%);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+.scan-pill__graphic::before{
+    content:"";
+    position:absolute;inset:0;
+    background-image:
+        linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
+    background-size:26px 26px;
+    mask-image:radial-gradient(circle at 50% 50%, #000 30%, transparent 78%);
+    -webkit-mask-image:radial-gradient(circle at 50% 50%, #000 30%, transparent 78%);
+}
+.scan-pill__graphic svg{
+    position:relative;
+    width:74px;height:74px;
+    transition:transform .5s ease;
+    filter:drop-shadow(0 10px 18px rgba(0,0,0,.35));
+}
+.scan-pill:hover .scan-pill__graphic svg{transform:scale(1.07) translateY(-2px);}
+.scan-pill__graphic::after{
+    content:"";
+    position:absolute;inset:0;
+    background:linear-gradient(180deg,rgba(8,12,32,.10) 0%,rgba(8,12,32,.50) 100%);
+}
+.scan-pill__icon{
+    position:absolute;
+    left:18px;bottom:-22px;
+    z-index:2;
+    width:46px;height:46px;
+    border-radius:14px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:1.2rem;
+    background:linear-gradient(135deg,#ffd471,#e6b44a);
+    color:#0c1230;
+    border:3px solid #fff;
+    box-shadow:0 10px 22px rgba(8,12,32,.22);
+}
+.scan-pill__body{padding:30px 20px 22px;}
+.scan-pill h6{color:#0c1230;margin:0 0 6px;}
+.scan-pill p{margin:0;color:#6b7280;font-size:.82rem;line-height:1.55;}
+.scan-step{
+    position:absolute;
+    top:14px;right:18px;
+    z-index:3;
+    font-size:1.5rem;
+    font-weight:800;
+    color:#ffd471;
+    line-height:1;
+    text-shadow:0 2px 10px rgba(8,12,32,.6);
+    pointer-events:none;
+}
+
+/* Scan results table - matches the staff login card */
+.st-wrap{
+    border:1px solid #e2dccb;border-radius:20px;overflow:hidden;background:#fff;
+    box-shadow:0 24px 70px rgba(8,12,32,.26);
+}
+.st-head{
+    background:linear-gradient(135deg,#1f2750 0%,#2b3568 55%,#b07285 140%);
+    padding:20px 24px;text-align:center;color:#fff;
+}
+.st-head__icon{
+    width:42px;height:42px;border-radius:12px;margin:0 auto 10px;
+    display:flex;align-items:center;justify-content:center;
+    background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.28);
+    color:#ffd471;font-size:1.1rem;
+}
+.st-head h6{font-family:'Sora',sans-serif;font-size:1rem;font-weight:700;margin:0;color:#fff;}
+.st-head p{color:rgba(255,255,255,.68);font-size:.8rem;margin:4px 0 0;}
+.st-scroll{overflow-x:auto;}
+.st-table{width:100%;min-width:620px;border-collapse:collapse;margin:0;}
+.st-table thead th{
+    background:#fbfaf6;
+    border-bottom:1px solid #e2dccb;
+    color:#8a6a12;
+    font-size:.7rem;font-weight:700;letter-spacing:.11em;text-transform:uppercase;
+    padding:13px 20px;text-align:left;white-space:nowrap;
+}
+.st-table tbody td{
+    padding:15px 20px;vertical-align:top;
+    border-top:1px solid #f1ece0;
+    font-size:.86rem;line-height:1.6;color:#4a5270;
+}
+.st-table tbody tr:first-child td{border-top:0;}
+.st-table tbody tr:nth-child(even){background:#fbfaf6;}
+.st-table tbody tr:hover{background:#fdf8ec;}
+.st-table tbody tr td:first-child{box-shadow:inset 3px 0 0 var(--sev,#e6b44a);}
+.st-area{display:flex;align-items:center;gap:10px;font-weight:700;color:#141b34;font-size:.9rem;line-height:1.35;}
+.st-area i{
+    width:32px;height:32px;flex:0 0 auto;border-radius:10px;
+    display:flex;align-items:center;justify-content:center;font-size:.88rem;
+    background:#fceec9;color:#a8760f;
+}
+.st-chip{
+    display:inline-block;margin-top:8px;
+    font-size:.68rem;font-weight:700;letter-spacing:.04em;
+    padding:3px 10px;border-radius:10px;white-space:nowrap;
+    background:#fceec9;color:#8a6a12;border:1px solid rgba(230,180,74,.55);
+}
+.st-chip.sev-high{background:#f9ecef;color:#9c2f3f;border-color:#f3d7dd;}
+.st-chip.sev-mid{background:#fdf0e2;color:#a35a12;border-color:#f6ddc2;}
+.st-cost{color:#6b7280;font-size:.8rem;display:block;margin-top:6px;}
+.st-foot{
+    padding:14px 20px;background:#fbfaf6;border-top:1px solid #e2dccb;
+    display:flex;align-items:flex-start;gap:8px;font-size:.78rem;color:#6b7280;
+}
+.st-foot i{color:#c08a1f;}
+.st-empty{padding:30px 20px;text-align:center;background:#f6fbf7;}
+.st-empty i{font-size:1.7rem;color:#198754;}
+.st-empty h6{font-family:'Sora',sans-serif;color:#141b34;font-weight:700;margin:10px 0 4px;}
+.st-empty p{margin:0;color:#6b7280;font-size:.85rem;}
+@media (max-width:575px){
+    .st-table thead th,.st-table tbody td{padding:12px 14px;}
+}
+</style>
+{% endblock %}
+
 {% block content %}
 
-<section style="background:var(--cream);padding:64px 0;">
-    <div class="container">
-        <div class="text-center">
-            <span class="eyebrow mb-3 justify-content-center"><i class="bi bi-search-heart me-1"></i>Free tool</span>
-            <h1 class="fw-bold mb-2">Free Website Health Check</h1>
-            <p class="text-muted mb-0" style="max-width:560px;margin:0 auto;">
+<section class="position-relative" style="background:linear-gradient(120deg, rgba(8,12,32,.95) 0%, rgba(12,18,48,.88) 55%, rgba(20,27,52,.74) 100%),url('{% static "images/scan-bg.jpg" %}') center 30% / cover no-repeat;padding:72px 0;">
+    <div class="aurora" style="width:480px;height:480px;background:radial-gradient(circle,rgba(240,191,77,.18),transparent 65%);top:-150px;right:-60px;"></div>
+    <div class="container position-relative" style="z-index:2;">
+        <div class="text-center mb-4">
+            <span class="eyebrow mb-2 justify-content-center"><span class="d-inline-block me-2" style="width:30px;height:2px;border-radius:99px;background:#e6b44a;"></span>Free tool</span>
+            <h1 class="fw-bold text-white mb-2">Free Website Health Check</h1>
+            <p class="text-white-50 mb-0" style="max-width:600px;margin:0 auto;">
                 Enter your website address and get an instant score. We measure speed, mobile,
                 security, trust and more — no sign-up needed.
             </p>
         </div>
-        <div class="row justify-content-center mt-5">
-            <div class="col-lg-8">
-                <div class="card-lift">
+        <div class="row g-4 align-items-stretch">
+            <div class="col-lg-7">
+                <div class="scan-card h-100 reveal">
+                    <div class="scan-card__bar"></div>
+                    <div class="scan-card__head d-flex flex-wrap align-items-center justify-content-between gap-2">
+                        <div style="position:relative;z-index:2;">
+                            <h5 class="fw-bold text-white mb-1">Scan your website</h5>
+                            <p class="small mb-0" style="color:rgba(255,255,255,.72);">22 checks across speed, mobile, security and findability.</p>
+                        </div>
+                        <span class="scan-badge" style="position:relative;z-index:2;">
+                            <i class="bi bi-lightning-charge-fill"></i> Instant results
+                        </span>
+                    </div>
                     <div class="card-body p-4 p-lg-5">
                         <form id="scanner-form" novalidate>
                             {% csrf_token %}
+                            <label class="small fw-semibold mb-2 d-block" style="color:#0c1230;" for="id_url">Your website address</label>
                             <div class="input-group input-group-lg mb-3">
+                                <span class="input-group-text" style="background:#f6f4ee;border:1px solid rgba(20,27,52,.14);border-right:0;"><i class="bi bi-globe2" style="color:#c08a1f;"></i></span>
                                 {{ form.url }}
                                 <button type="submit" class="btn btn-champagne btn-sheen px-4" id="scan-btn">
                                     Check Now
                                 </button>
                             </div>
                             <div id="scan-error" class="alert alert-danger d-none" role="alert"></div>
-                            <div class="small text-muted">
-                                <i class="bi bi-info-circle me-1"></i>
-                                We only scan public pages. We never log in to anything, we respect each
-                                site's robots file, and no personal data is stored.
+                            <div class="d-flex align-items-start gap-2 small text-muted">
+                                <i class="bi bi-shield-lock mt-1" style="color:#e6b44a;"></i>
+                                <span>We only scan public pages. We never log in to anything, we respect each site's robots file, and no personal data is stored.</span>
                             </div>
                         </form>
 
@@ -40,9 +290,9 @@
                                 <h4 class="fw-bold" id="score-title">-</h4>
                             </div>
                             <hr>
-                            <h6 class="fw-bold mb-3">Your top areas to improve:</h6>
+                            <h6 class="fw-bold mb-3">Your top areas to improve</h6>
                             <div id="issues-list"></div>
-                            <div class="alert" style="border:1px solid var(--line);background:#fbf7ee; border-radius:14px;" role="alert">
+                            <div class="alert" style="border:1px solid rgba(230,180,74,.45);background:linear-gradient(120deg,#fdf8ec,#fbf4e2); border-radius:14px;" role="alert">
                                 <h6 class="fw-bold"><i class="bi bi-file-earmark-pdf me-1" style="color:#e6b44a;"></i> Want the full report?</h6>
                                 <p class="small mb-2">
                                     Get the complete one-page report with all 22 checks, what each
@@ -56,32 +306,100 @@
                     </div>
                 </div>
             </div>
+            <div class="col-lg-5">
+                <div class="d-flex flex-column gap-4 h-100">
+                    <div class="scan-side reveal">
+                        <img src="{% static 'images/scan-laptop.jpg' %}" alt="Analyst reviewing website performance charts" loading="lazy">
+                        <div class="scan-side__cap">
+                            <h6 class="fw-bold text-white mb-1">Reports a client can act on</h6>
+                            <p class="small mb-0" style="color:rgba(255,255,255,.82);">Every issue is explained in plain language, with the fix and what it was costing you.</p>
+                        </div>
+                    </div>
+                    <div class="scan-side reveal">
+                        <img src="{% static 'images/scan-hero.jpg' %}" alt="Team discussing a website audit" loading="lazy" style="object-position:center 25%;">
+                        <div class="scan-side__cap">
+                            <h6 class="fw-bold text-white mb-1">Scanned by real engineers</h6>
+                            <p class="small mb-0" style="color:rgba(255,255,255,.82);">The same team that builds these systems reviews the results with you.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </section>
 
-<section class="py-5" style="background:#fff;">
+<section class="position-relative" style="background:#fff;padding:64px 0;">
     <div class="container">
-        <div class="row g-4 text-center">
-            <div class="col-md-3">
-                <span class="icon-chip mx-auto"><i class="bi bi-shield-check"></i></span>
-                <h6 class="fw-bold mt-3">Security</h6>
-                <p class="small text-muted mb-0">HTTPS, certificate, mixed content</p>
+        <div class="text-center mb-4 reveal">
+            <span class="eyebrow mb-2 justify-content-center"><span class="d-inline-block me-2" style="width:30px;height:2px;border-radius:99px;background:#e6b44a;"></span>What we check</span>
+            <h2 class="fw-bold mb-0">Four areas that decide whether customers stay</h2>
+        </div>
+        <div class="row g-4">
+            <div class="col-sm-6 col-lg-3 reveal">
+                <div class="scan-pill">
+                    <span class="scan-step">01</span>
+                    <div class="scan-pill__graphic" role="img" aria-label="Shield with a padlock representing website security">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+                            <defs>
+                                <linearGradient id="secShield" x1="12" y1="2" x2="12" y2="22" gradientUnits="userSpaceOnUse">
+                                    <stop offset="0" stop-color="#ffd471"/>
+                                    <stop offset="1" stop-color="#e6b44a"/>
+                                </linearGradient>
+                            </defs>
+                            <path d="M12 2.2 4.2 5.1v6.1c0 4.6 3.2 8.7 7.8 10.2 4.6-1.5 7.8-5.6 7.8-10.2V5.1L12 2.2Z"
+                                  fill="url(#secShield)" opacity="0.18"/>
+                            <path d="M12 2.2 4.2 5.1v6.1c0 4.6 3.2 8.7 7.8 10.2 4.6-1.5 7.8-5.6 7.8-10.2V5.1L12 2.2Z"
+                                  stroke="url(#secShield)" stroke-width="1.5" stroke-linejoin="round"/>
+                            <rect x="8.6" y="10.3" width="6.8" height="5.6" rx="1.3" fill="url(#secShield)"/>
+                            <path d="M10.1 10.2V8.9a1.9 1.9 0 1 1 3.8 0v1.3" stroke="url(#secShield)" stroke-width="1.4" stroke-linecap="round"/>
+                            <circle cx="12" cy="12.9" r="0.85" fill="#0c1230"/>
+                        </svg>
+                        <span class="scan-pill__icon"><i class="bi bi-shield-check"></i></span>
+                    </div>
+                    <div class="scan-pill__body">
+                        <h6>Security</h6>
+                        <p>HTTPS, certificate validity, mixed content and exposed information.</p>
+                    </div>
+                </div>
             </div>
-            <div class="col-md-3">
-                <span class="icon-chip mx-auto"><i class="bi bi-phone"></i></span>
-                <h6 class="fw-bold mt-3">Mobile</h6>
-                <p class="small text-muted mb-0">Layout, readability, tap targets</p>
+            <div class="col-sm-6 col-lg-3 reveal">
+                <div class="scan-pill">
+                    <span class="scan-step">02</span>
+                    <div class="scan-pill__photo">
+                        <img src="{% static 'images/chk-mobile.jpg' %}" alt="Hands using a smartphone on a small screen" loading="lazy" style="object-position:center 40%;">
+                        <span class="scan-pill__icon"><i class="bi bi-phone"></i></span>
+                    </div>
+                    <div class="scan-pill__body">
+                        <h6>Mobile</h6>
+                        <p>Layout on small screens, readability and tap-target sizes.</p>
+                    </div>
+                </div>
             </div>
-            <div class="col-md-3">
-                <span class="icon-chip mx-auto"><i class="bi bi-speedometer2"></i></span>
-                <h6 class="fw-bold mt-3">Speed</h6>
-                <p class="small text-muted mb-0">Load time, page size, images</p>
+            <div class="col-sm-6 col-lg-3 reveal">
+                <div class="scan-pill">
+                    <span class="scan-step">03</span>
+                    <div class="scan-pill__photo">
+                        <img src="{% static 'images/chk-speed.jpg' %}" alt="Stopwatch measuring page load speed" loading="lazy" style="object-position:center 45%;">
+                        <span class="scan-pill__icon"><i class="bi bi-speedometer2"></i></span>
+                    </div>
+                    <div class="scan-pill__body">
+                        <h6>Speed</h6>
+                        <p>Load time, page weight and oversized images slowing customers down.</p>
+                    </div>
+                </div>
             </div>
-            <div class="col-md-3">
-                <span class="icon-chip mx-auto"><i class="bi bi-search"></i></span>
-                <h6 class="fw-bold mt-3">Findability</h6>
-                <p class="small text-muted mb-0">Titles, descriptions, Google</p>
+            <div class="col-sm-6 col-lg-3 reveal">
+                <div class="scan-pill">
+                    <span class="scan-step">04</span>
+                    <div class="scan-pill__photo">
+                        <img src="{% static 'images/chk-findability.jpg' %}" alt="Magnifying glass searching a map for visibility" loading="lazy" style="object-position:center 60%;">
+                        <span class="scan-pill__icon"><i class="bi bi-search"></i></span>
+                    </div>
+                    <div class="scan-pill__body">
+                        <h6>Findability</h6>
+                        <p>Titles, descriptions and how ready you are to be found on Google.</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -128,8 +446,12 @@ document.addEventListener('DOMContentLoaded', function () {
             errorDiv.classList.remove('d-none');
         })
         .finally(() => {
-            btn.disabled = false;
-            btn.innerHTML = 'Check Now';
+            if (window.oweruLoading) {
+                window.oweruLoading.reset(btn);
+            } else {
+                btn.disabled = false;
+                btn.innerHTML = 'Check Now';
+            }
         });
     });
 
@@ -151,14 +473,77 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const issuesList = document.getElementById('issues-list');
         issuesList.innerHTML = '';
-        data.top_issues.forEach(issue => {
-            const item = document.createElement('div');
-            item.className = 'list-group-item border-start-0 border-end-0';
-            item.innerHTML = '<i class="bi bi-exclamation-triangle text-warning me-2"></i>' +
-                '<strong class="text-capitalize">' + issue.area + ':</strong> ' +
-                issue.description;
-            issuesList.appendChild(item);
-        });
+
+        const AREA_ICONS = {
+            'security': 'bi-shield-lock',
+            'mobile': 'bi-phone',
+            'speed': 'bi-lightning-charge',
+            'function': 'bi-gear-wide-connected',
+            'findability': 'bi-search',
+            'trust': 'bi-patch-check',
+            'commerce': 'bi-bag-check',
+            'freshness': 'bi-clock-history'
+        };
+
+        if (!data.top_issues.length) {
+            issuesList.innerHTML =
+                '<div class="st-wrap">' +
+                    '<div class="st-head">' +
+                        '<span class="st-head__icon"><i class="bi bi-check-circle-fill"></i></span>' +
+                        '<h6>Clean scan</h6>' +
+                        '<p>No issues found on this website</p>' +
+                    '</div>' +
+                    '<div class="st-empty">' +
+                        '<i class="bi bi-patch-check-fill"></i>' +
+                        '<h6>Every check passed</h6>' +
+                        '<p>Your site passed all of the checks we ran. Well done.</p>' +
+                    '</div>' +
+                '</div>';
+        } else {
+            const rows = data.top_issues.map(issue => {
+                const points = parseInt(issue.points_lost, 10) || 0;
+                const level = points >= 8 ? 'high' : (points >= 5 ? 'mid' : 'low');
+                const barColor = level === 'high' ? '#dc3545' : (level === 'mid' ? '#fd7e14' : '#e6b44a');
+                const chipClass = level === 'high' ? ' sev-high' : (level === 'mid' ? ' sev-mid' : '');
+                const areaKey = String(issue.area || '').toLowerCase();
+                const icon = AREA_ICONS[areaKey] || 'bi-exclamation-triangle';
+                const areaLabel = areaKey.charAt(0).toUpperCase() + areaKey.slice(1);
+                const impact = issue.cost_to_business
+                    ? '<span class="st-cost"><b>Why it matters:</b> ' + issue.cost_to_business + '</span>'
+                    : '';
+
+                return '<tr style="--sev:' + barColor + ';">' +
+                    '<td>' +
+                        '<span class="st-area"><i class="bi ' + icon + '"></i>' + areaLabel + '</span>' +
+                        '<span class="st-chip' + chipClass + '">-' + points + ' pts</span>' +
+                    '</td>' +
+                    '<td>' + (issue.description || '') + '</td>' +
+                    '<td>' + impact + '</td>' +
+                '</tr>';
+            }).join('');
+
+            const count = data.top_issues.length;
+            issuesList.innerHTML =
+                '<div class="st-wrap">' +
+                    '<div class="st-head">' +
+                        '<span class="st-head__icon"><i class="bi bi-clipboard-data"></i></span>' +
+                        '<h6>' + count + (count === 1 ? ' issue' : ' issues') + ' found</h6>' +
+                        '<p>Ranked by how many points each one costs your score</p>' +
+                    '</div>' +
+                    '<div class="st-scroll"><table class="st-table">' +
+                        '<thead><tr>' +
+                            '<th scope="col">Area</th>' +
+                            '<th scope="col">What we found</th>' +
+                            '<th scope="col">What it costs you</th>' +
+                        '</tr></thead>' +
+                        '<tbody>' + rows + '</tbody>' +
+                    '</table></div>' +
+                    '<div class="st-foot">' +
+                        '<i class="bi bi-info-circle mt-1"></i>' +
+                        '<span>The full report shows all 22 checks with the exact fix for each one.</span>' +
+                    '</div>' +
+                '</div>';
+        }
 
         // Carry URL to full report form
         const reportLink = document.getElementById('full-report-link');

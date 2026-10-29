@@ -117,6 +117,7 @@ class FullReportForm(forms.Form):
     """Contact details to receive the full report."""
 
     website = forms.CharField(
+        label='Website address',
         required=False,
         widget=forms.HiddenInput(),
     )
@@ -156,9 +157,43 @@ class FullReportForm(forms.Form):
         widget=forms.CheckboxInput(attrs={'class': 'form-check-input', 'required': True}),
     )
 
+    def clean(self):
+        """Validate and normalise the scanned website address.
+
+        This used to be an unvalidated optional CharField, so submitting the
+        page without a URL produced a Scan row whose address was literally
+        ``https://``. The error is raised as a non-field error because the
+        field itself is a hidden input.
+        """
+        cleaned = super().clean()
+        website = (cleaned.get('website') or '').strip()
+
+        if not website:
+            raise forms.ValidationError(
+                'We could not read the website address. Please run the free '
+                'scan again, then request your report from that page.'
+            )
+
+        from .scanner import normalize_scan_url
+        try:
+            cleaned['website'] = normalize_scan_url(website)
+        except ValueError as exc:
+            raise forms.ValidationError(str(exc))
+
+        return cleaned
+
 
 class PaymentForm(forms.ModelForm):
     """Customer form to declare a payment made (transaction reference)."""
+
+    payer_name = forms.CharField(
+        label='Your name',
+        required=True,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Who is making this payment',
+        }),
+    )
 
     amount = forms.DecimalField(
         label='Amount paid (TZS)',
@@ -173,7 +208,7 @@ class PaymentForm(forms.ModelForm):
 
     class Meta:
         model = Payment
-        fields = ['method', 'amount', 'reference', 'kind', 'notes']
+        fields = ['method', 'amount', 'reference', 'kind', 'notes', 'proof_image']
         widgets = {
             'method': forms.Select(attrs={'class': 'form-control'}),
             'reference': forms.TextInput(attrs={
@@ -181,14 +216,19 @@ class PaymentForm(forms.ModelForm):
                 'placeholder': 'e.g. M-Pesa transaction ID or bank payer reference',
                 'required': True,
             }),
-            'kind': forms.Select(attrs={'class': 'form-control'}),
+            'kind': forms.HiddenInput(),
             'notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
+            'proof_image': forms.FileInput(attrs={
+                'class': 'form-control',
+                'accept': 'image/*',
+                'required': False,
+            }),
         }
         labels = {
             'method': 'How did you pay?',
             'reference': 'Transaction / paybill reference',
-            'kind': 'What is this payment for?',
             'notes': 'Anything we should know (optional)',
+            'proof_image': 'Screenshot / proof (optional)',
         }
 
     def clean_reference(self):

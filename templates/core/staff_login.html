@@ -62,6 +62,7 @@
             color: #221d10;
         }
         .btn-login:hover { filter: brightness(1.05); }
+        .btn-login.is-loading { opacity: .8; pointer-events: none; cursor: wait; }
         .link-site { color: var(--ink-2); font-size: .82rem; font-weight: 600; text-decoration: none; }
         .link-site:hover { color: #c08a1f; }
         .alert { font-size: .85rem; border-radius: 10px; }
@@ -110,7 +111,7 @@
                            placeholder="Enter your password" required autocomplete="current-password">
                     {% for err in form.password.errors %}<div class="field-error">{{ err }}</div>{% endfor %}
                 </div>
-                <button type="submit" class="btn btn-login"><i class="bi bi-box-arrow-in-right me-2"></i>Sign in</button>
+                <button type="submit" class="btn btn-login" data-loading-label="Signing in…"><i class="bi bi-box-arrow-in-right me-2"></i>Sign in</button>
             </form>
 
             <div class="text-center mt-3">
@@ -118,5 +119,24 @@
             </div>
         </div>
     </div>
+    <script>
+        // Standalone page (does not extend base.html), so the same tiny loader
+        // used everywhere else lives here too.
+        (function () {
+            function setLoading(btn) {
+                btn.setAttribute('aria-busy', 'true');
+                btn.disabled = true;
+                btn.classList.add('is-loading');
+                btn.innerHTML =
+                    '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>' +
+                    (btn.getAttribute('data-loading-label') || 'Please wait\u2026');
+            }
+            document.addEventListener('submit', function (e) {
+                var form = e.target;
+                var btn = e.submitter || (form && form.querySelector('[type="submit"]'));
+                if (btn && (btn.type || 'submit') === 'submit') { setLoading(btn); }
+            }, true);
+        })();
+    </script>
 </body>
 </html>

@@ -1,6 +1,7 @@
 """Views for Oweru Tech Solutions."""
 
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
 from django.contrib import messages
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from django.contrib.auth.forms import AuthenticationForm
@@ -10,10 +11,11 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.utils import timezone
 from django.db.models import Count, Q
-from django.http import JsonResponse, HttpResponseRedirect
+from django.http import JsonResponse, HttpResponseRedirect, Http404
 import json
 import re
 import requests
+from decimal import Decimal
 from urllib.parse import urlparse
 
 from .models import (
@@ -23,16 +25,18 @@ from .models import (
     Customer, Proposal, ProposalItem, ServiceDelivery, SupportTicket, Signal
 )
 from .forms import EnquiryForm, ScannerForm, FullReportForm, PaymentForm
-from .scanner import scan_website, calculate_score
+from .scanner import scan_website, calculate_score, is_excluded
 from .check_labels import (
     AREA_TITLES, AREA_META, CHECK_TITLES,
     area_title, check_label, group_checks,
 )
 from .workers import run_batch_in_background
 from .notifications import (
-    notify_new_enquiry, notify_payment_submitted,
+    notify_new_enquiry,
     notify_payment_confirmed, notify_proposal_sent, notify_support_reply,
     notify_request_approved, notify_customer_response, email_customer,
+    notify_payment_submitted, notify_payment_request_sent, _get_setting,
+    notify_alert,
 )
 
 
@@ -118,11 +122,6 @@ def _resolve_display_currency(request):
         request.session['display_currency'] = chosen
         return chosen, True
     return chosen, False
-
-
-def form_probe(request):
-    """Diagnostic page: a plain HTML form with no site CSS, to isolate browser rendering issues."""
-    return render(request, 'core/form_probe.html')
 
 
 def _create_enquiry(request, selected_package):
@@ -226,52 +225,149 @@ def enquiry_new(request):
 
 def enquiry_thanks(request, enquiry_id):
     enquiry = get_object_or_404(Enquiry, id=enquiry_id)
-    return render(request, 'core/enquiry_thanks.html', {
+    context = {
         'enquiry': enquiry,
         'steps': enquiry.journey_steps(),
+    }
+    # Book-now packages: the customer can secure their spot with a deposit now.
+    if enquiry.payment_token:
+        context['payment_link'] = (
+            settings.BASE_URL + reverse('core:payment_claim', args=[enquiry.payment_token])
+        )
+        context['book_now_deposit'] = enquiry.book_now_deposit()
+        if enquiry.package:
+            context['book_now_price'] = enquiry.package.price_tzs
+    return render(request, 'core/enquiry_thanks.html', context)
+
+
+# ---------------------------------------------------------------------------
+# Customer payment requests (secure deposit page)
+# ---------------------------------------------------------------------------
+
+def _payment_instructions():
+    """Human payment instructions per method, editable in Settings."""
+    return {
+        'mpesa': _get_setting(
+            'payment_mpesa_details',
+            'M-Pesa: Vodacom Business Pay Bill 500100, Account OWRU@<ref>. Code *150*00#'),
+        'tigo_pesa': _get_setting(
+            'payment_tigo_details',
+            'Tigo Pesa: Business Number 300850, Account OWRU@<ref>. Code *150*01#'),
+        'airtel_money': _get_setting(
+            'payment_airtel_details',
+            'Airtel Money: Business Code 310099, Account OWRU@<ref>. Code *150*60#'),
+        'halopesa': _get_setting(
+            'payment_halopesa_details',
+            'HaloPesa: use the account number we confirm on WhatsApp with your reference.'),
+        'bank_transfer': _get_setting(
+            'payment_bank_details',
+            'Bank transfer: CRDB Bank - Oweru Tech Solutions, TZS account. Use your reference '),
+        'cash': _get_setting(
+            'payment_cash_details',
+            'Cash: pay our team in person and mention your reference code.'),
+    }
+
+
+def payment_claim(request, token):
+    """Secure public page where a customer pays the deposit for a booking.
+
+    The token comes from either a Proposal (custom quote deposit) or a
+    book-now enquiry (fixed starter package). Posting the form records a
+    pending Payment with the customer's transaction reference (and optional
+    screenshot), then staff confirms it in the admin panel.
+    """
+    proposal = Proposal.objects.filter(payment_token=token).first()
+    enquiry = Enquiry.objects.filter(payment_token=token).first()
+    if not (proposal or enquiry):
+        raise Http404
+
+    context = {}
+
+    if proposal:
+        enquiry = proposal.enquiry
+        if not enquiry:
+            raise Http404
+        context.update({
+            'item_title': proposal.title,
+            'item_subtitle': f'Proposal {proposal.reference}',
+            'total_amount': proposal.total_amount,
+            'deposit_amount': proposal.deposit_amount(),
+            'currency': proposal.currency,
+            'due_date': proposal.valid_until,
+            'source': 'proposal',
+        })
+    else:
+        context.update({
+            'item_title': enquiry.package.name if enquiry.package else 'Booking deposit',
+            'item_subtitle': f'Enquiry ref {enquiry.reference}',
+            'total_amount': (enquiry.package.price_tzs if enquiry.package else None),
+            'deposit_amount': enquiry.book_now_deposit(),
+            'currency': 'TZS',
+            'due_date': None,
+            'source': 'book_now',
+        })
+
+    context['enquiry'] = enquiry
+    context['instructions'] = {
+        code: text.replace('<ref>', enquiry.reference)
+        for code, text in _payment_instructions().items()
+    }
+    context['support_phone'] = _get_setting('payment_support_phone', '')
+    form = PaymentForm(initial={
+        'kind': 'deposit',
+        'payer_name': enquiry.name,
     })
 
-
-def customer_pay(request, reference):
-    """Public page to see what to pay and submit a payment reference."""
-    enquiry = get_object_or_404(Enquiry, reference=reference.upper())
-    deposit = enquiry.deposit_amount()
-
-    settings_map = {s.key: s.value for s in Setting.objects.filter(category='payment')}
-    payment_methods = [
-        {'key': 'mpesa', 'label': 'M-Pesa', 'instructions': settings_map.get('payment_mpesa_details', '')},
-        {'key': 'tigo_pesa', 'label': 'Tigo Pesa', 'instructions': settings_map.get('payment_tigo_details', '')},
-        {'key': 'airtel_money', 'label': 'Airtel Money', 'instructions': settings_map.get('payment_airtel_details', '')},
-        {'key': 'bank_transfer', 'label': 'Bank Transfer', 'instructions': settings_map.get('payment_bank_details', '')},
-    ]
-
     if request.method == 'POST':
-        form = PaymentForm(request.POST)
+        form = PaymentForm(request.POST, request.FILES, initial={
+            'kind': 'deposit',
+            'payer_name': enquiry.name,
+        })
         if form.is_valid():
-            payment = form.save(commit=False)
-            payment.enquiry = enquiry
-            payment.amount = form.cleaned_data.get('amount') or deposit or 0
-            payment.submitted_by = enquiry.name
-            payment.save()
-            notify_payment_submitted(payment)
-            messages.success(
-                request,
-                'Thank you! Your payment reference has been received. '
-                'We verify it within a few hours and update your status.'
-            )
-            return redirect('core:customer_tracking', reference=enquiry.reference)
-    else:
-        initial = {}
-        if request.user.is_authenticated:
-            initial['submitted_by'] = request.user.email
-        form = PaymentForm(initial=initial)
+            deposit = context.get('deposit_amount') or Decimal('0')
+            amount = form.cleaned_data.get('amount')
+            if amount is None:
+                amount = deposit
+            if amount is None or amount <= 0:
+                form.add_error('amount', 'Enter the amount you paid.')
+            else:
+                payment = Payment.objects.create(
+                    enquiry=enquiry,
+                    proposal=proposal,
+                    amount=amount,
+                    currency=context.get('currency') or 'TZS',
+                    method=form.cleaned_data['method'],
+                    reference=form.cleaned_data['reference'].strip(),
+                    kind=form.cleaned_data.get('kind') or 'deposit',
+                    notes=form.cleaned_data.get('notes', ''),
+                    paid_by=form.cleaned_data.get('payer_name') or enquiry.name,
+                    proof_image=request.FILES.get('proof_image'),
+                    submitted_by='online',
+                    status='pending',
+                )
+                notify_payment_submitted(payment)
+                notify_alert(
+                    title=f'Payment reported: {enquiry.business_name}',
+                    body=(
+                        f'{payment.get_method_display()} {payment.currency} {payment.amount:,.2f} '
+                        f'(ref {payment.reference}) - {enquiry.name}'
+                    ),
+                    url=reverse('core:admin_enquiry_detail', args=[enquiry.id]),
+                    kind='payment',
+                    enquiry=enquiry,
+                )
+                return redirect('core:payment_done', payment_id=payment.id)
 
-    return render(request, 'core/customer/pay.html', {
-        'enquiry': enquiry,
-        'deposit': deposit,
-        'payment_methods': payment_methods,
-        'support_phone': settings_map.get('payment_support_phone', ''),
-        'form': form,
+    context['form'] = form
+    return render(request, 'core/payment_claim.html', context)
+
+
+def payment_done(request, payment_id):
+    """Receipt page shown right after a customer reports their payment."""
+    payment = get_object_or_404(Payment, id=payment_id)
+    return render(request, 'core/payment_done.html', {
+        'payment': payment,
+        'enquiry': payment.enquiry,
     })
 
 
@@ -291,10 +387,16 @@ def scanner_check(request):
         form = ScannerForm(request.POST)
         if form.is_valid():
             url = form.cleaned_data['url']
-            normalized = normalize_url(url)
+            try:
+                normalized = normalize_url(url)
+            except ValueError as exc:
+                return JsonResponse({'error': str(exc)}, status=400)
 
-            # Check exclusion list
-            if ScanExclusion.objects.filter(website_url__icontains=urlparse(normalized).netloc).exists():
+            # Use the same exclusion matcher as the scan itself so an opt-out
+            # can never be bypassed by a different entry point. (The old
+            # `icontains` lookup here matched on a substring of the host and
+            # disagreed with scan_website()'s stricter host/subdomain test.)
+            if is_excluded(normalized):
                 return JsonResponse({
                     'error': 'This site has requested not to be scanned.'
                 }, status=403)
@@ -339,7 +441,9 @@ def scanner_full_report(request):
     if request.method == 'POST':
         form = FullReportForm(request.POST)
         if form.is_valid():
-            url = normalize_url(form.cleaned_data['website'])
+            # FullReportForm.clean() has already validated and normalised it,
+            # so an empty or malformed address can never reach scan_website().
+            url = form.cleaned_data['website']
 
             # Graceful failure handling: if the remote site is unreachable we
             # still keep the lead, flag the scan as pending, and let the admin
@@ -410,7 +514,10 @@ def scanner_full_report(request):
             )
             return redirect('core:scanner_thanks', scan_id=scan.id)
 
-    return render(request, 'core/scanner_full.html', {'form': form, 'website': request.GET.get('url', '')})
+    # On a failed POST fall back to the submitted address so the validation
+    # error still tells the visitor which site they asked about.
+    website = request.GET.get('url', '') or str(request.POST.get('website', '')).strip()
+    return render(request, 'core/scanner_full.html', {'form': form, 'website': website})
 
 
 def scanner_thanks(request, scan_id):
@@ -425,11 +532,14 @@ def scanner_thanks(request, scan_id):
 
 
 def normalize_url(url):
-    """Ensure URL has protocol prefix."""
-    url = url.strip()
-    if not url.startswith(('http://', 'https://')):
-        url = f'https://{url}'
-    return url
+    """Ensure URL has protocol prefix and is a usable website address.
+
+    Raises ValueError when the address cannot be a website, so no entry
+    point can create a Scan row like ``https://``. See
+    :func:`core.scanner.normalize_scan_url` for the single source of truth.
+    """
+    from .scanner import normalize_scan_url
+    return normalize_scan_url(url)
 
 
 # ---------------------------------------------------------------------------
@@ -501,22 +611,6 @@ def staff_logout(request):
     auth_logout(request)
     messages.info(request, 'You have been signed out.')
     return redirect('core:home')
-
-
-def customer_login(request):
-    """Customer sign-in using their enquiry reference code."""
-    if request.method == 'POST':
-        ref = (request.POST.get('reference') or '').strip().upper()
-        enquiry = _get_enquiry_by_ref(ref)
-        if enquiry:
-            request.session['enquiry_ref'] = enquiry.reference
-            messages.success(
-                request,
-                f'Welcome back, {enquiry.name or enquiry.business_name}!'
-            )
-            return redirect('core:customer_tracking', reference=enquiry.reference)
-        messages.error(request, 'No project was found for that reference code.')
-    return render(request, 'core/customer_login.html', {})
 
 
 @admin_required
@@ -657,10 +751,9 @@ def admin_alert_read(request, alert_id):
     return redirect('core:admin_alerts')
 
 
+@admin_required
 def admin_report_requests(request):
     """Report approval queue - admin confirms before a client PDF is emailed."""
-    if not _is_admin(request.user):
-        return redirect('core:home')
 
     if request.method == 'POST':
         scan_id = request.POST.get('scan_id', '')
@@ -760,6 +853,11 @@ def admin_scans(request):
         'scan_type_choices': Scan.SCAN_TYPE_CHOICES,
         'total_scans': scans.count(),
         'current_search': search,
+        # Fixed count per scan source so the tabs always show real totals.
+        'type_counts': {
+            value: Scan.objects.filter(scan_type=value).count()
+            for value, _label in Scan.SCAN_TYPE_CHOICES
+        },
     }
     return render(request, 'core/admin/scans_list.html', context)
 
@@ -772,7 +870,24 @@ def admin_scan_batch(request):
         batch_name = request.POST.get('batch_name', '')
 
         url_list = [u.strip() for u in urls_raw.split('\n') if u.strip()]
-        url_list = [normalize_url(u) for u in url_list]
+
+        # Normalise and drop anything that cannot be a website, so one bad
+        # line no longer aborts the whole batch.
+        valid, skipped = [], []
+        for raw in url_list:
+            try:
+                valid.append(normalize_url(raw))
+            except ValueError:
+                skipped.append(raw)
+        url_list = valid
+
+        if skipped:
+            messages.warning(
+                request,
+                f'{len(skipped)} entr'
+                f'{"y was" if len(skipped) == 1 else "ies were"} skipped '
+                'because they are not valid website addresses.'
+            )
 
         if url_list:
             batch = ScanBatch.objects.create(
@@ -1473,8 +1588,12 @@ def admin_package_edit(request, package_id):
         package.description = request.POST.get('description', package.description)
         package.price_tzs_min = parse_decimal(request.POST.get('price_tzs_min'))
         package.price_tzs_max = parse_decimal(request.POST.get('price_tzs_max'))
+        package.price_usd_min = parse_decimal(request.POST.get('price_usd_min'))
+        package.price_usd_max = parse_decimal(request.POST.get('price_usd_max'))
         package.timeline = request.POST.get('timeline', package.timeline)
         package.sort_order = int(request.POST.get('sort_order', 0) or 0)
+        package.is_active = bool(request.POST.get('is_active'))
+        package.included = [v.strip() for v in request.POST.getlist('included') if v.strip()]
         package.save()
         messages.success(request, f'Package "{package.name}" saved.')
         return redirect('core:admin_packages')
@@ -1575,6 +1694,49 @@ def admin_proposal_detail(request, proposal_id):
                     proposal.responded_at = timezone.now()
                 proposal.save()
                 messages.success(request, f'Proposal moved to {dict(Proposal.STATUS_CHOICES)[new_status]}.')
+        elif action == 'send_payment_link':
+            propose_token = proposal.payment_token or ''
+            if propose_token:
+                notify_payment_request_sent(proposal)
+                messages.success(request, 'Payment reminder with secure link sent to the customer.')
+            else:
+                messages.error(request, 'This proposal has no payment token yet - save it first.')
+        elif action == 'confirm_deposit':
+            enquiry = proposal.enquiry
+            method = request.POST.get('method', 'bank_transfer')
+            if method not in dict(Payment.METHOD_CHOICES):
+                method = 'bank_transfer'
+            if Payment.objects.filter(proposal=proposal, kind='deposit', status='confirmed').exists():
+                messages.error(request, 'A deposit for this proposal is already confirmed.')
+            elif not enquiry:
+                messages.error(request, 'This proposal has no linked enquiry - cannot record a deposit.')
+            else:
+                deposit = proposal.deposit_amount() or proposal.total_amount or Decimal('0')
+                if deposit <= 0:
+                    messages.error(request, 'No deposit amount to confirm - add line items and a total first.')
+                else:
+                    payment = Payment.objects.create(
+                        enquiry=enquiry,
+                        proposal=proposal,
+                        customer=proposal.customer,
+                        amount=deposit,
+                        currency=proposal.currency,
+                        method=method,
+                        reference=request.POST.get('reference', '').strip() or f'staff-{proposal.reference}',
+                        kind='deposit',
+                        paid_by=enquiry.name,
+                        status='confirmed',
+                        notes=request.POST.get('notes', ''),
+                        submitted_by='staff',
+                        confirmed_by=request.user,
+                        date_confirmed=timezone.now(),
+                    )
+                    enquiry.sync_payment_status()
+                    if enquiry.payment_status == 'none':
+                        enquiry.payment_status = 'deposit_paid'
+                        enquiry.save()
+                    notify_payment_confirmed(payment)
+                    messages.success(request, f'Deposit confirmed: {payment.currency} {deposit:,.2f}')
         elif action == 'save_notes':
             proposal.notes = request.POST.get('notes', proposal.notes)
             proposal.save()
@@ -1615,6 +1777,9 @@ def admin_proposal_detail(request, proposal_id):
     return render(request, 'core/admin/proposal_detail.html', {
         'proposal': proposal,
         'total': _proposal_total(proposal),
+        'payment_url': settings.BASE_URL + reverse('core:payment_claim', args=[proposal.payment_token or 'placeholder']),
+        'deposit_confirmed': Payment.objects.filter(proposal=proposal, kind='deposit', status='confirmed').first(),
+        'deposit_pending': Payment.objects.filter(proposal=proposal, kind='deposit', status='pending'),
     })
 
 
@@ -1804,95 +1969,8 @@ def admin_ticket_detail(request, ticket_id):
 
 
 # ---------------------------------------------------------------------------
-# CUSTOMER PORTAL (reference-code based)
+# Scanner opt-out
 # ---------------------------------------------------------------------------
-
-def _get_enquiry_by_ref(reference):
-    return Enquiry.objects.filter(reference=reference.upper()).first()
-
-
-def customer_home(request, reference):
-    """Customer dashboard - My Enquiries."""
-    enquiry = get_object_or_404(Enquiry, reference=reference.upper())
-    request.session['enquiry_ref'] = enquiry.reference
-    return render(request, 'core/customer/customer_home.html', {
-        'enquiry': enquiry,
-        'steps': enquiry.journey_steps(),
-        'payments': enquiry.payments.all(),
-        'proposals': enquiry.proposals.all(),
-        'deliveries': enquiry.deliveries.all(),
-        'tickets': enquiry.tickets.all(),
-        'deposit': enquiry.deposit_amount(),
-        'customer': enquiry.customer,
-    })
-
-
-def customer_services(request, reference):
-    """My Services - delivered systems / care plans."""
-    enquiry = get_object_or_404(Enquiry, reference=reference.upper())
-    request.session['enquiry_ref'] = enquiry.reference
-    customer = enquiry.customer
-    deliveries = enquiry.deliveries.all()
-    if customer:
-        deliveries = customer.deliveries.all()
-    return render(request, 'core/customer/customer_services.html', {
-        'enquiry': enquiry,
-        'customer': customer,
-        'deliveries': deliveries,
-    })
-
-
-def customer_proposals(request, reference):
-    """My Proposals - quotes received."""
-    enquiry = get_object_or_404(Enquiry, reference=reference.upper())
-    request.session['enquiry_ref'] = enquiry.reference
-    proposals = enquiry.proposals.all()
-    if enquiry.customer:
-        proposals = enquiry.customer.proposals.all().exclude(id__in=proposals.values_list('id', flat=True)) | proposals
-    return render(request, 'core/customer/customer_proposals.html', {
-        'enquiry': enquiry,
-        'proposals': proposals.distinct(),
-    })
-
-
-def customer_payments_list(request, reference):
-    """My Payments - history and deposit due."""
-    enquiry = get_object_or_404(Enquiry, reference=reference.upper())
-    request.session['enquiry_ref'] = enquiry.reference
-    paid_total = sum((p.amount for p in enquiry.payments.filter(status='confirmed')), 0)
-    return render(request, 'core/customer/customer_payments.html', {
-        'enquiry': enquiry,
-        'payments': enquiry.payments.all(),
-        'deposit': enquiry.deposit_amount(),
-        'paid_total': paid_total,
-        'balance': max(enquiry.agreed_amount - paid_total, 0),
-    })
-
-
-def customer_support(request, reference):
-    """My Support - tickets for this enquiry."""
-    enquiry = get_object_or_404(Enquiry, reference=reference.upper())
-    request.session['enquiry_ref'] = enquiry.reference
-    if request.method == 'POST':
-        ticket = SupportTicket.objects.create(
-            customer=enquiry.customer,
-            enquiry=enquiry,
-            subject=request.POST.get('subject', ''),
-            message=request.POST.get('message', ''),
-            category=request.POST.get('category', 'question'),
-            priority=request.POST.get('priority', 'medium'),
-        )
-        messages.success(request, f'Support ticket {ticket.reference} created. We will email you.')
-        return redirect('core:customer_support', reference=enquiry.reference)
-    tickets = enquiry.tickets.all()
-    if enquiry.customer:
-        tickets = enquiry.customer.tickets.all()
-    return render(request, 'core/customer/customer_support.html', {
-        'enquiry': enquiry,
-        'tickets': tickets,
-        'categories': SupportTicket.CATEGORY_CHOICES,
-    })
-
 
 def handle_exclusion(request, url=None):
     """Let a site owner opt out of automated scanning.
@@ -1913,7 +1991,7 @@ def handle_exclusion(request, url=None):
             return JsonResponse(payload, status=status)
         messages.error(request, payload.get('error') or payload.get('message', ''))
         back = request.META.get('HTTP_REFERER', '')
-        return redirect(back) if back else redirect('core:scanner')
+        return redirect(back) if back else redirect('core:scanner_home')
 
     if not target:
         return _reply({'error': 'No website URL supplied.'}, status=400)
@@ -1954,4 +2032,4 @@ def handle_exclusion(request, url=None):
 
     messages.success(request, confirmation)
     back = request.META.get('HTTP_REFERER', '')
-    return redirect(back) if back else redirect('core:scanner')
+    return redirect(back) if back else redirect('core:scanner_home')

@@ -11,6 +11,18 @@
         <div class="d-flex justify-content-end mb-3">
             <a href="{% url 'core:admin_scan_batch' %}" class="btn btn-primary">New Batch Scan</a>
         </div>
+
+        <div class="d-flex flex-wrap gap-2 mb-3">
+            <a href="{% url 'core:admin_scans' %}{% if current_search %}?q={{ current_search }}{% endif %}"
+               class="btn btn-sm {% if not current_scan_type %}pill-gold{% else %}pill-line{% endif %}">All scans</a>
+            <a href="{% url 'core:admin_scans' %}?scan_type=public{% if current_search %}&amp;q={{ current_search }}{% endif %}"
+               class="btn btn-sm {% if current_scan_type == 'public' %}pill-gold{% else %}pill-line{% endif %}">Customer scans ({{ type_counts.public|default:0 }})</a>
+            <a href="{% url 'core:admin_scans' %}?scan_type=batch{% if current_search %}&amp;q={{ current_search }}{% endif %}"
+               class="btn btn-sm {% if current_scan_type == 'batch' %}pill-gold{% else %}pill-line{% endif %}">Scraped / auto scans ({{ type_counts.batch|default:0 }})</a>
+            <a href="{% url 'core:admin_scans' %}?scan_type=internal{% if current_search %}&amp;q={{ current_search }}{% endif %}"
+               class="btn btn-sm {% if current_scan_type == 'internal' %}pill-gold{% else %}pill-line{% endif %}">Internal staff ({{ type_counts.internal|default:0 }})</a>
+        </div>
+
         <form method="get" class="row g-2 mb-3">
             <div class="col-md-2">
                 <select name="band" class="form-select">
@@ -58,6 +70,7 @@
                     <tr>
                         <th>Website</th>
                         <th>Business</th>
+                        <th>Source</th>
                         <th>Score</th>
                         <th>Band</th>
                         <th>Change</th>
@@ -72,6 +85,11 @@
                     <tr style="cursor:pointer;" onclick="document.location='{% url 'core:admin_scan_detail' scan.id %}'">
                         <td class="small">{{ scan.website_url|truncatechars:40 }}</td>
                         <td>{{ scan.business_name|default:'-' }}</td>
+                        <td>
+                            {% if scan.scan_type == 'public' %}<span class="badge bg-info text-dark" title="The owner scanned their own site through the public scanner">Customer</span>
+                            {% elif scan.scan_type == 'batch' %}<span class="badge bg-secondary" title="Picked up automatically by the daily discovery scan">Scraped</span>
+                            {% else %}<span class="badge bg-light text-dark border" title="Run manually by staff">Staff</span>{% endif %}
+                        </td>
                         <td class="fw-bold">{{ scan.score }}</td>
                         <td>
                             {% if scan.band == 'critical' %}<span class="badge bg-danger">Critical</span>
@@ -102,7 +120,7 @@
                         </td>
                     </tr>
                     {% empty %}
-                    <tr><td colspan="8" class="text-center text-muted py-5">No scans found. Run a batch scan to get started.</td></tr>
+                    <tr><td colspan="10" class="text-center text-muted py-5">No scans found. Run a batch scan to get started.</td></tr>
                     {% endfor %}
                 </tbody>
             </table>

@@ -1,0 +1,95 @@
+{% comment %}
+Shared admin navigation. Included by both the fixed sidebar and the
+small-screen offcanvas so the menu is only defined in one place.
+Active item is matched on the resolved URL name.
+{% endcomment %}
+<div class="section-title">Overview</div>
+<a class="admin-menu-link{% if request.resolver_match.url_name == 'admin_dashboard' %} is-active{% endif %}" href="{% url 'core:admin_dashboard' %}">
+    <span class="mi"><i class="bi bi-grid-1x2-fill"></i></span>
+    <div class="lh-sm">
+        <div class="fw-semibold">Dashboard</div>
+        <div class="small text-muted">Today at a glance</div>
+    </div>
+</a>
+<a class="admin-menu-link{% if request.resolver_match.url_name == 'admin_alerts' %} is-active{% endif %}" href="{% url 'core:admin_alerts' %}">
+    <span class="mi"><i class="bi bi-bell-fill"></i></span>
+    <div class="lh-sm">
+        <div class="fw-semibold">Alerts</div>
+        <div class="small text-muted">Everything needing attention</div>
+    </div>
+</a>
+
+<div class="section-title">Leads &amp; sales</div>
+<a class="admin-menu-link{% if 'admin_enquir' in request.resolver_match.url_name %} is-active{% endif %}" href="{% url 'core:admin_enquiries' %}">
+    <span class="mi"><i class="bi bi-inbox-fill"></i></span>
+    <div class="lh-sm">
+        <div class="fw-semibold">Enquiries</div>
+        <div class="small text-muted">Requests and pipeline</div>
+    </div>
+</a>
+<a class="admin-menu-link{% if 'admin_customer' in request.resolver_match.url_name %} is-active{% endif %}" href="{% url 'core:admin_customers' %}">
+    <span class="mi"><i class="bi bi-people-fill"></i></span>
+    <div class="lh-sm">
+        <div class="fw-semibold">Customers</div>
+        <div class="small text-muted">Client records and contacts</div>
+    </div>
+</a>
+<a class="admin-menu-link{% if 'admin_proposal' in request.resolver_match.url_name %} is-active{% endif %}" href="{% url 'core:admin_proposals' %}">
+    <span class="mi"><i class="bi bi-file-earmark-text-fill"></i></span>
+    <div class="lh-sm">
+        <div class="fw-semibold">Proposals</div>
+        <div class="small text-muted">Quotes and price lists</div>
+    </div>
+</a>
+<a class="admin-menu-link{% if request.resolver_match.url_name == 'admin_payments' %} is-active{% endif %}" href="{% url 'core:admin_payments' %}">
+    <span class="mi"><i class="bi bi-cash-coin"></i></span>
+    <div class="lh-sm">
+        <div class="fw-semibold">Payments</div>
+        <div class="small text-muted">Deposits and confirmations</div>
+    </div>
+</a>
+<a class="admin-menu-link{% if 'admin_signal' in request.resolver_match.url_name %} is-active{% endif %}" href="{% url 'core:admin_signals' %}">
+    <span class="mi"><i class="bi bi-radar"></i></span>
+    <div class="lh-sm">
+        <div class="fw-semibold">Signals</div>
+        <div class="small text-muted">Job posts, tenders, funding</div>
+    </div>
+</a>
+
+<div class="section-title">Delivery</div>
+<a class="admin-menu-link{% if 'admin_deliver' in request.resolver_match.url_name %} is-active{% endif %}" href="{% url 'core:admin_deliveries' %}">
+    <span class="mi"><i class="bi bi-truck"></i></span>
+    <div class="lh-sm">
+        <div class="fw-semibold">Service Delivery</div>
+        <div class="small text-muted">Jobs in progress</div>
+    </div>
+</a>
+<a class="admin-menu-link{% if 'admin_package' in request.resolver_match.url_name %} is-active{% endif %}" href="{% url 'core:admin_packages' %}">
+    <span class="mi"><i class="bi bi-box-seam-fill"></i></span>
+    <div class="lh-sm">
+        <div class="fw-semibold">Packages</div>
+        <div class="small text-muted">Services and pricing</div>
+    </div>
+</a>
+<div class="section-title">Tools</div>
+<a class="admin-menu-link{% if request.resolver_match.url_name == 'admin_scans' or request.resolver_match.url_name == 'admin_scan_detail' or request.resolver_match.url_name == 'admin_scan_daily' or request.resolver_match.url_name == 'admin_batch_detail' %} is-active{% endif %}" href="{% url 'core:admin_scans' %}">
+    <span class="mi"><i class="bi bi-search-heart-fill"></i></span>
+    <div class="lh-sm">
+        <div class="fw-semibold">Scanner Logs</div>
+        <div class="small text-muted">Site health checks</div>
+    </div>
+</a>
+<a class="admin-menu-link{% if request.resolver_match.url_name == 'admin_scan_batch' %} is-active{% endif %}" href="{% url 'core:admin_scan_batch' %}">
+    <span class="mi"><i class="bi bi-stack"></i></span>
+    <div class="lh-sm">
+        <div class="fw-semibold">Batch Scan</div>
+        <div class="small text-muted">Scan many sites at once</div>
+    </div>
+</a>
+<a class="admin-menu-link{% if 'admin_report_request' in request.resolver_match.url_name %} is-active{% endif %}" href="{% url 'core:admin_report_requests' %}">
+    <span class="mi"><i class="bi bi-envelope-check"></i></span>
+    <div class="lh-sm">
+        <div class="fw-semibold">Report Requests</div>
+        <div class="small text-muted">Approve before sending PDFs</div>
+    </div>
+</a>

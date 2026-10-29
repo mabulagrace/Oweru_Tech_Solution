@@ -9,78 +9,116 @@
 
 <section class="py-4">
     <div class="container">
-        <button class="btn btn-primary mb-3" data-bs-toggle="collapse" data-bs-target="#newPkg">+ New Package</button>
+        <button class="btn btn-primary mb-3" data-bs-toggle="collapse" data-bs-target="#newPkg">
+            <i class="bi bi-plus-lg me-1"></i>New Package
+        </button>
         <div class="card border-0 rounded-4 overflow-hidden mb-4 collapse" id="newPkg" style="box-shadow:0 4px 14px rgba(31,39,80,.08);">
-            <div class="card-header bg-white fw-bold">Create package</div>
+            <div class="card-header bg-white fw-bold d-flex align-items-center gap-2">
+                <i class="bi bi-box-seam" style="color:#e6b44a;"></i>Create package
+            </div>
             <div class="card-body">
                 <form method="post">
                     {% csrf_token %}
                     <input type="hidden" name="action" value="create">
-                    <div class="row g-2">
+                    <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label small fw-semibold">Name</label>
-                            <input name="name" class="form-control" required>
+                            <label class="ow-label" for="c-name"><i class="bi bi-type"></i>Name <span class="ow-req">*</span></label>
+                            <input id="c-name" name="name" class="ow-input" required placeholder="e.g. Starter Business Website">
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label small fw-semibold">Group</label>
-                            <select name="group" class="form-select">
+                            <label class="ow-label" for="c-group"><i class="bi bi-collection"></i>Group</label>
+                            <select id="c-group" name="group" class="ow-input">
                                 <option value="mobile-web">Mobile &amp; Web Systems</option>
                                 <option value="crm">CRM Systems</option>
                                 <option value="network">Network Design &amp; Maintenance</option>
                             </select>
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label small fw-semibold">Timeline</label>
-                            <input name="timeline" class="form-control" placeholder="e.g. 2-3 weeks">
+                            <label class="ow-label" for="c-timeline"><i class="bi bi-hourglass-split"></i>Timeline</label>
+                            <input id="c-timeline" name="timeline" class="ow-input" placeholder="e.g. 2-3 weeks">
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label small fw-semibold">Price min (TZS)</label>
-                            <input name="price_tzs_min" class="form-control">
+                            <label class="ow-label" for="c-tzs-min"><i class="bi bi-tag"></i>Price min (TZS)</label>
+                            <div class="ow-money">
+                                <span class="ow-money__tag">TZS</span>
+                                <input id="c-tzs-min" name="price_tzs_min" class="ow-input" inputmode="numeric" placeholder="0">
+                            </div>
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label small fw-semibold">Price max (TZS)</label>
-                            <input name="price_tzs_max" class="form-control">
+                            <label class="ow-label" for="c-tzs-max"><i class="bi bi-tag"></i>Price max (TZS)</label>
+                            <div class="ow-money">
+                                <span class="ow-money__tag">TZS</span>
+                                <input id="c-tzs-max" name="price_tzs_max" class="ow-input" inputmode="numeric" placeholder="0">
+                            </div>
                         </div>
                         <div class="col-12">
-                            <label class="form-label small fw-semibold">Description</label>
-                            <textarea name="description" rows="2" class="form-control"></textarea>
+                            <label class="ow-label" for="c-desc"><i class="bi bi-card-text"></i>Description</label>
+                            <textarea id="c-desc" name="description" rows="2" class="ow-input" placeholder="A short plain-English summary of who this package is for."></textarea>
                         </div>
-                        <div class="col-12"><button class="btn btn-primary">Create package</button></div>
+                        <div class="col-12">
+                            <button class="btn btn-primary btn-sheen"><i class="bi bi-check-lg me-1"></i>Create package</button>
+                            <a href="{% url 'core:admin_packages' %}" class="btn btn-sm pill-line ms-2">Cancel</a>
+                        </div>
                     </div>
                 </form>
             </div>
         </div>
 
         {% for group in groups %}
-        <h5 class="fw-bold mt-4">{{ group.label }}</h5>
-        <div class="table-responsive">
-            <table class="table table-hover align-middle">
-                <thead class="table-light">
-                    <tr><th>Package</th><th>Price (TZS)</th><th>Timeline</th><th>Active</th><th>Sort</th></tr>
+        <h5 class="fw-bold mt-4 mb-2">{{ group.label }}</h5>
+        <div class="ow-table-wrap">
+            <div class="table-responsive">
+            <table class="table ow-table align-middle">
+                <thead>
+                    <tr>
+                        <th><span class="ow-th"><i class="bi bi-box-seam"></i>Package</span></th>
+                        <th><span class="ow-th"><i class="bi bi-tag"></i>Price (TZS)</span></th>
+                        <th class="ow-hide-md"><span class="ow-th"><i class="bi bi-clock"></i>Timeline</span></th>
+                        <th><span class="ow-th"><i class="bi bi-toggle-on"></i>Active</span></th>
+                        <th class="ow-hide-sm"><span class="ow-th"><i class="bi bi-sort-down"></i>Sort</span></th>
+                    </tr>
                 </thead>
                 <tbody>
                     {% for p in group.packages %}
-                    <tr style="cursor:pointer;" onclick="document.location='{% url 'core:admin_package_edit' p.id %}'">
-                        <td class="fw-semibold">{{ p.name }}</td>
-                        <td>{% if p.price_tzs_min %}{{ p.price_tzs_min|floatformat:0|intcomma }} - {{ p.price_tzs_max|floatformat:0|intcomma }}{% else %}—{% endif %}</td>
-                        <td>{{ p.timeline|default:'—' }}</td>
+                    <tr class="{% if p.is_active %}ow-row--won{% else %}ow-row--mute{% endif %}" style="cursor:pointer;" onclick="document.location='{% url 'core:admin_package_edit' p.id %}'">
                         <td>
-                            <form method="post" onclick="event.stopPropagation();">
+                            <div class="ow-cell-id">
+                                <span class="ow-ava ow-ava--p">{{ p.name|slice:":1"|upper }}</span>
+                                <span style="min-width:0;">
+                                    <span class="ow-strong">{{ p.name }}</span>
+                                    {% if p.description %}<span class="ow-meta">{{ p.description|truncatechars:58 }}</span>{% endif %}
+                                </span>
+                            </div>
+                        </td>
+                        <td>
+                            {% if p.price_tzs_min %}
+                            <span class="ow-amount">{{ p.price_tzs_min|floatformat:0|intcomma }}{% if p.price_tzs_max %} &ndash; {{ p.price_tzs_max|floatformat:0|intcomma }}{% endif %}</span>
+                            {% else %}
+                            <span class="ow-chip ow-chip--mute">On request</span>
+                            {% endif %}
+                        </td>
+                        <td class="ow-hide-md">
+                            {% if p.timeline %}<span class="ow-chip ow-chip--teal"><i class="bi bi-clock-fill"></i>{{ p.timeline }}</span>
+                            {% else %}<span class="ow-meta">&mdash;</span>{% endif %}
+                        </td>
+                        <td onclick="event.stopPropagation();">
+                            <form method="post" class="d-inline-block">
                                 {% csrf_token %}
                                 <input type="hidden" name="action" value="toggle">
                                 <input type="hidden" name="package_id" value="{{ p.id }}">
-                                <button class="btn btn-sm {% if p.is_active %}btn-success{% else %}btn-outline-secondary{% endif %}">
+                                <button class="btn btn-sm {% if p.is_active %}btn-success{% else %}pill-line{% endif %}">
                                     {{ p.is_active|yesno:'Active,Inactive' }}
                                 </button>
                             </form>
                         </td>
-                        <td>{{ p.sort_order }}</td>
+                        <td class="ow-hide-sm"><span class="ow-num{% if not p.sort_order %} ow-num--0{% endif %}">{{ p.sort_order }}</span></td>
                     </tr>
                     {% empty %}
-                    <tr><td colspan="5" class="text-muted">No packages in this group</td></tr>
+                    <tr><td colspan="5" class="ow-empty"><i class="bi bi-box-seam"></i>No packages in this group</td></tr>
                     {% endfor %}
                 </tbody>
             </table>
+            </div>
         </div>
         {% endfor %}
     </div>

@@ -8,7 +8,7 @@
 {% block extra_css %}
 <style>
     /* =========================================================
-       HERO — reference-style, navy + gold
+       HERO â reference-style, navy + gold
     ========================================================= */
     .hero-prime {
         position: relative;
@@ -133,13 +133,13 @@
     .wdo-card {
         position: relative; display: flex; flex-direction: column;
         padding: 24px; border-radius: 16px; min-height: 178px;
-        background: #fff; border: 1px solid var(--line);
+        background: linear-gradient(140deg, #fff9ea, #fdf0d3);
+        border: 1px solid rgba(230,180,74,.50);
         box-shadow: 0 12px 28px -20px rgba(20,27,52,.28);
         color: inherit; text-decoration: none;
         transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease;
     }
-    .wdo-card:hover { transform: translateY(-6px); border-color: rgba(230,180,74,.65); box-shadow: 0 24px 48px -24px rgba(20,27,52,.38); }
-    .wdo-card.wdo-gold { background: linear-gradient(140deg, #fff9ea, #fdf0d3); border-color: rgba(230,180,74,.55); }
+    .wdo-card:hover { transform: translateY(-6px); border-color: rgba(230,180,74,.85); box-shadow: 0 24px 48px -24px rgba(20,27,52,.38); }
     .sol-num {
         display: inline-flex; align-items: center; justify-content: center;
         width: 44px; height: 44px; border-radius: 11px;
@@ -153,6 +153,21 @@
     .sol-link { display: inline-flex; align-items: center; gap: 6px; font-size: .78rem; font-weight: 700; color: #c08a1f; transition: color .18s ease; }
     .wdo-card:hover .sol-link { color: var(--champagne); }
     .sol-link i { font-size: .72rem; }
+
+    /* What we do: minimized - shorter picture tile and tighter word blocks */
+    .wdo-grid { gap: 10px; grid-template-columns: 1.5fr 1fr 1fr; }
+    .wdo-feat { padding: 18px; }
+    .wdo-feat h3 { font-size: 1.3rem; }
+    .wdo-feat p { font-size: .88rem; line-height: 1.55; margin-bottom: 14px; }
+    .wdo-feat .feat-line { width: 34px; margin-bottom: 10px; }
+    .feat-badge { top: 12px; left: 12px; padding: 5px 10px; font-size: .72rem; }
+    .wdo-feat .btn { padding: .42rem .95rem; font-size: .82rem; }
+    .wdo-card { padding: 15px; min-height: 130px; border-radius: 12px; }
+    .wdo-card .sol-num { margin-bottom: 10px; }
+    .wdo-card h3 { font-size: 1rem; margin-bottom: 6px; }
+    .wdo-card p { font-size: .84rem; line-height: 1.5; margin-bottom: 10px; }
+    .sol-num { width: 34px; height: 34px; font-size: .9rem; border-radius: 9px; }
+    .sol-link { font-size: .78rem; }
 
     /* Trust band */
     .trust-band {
@@ -213,32 +228,52 @@
     }
     .impact-band .sec-head h2 { color: #fff; }
     .impact-band .sec-head p { color: rgba(255,255,255,.72); }
-    .impact-grid { display: grid; grid-template-columns: 1.25fr 1fr; gap: 16px; max-width: 1000px; margin: 0 auto; align-items: stretch; }
+    .impact-band .eyebrow { justify-content: flex-start; }
+    .impact-wrap {
+        display: grid; grid-template-columns: 1fr 1.25fr; gap: 40px;
+        align-items: center; max-width: 1040px; margin: 0 auto;
+    }
+    .impact-grid { display: flex; flex-direction: column; gap: 14px; }
     .impact-card {
-        position: relative; display: flex; flex-direction: column;
-        padding: 28px; border-radius: 16px;
-        background: #fff; border: 1px solid var(--line);
-        box-shadow: 0 18px 40px -28px rgba(12,18,48,.45);
+        position: relative; display: flex; flex-direction: row; align-items: flex-start;
+        gap: 16px; padding: 20px 20px; border-radius: 14px;
+        background: linear-gradient(150deg, rgba(28,37,71,.94) 0%, rgba(12,18,48,.94) 100%);
+        border: 1px solid rgba(255,212,113,.30);
+        box-shadow: 0 16px 34px -22px rgba(0,0,0,.75);
         color: inherit;
-        transition: transform .25s ease, border-color .25s ease;
+        transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease;
     }
-    .impact-card:hover { transform: translateY(-5px); border-color: rgba(230,180,74,.65); }
+        .impact-card__media {
+        width: 180px; flex: 0 0 180px; border-radius: 12px; overflow: hidden;
+        position: relative; box-shadow: 0 10px 22px -14px rgba(8,12,32,.55);
+    }
+    .impact-card__media img {
+        width: 100%; height: 100%; object-fit: cover; aspect-ratio: 4/3; display: block;
+        transition: transform .4s ease;
+    }
+    .impact-card:hover .impact-card__media img { transform: scale(1.05); }
+.impact-card:hover {
+        transform: translateY(-5px);
+        border-color: rgba(255,212,113,.75);
+        box-shadow: 0 24px 46px -20px rgba(0,0,0,.85);
+    }
     .ic-chip {
+        flex: 0 0 auto;
         display: inline-flex; align-items: center; justify-content: center;
-        width: 52px; height: 52px; border-radius: 14px; margin-bottom: 20px;
+        width: 44px; height: 44px; border-radius: 12px;
         background: linear-gradient(135deg, var(--champagne-2), var(--champagne));
-        color: #221d10; font-size: 1.35rem;
-        box-shadow: 0 10px 20px -10px rgba(230,180,74,.6);
+        color: #221d10; font-size: 1.12rem;
+        box-shadow: 0 8px 18px -9px rgba(230,180,74,.65);
     }
-    .impact-card.impact-feature { grid-row: span 2; background: linear-gradient(160deg, #fff, #fffdf4); }
-    .impact-card h3 { font-size: 1.1rem; font-weight: 700; margin: 0 0 10px; color: var(--navy-deep); }
-    .impact-card p { color: var(--muted); font-size: .87rem; line-height: 1.65; margin: 0; }
-    .impact-feature .check-list { list-style: none; margin: 18px 0 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
-    .impact-feature .check-list li { display: flex; align-items: center; gap: 10px; font-size: .85rem; font-weight: 600; color: #2b335c; }
-    .impact-feature .check-list i { color: #c08a1f; font-size: .95rem; }
+    .impact-card__body{min-width:0;}
+    .impact-band .sec-head{text-align:left;margin-bottom:0;}
+    .impact-card h3 { font-size: .96rem; font-weight: 700; margin: 0 0 7px; color: #fff; }
+    .impact-card p { color: rgba(255,255,255,.70); font-size: .8rem; line-height: 1.6; margin: 0; }
+    .impact-feature .check-list { list-style: none; margin: 11px 0 0; padding: 0; display: flex; flex-direction: row; flex-wrap: wrap; gap: 6px 16px; }
+    .impact-feature .check-list li { display: flex; align-items: center; gap: 8px; font-size: .79rem; font-weight: 600; color: rgba(255,255,255,.88); }
+    .impact-feature .check-list i { color: #ffd471; font-size: .88rem; }
     .impact-feature .gold-line {
-        margin-top: auto; display: block; height: 3px; border-radius: 99px;
-        background: linear-gradient(90deg, var(--champagne-2), var(--champagne), transparent);
+        display: none;
     }
 
     /* Final CTA: split word + picture */
@@ -247,7 +282,7 @@
         background-color: var(--navy-deep);
         background-image: radial-gradient(circle at 85% 15%, rgba(230,180,74,.16), transparent 55%);
     }
-    .cta-split { display: grid; grid-template-columns: 1.05fr 1fr; gap: 52px; align-items: center; max-width: 1060px; margin: 0 auto; text-align: left; }
+    .cta-split { display: grid; grid-template-columns: 1fr 1.45fr; gap: 52px; align-items: center; max-width: 1120px; margin: 0 auto; text-align: left; }
     .cta-copy h2 { font-size: clamp(30px, 4.4vw, 44px); font-weight: 800; letter-spacing: -.02em; margin: 0 0 16px; line-height: 1.16; }
     .cta-copy p { color: rgba(255,255,255,.78); font-size: 15px; line-height: 1.7; margin: 0 0 30px; max-width: 460px; }
     .cta-media { position: relative; }
@@ -284,8 +319,9 @@
 
         .wdo-grid { grid-template-columns: 1fr 1fr; }
         .wdo-feat { grid-column: 1 / -1; grid-row: auto; min-height: 270px; }
-        .impact-grid { grid-template-columns: 1fr 1fr; }
-        .impact-feature { grid-column: 1 / -1; grid-row: auto; }
+        .impact-wrap { grid-template-columns: 1fr; gap: 28px; }
+        .impact-band .sec-head { text-align: center; }
+        .impact-band .eyebrow { justify-content: center; }
         .trust-wrap { grid-template-columns: 1fr; gap: 36px; }
         .trust-media { max-width: 420px; margin: 0 auto; }
         .trust-list { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -294,9 +330,9 @@
         .stats-glass { grid-template-columns: repeat(2, 1fr); margin-top: -46px; }
         .stat-cell:nth-child(2) { border-right: 0; }
         .stat-cell:nth-child(-n+2) { border-bottom: 1px solid rgba(230,180,74,.18); }
-        .wdo-grid, .impact-grid { grid-template-columns: 1fr; }
+        .wdo-grid { grid-template-columns: 1fr; }
         .wdo-feat { min-height: 240px; }
-        .impact-feature { grid-column: auto; }
+        .impact-card { flex-direction: column; }
         .trust-list { grid-template-columns: 1fr; }
     }
     @media (max-width: 560px) {
@@ -314,14 +350,14 @@
     <div class="hero-slide" style="background-image:url('{% static "images/hero-cross-2.jpg" %}');"></div>
     <div class="hero-slide" style="background-image:url('{% static "images/hero-cross-3.jpg" %}');"></div>
     <div class="hero-inner">
-        <span class="eyebrow mb-3"><i class="bi bi-stars me-1" style="color:#ffd471;"></i>Oweru Tech Solutions · Tanzania</span>
+        <span class="eyebrow mb-3"><i class="bi bi-stars me-1" style="color:#ffd471;"></i>Oweru Tech Solutions Â· Tanzania</span>
         <h1>
             Innovating Tomorrow.
             <br>
             <span class="hero-gold">Building Today.</span>
         </h1>
         <p>
-            We are Oweru — a Tanzanian software house building mobile apps, web platforms,
+            We are Oweru â a Tanzanian software house building mobile apps, web platforms,
             CRM systems and secure networks for growing businesses. A fixed price before we
             start, delivery on the day we promise.
         </p>
@@ -367,11 +403,11 @@
         </div>
         <div class="wdo-grid">
             <div class="wdo-feat reveal">
-                <span class="feat-badge"><i class="bi bi-stars"></i> OUR WORK · LIVE</span>
+                <span class="feat-badge"><i class="bi bi-stars"></i> OUR WORK Â· LIVE</span>
                 <div>
                     <span class="feat-line"></span>
                     <h3>Real systems our engineers ship.</h3>
-                    <p>From internal CRMs to public booking platforms and visitor dashboards — designed, built, launched and kept healthy end-to-end.</p>
+                    <p>From internal CRMs to public booking platforms and visitor dashboards â designed, built, launched and kept healthy end-to-end.</p>
                     <a href="{% url 'core:services' %}" class="btn btn-champagne btn-sheen px-3">Meet the solutions</a>
                 </div>
             </div>
@@ -402,7 +438,7 @@
             <a href="{% url 'core:scanner_home' %}" class="wdo-card wdo-gold reveal">
                 <span class="sol-num">05</span>
                 <h3>Website Health Scanner</h3>
-                <p>Free 22-check health score — speed, mobile, security and trust, measured not claimed.</p>
+                <p>Free 22-check health score â speed, mobile, security and trust, measured not claimed.</p>
                 <span class="sol-link">Run free check <i class="bi bi-arrow-right"></i></span>
             </a>
             <a href="{% url 'core:services' %}" class="wdo-card reveal">
@@ -471,6 +507,7 @@
 <!-- ================= IMPACT ================= -->
 <section class="sec impact-band">
     <div class="container">
+        <div class="impact-wrap">
         <div class="sec-head reveal">
             <span class="eyebrow mb-2"><span class="d-inline-block me-2" style="width:30px;height:2px;border-radius:99px;background:#e6b44a;"></span>Real impact</span>
             <h2>Proven <span class="hero-gold">results.</span></h2>
@@ -478,27 +515,39 @@
         </div>
         <div class="impact-grid reveal">
             <div class="impact-card impact-feature">
-                <span class="ic-chip"><i class="bi bi-lightning-charge"></i></span>
-                <h3>Business Automation</h3>
-                <p>Removing repetitive manual work through smart systems and integrations that run by themselves.</p>
-                <ul class="check-list">
-                    <li><i class="bi bi-check2"></i> Fewer manual errors</li>
-                    <li><i class="bi bi-check2"></i> Hours returned to your team</li>
-                    <li><i class="bi bi-check2"></i> Processes that run on their own</li>
-                </ul>
-                <span class="gold-line"></span>
+                <div class="impact-card__media">
+                    <img src="{% static 'images/grp-crm.jpg' %}" alt="Business automation systems" loading="lazy">
+                </div>
+                <div class="impact-card__body">
+                    <h3>Business Automation</h3>
+                    <p>Removing repetitive manual work through smart systems and integrations that run by themselves.</p>
+                    <ul class="check-list">
+                        <li><i class="bi bi-check2"></i> Fewer manual errors</li>
+                        <li><i class="bi bi-check2"></i> Hours returned to your team</li>
+                        <li><i class="bi bi-check2"></i> Processes that run on their own</li>
+                    </ul>
+                </div>
             </div>
             <div class="impact-card">
-                <span class="ic-chip"><i class="bi bi-graph-up-arrow"></i></span>
-                <h3>Digital Growth</h3>
-                <p>Platforms that help businesses reach, serve and convert more customers — measured, not guessed.</p>
+                <div class="impact-card__media">
+                    <img src="{% static 'images/grp-mobile-web.jpg' %}" alt="Digital growth solutions" loading="lazy">
+                </div>
+                <div class="impact-card__body">
+                    <h3>Digital Growth</h3>
+                    <p>Platforms that help businesses reach, serve and convert more customers â measured, not guessed.</p>
+                </div>
             </div>
             <div class="impact-card">
-                <span class="ic-chip"><i class="bi bi-lightbulb"></i></span>
-                <h3>Technology Innovation</h3>
-                <p>Modern solutions built around how your business actually works, backed by a team of local engineers.</p>
+                <div class="impact-card__media">
+                    <img src="{% static 'images/hero-dashboard.jpg' %}" alt="Technology innovation dashboard" loading="lazy">
+                </div>
+                <div class="impact-card__body">
+                    <h3>Technology Innovation</h3>
+                    <p>Modern solutions built around how your business actually works, backed by a team of local engineers.</p>
+                </div>
             </div>
         </div>
+    </div>
     </div>
 </section>
 
@@ -509,7 +558,7 @@
             <div class="cta-copy">
                 <span class="eyebrow mb-3"><i class="bi bi-rocket-takeoff me-1" style="color:#ffd471;"></i>Start today</span>
                 <h2><span class="hero-gold">Ready to build something extraordinary?</span></h2>
-                <p>Tell us the problem — we give you a fixed price and delivery date before you commit.</p>
+                <p>Tell us the problem â we give you a fixed price and delivery date before you commit.</p>
                 <div class="hero-cta justify-content-start">
                     <a href="{% url 'core:enquiry_new' %}" class="btn btn-champagne btn-sheen btn-lg px-5">Start a Project</a>
                     <a href="{% url 'core:scanner_home' %}" class="btn btn-outline-gold btn-lg px-4">Run a Free Site Check</a>
