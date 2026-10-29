@@ -2,17 +2,48 @@
 Django settings for oweru_tech_solutions project.
 """
 
+import os as _os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
+def _load_env_file(path):
+    """Minimal .env loader, so secrets live in one file instead of the registry.
+
+    Real environment variables always win, which keeps any shell session or
+    deployment able to override the file. No extra dependency needed.
+    """
+    try:
+        # utf-8-sig tolerates a byte-order mark, which Notepad and PowerShell
+        # add when saving a .env file as UTF-8.
+        with open(path, 'r', encoding='utf-8-sig') as fh:
+            for raw in fh:
+                line = raw.strip()
+                if not line or line.startswith('#') or '=' not in line:
+                    continue
+                key, _, value = line.partition('=')
+                _os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
+    except OSError:
+        pass
+
+
+# Load .env before anything below reads the environment.
+_load_env_file(BASE_DIR / '.env')
+
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-@#!f5oj+$q3#7b=%kuq-m)#h0kw#e1=eg83j9ch#qq==)fvnes'
+# Read from the environment so no key is ever committed. The fallback is a
+# deliberately useless development key - set DJANGO_SECRET_KEY for real use.
+SECRET_KEY = (
+    _os.environ.get('DJANGO_SECRET_KEY')
+    or _os.environ.get('SECRET_KEY')
+    or 'django-insecure-local-dev-only'
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -69,27 +100,50 @@ WSGI_APPLICATION = 'oweru_tech_solutions.wsgi.application'
 
 
 # ============================================================
-# PostgreSQL (production) - currently active
+# Database
 # ============================================================
+# The defaults match the original local setup, so an existing checkout keeps
+# running with no .env file at all. Point DB_* at your own PostgreSQL, or set
+# DB_ENGINE=sqlite for a zero-setup development database.
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'oweru_tech',
-        'USER': 'postgres',
-        'PASSWORD': '123',
-        'HOST': 'localhost',
-        'PORT': '5432',
+if _os.environ.get('DB_ENGINE', 'postgresql').strip().lower() == 'sqlite':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': _os.environ.get('DB_NAME', 'oweru_tech'),
+            'USER': _os.environ.get('DB_USER', 'postgres'),
+            'PASSWORD': _os.environ.get('DB_PASSWORD', '123'),
+            'HOST': _os.environ.get('DB_HOST', 'localhost'),
+            'PORT': _os.environ.get('DB_PORT', '5432'),
+        }
+    }
 
-# DEVELOPMENT fallback (uncomment to use SQLite instead)
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
+# A full connection string wins over the individual DB_* values.
+# Example: postgres://user:password@host:5432/dbname
+_db_url = _os.environ.get('DATABASE_URL', '').strip()
+if _db_url.startswith(('postgres://', 'postgresql://')):
+    from urllib.parse import urlparse as _urlparse
+    _u = _urlparse(_db_url)
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': _u.path.lstrip('/'),
+        'USER': _u.username,
+        'PASSWORD': _u.password,
+        'HOST': _u.hostname,
+        'PORT': _u.port or '5432',
+    }
+elif _db_url.startswith('sqlite'):
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
 
 
 # Custom User Model
@@ -140,29 +194,6 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # Real sending uses SMTP settings from environment variables so secrets are
 # never committed. Leave EMAIL_HOST empty to keep the console backend.
 
-import os as _os
-
-
-def _load_env_file(path):
-    """Minimal .env loader, so secrets live in one file instead of the registry.
-
-    Real environment variables always win, which keeps the scheduled task and
-    any deployment able to override the file. No extra dependency needed.
-    """
-    try:
-        with open(path, 'r', encoding='utf-8') as fh:
-            for raw in fh:
-                line = raw.strip()
-                if not line or line.startswith('#') or '=' not in line:
-                    continue
-                key, _, value = line.partition('=')
-                _os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
-    except OSError:
-        pass
-
-
-_load_env_file(BASE_DIR / '.env')
-
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 EMAIL_HOST = _os.environ.get('SMTP_HOST', '')
 EMAIL_PORT = int(_os.environ.get('SMTP_PORT', '587') or 587)
@@ -208,19 +239,9 @@ if _os.environ.get('VERCEL'):
         }
     }
 
-    _db_url = _os.environ.get('DATABASE_URL', '').strip()
-    if _db_url and _db_url.startswith('postgres'):
-        from urllib.parse import urlparse as _urlparse
-        _u = _urlparse(_db_url)
-        DATABASES['default'] = {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': _u.path.lstrip('/'),
-            'USER': _u.username,
-            'PASSWORD': _u.password,
-            'HOST': _u.hostname,
-            'PORT': _u.port or '5432',
-        }
-    else:
+    # No DATABASE_URL on Vercel means a throwaway SQLite file that renders
+    # pages but stores nothing.
+    if not _os.environ.get('DATABASE_URL', '').strip():
         DATABASES['default'] = {
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': BASE_DIR / 'db.sqlite3',

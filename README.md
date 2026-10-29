@@ -48,21 +48,26 @@ Complete lead-generation and sales system for Oweru International Ltd, built wit
 ```bash
 # 1. Create and activate virtual environment
 python -m venv venv
-venv\Scripts\activate
+venv\Scripts\activate          # Windows
+# source venv/bin/activate     # macOS / Linux
 
 # 2. Install dependencies
 pip install -r requirements.txt
 
-# 3. Migrate the database
+# 3. Configure your database (optional - see "Run it locally" below)
+copy .env.example .env         # Windows
+# cp .env.example .env         # macOS / Linux
+
+# 4. Migrate the database
 python manage.py migrate
 
-# 4. Seed initial content (packages, care plans, scanner weights)
+# 5. Seed initial content (packages, care plans, scanner weights)
 python manage.py seed_data
 
-# 5. Create an admin user
+# 6. Create an admin user
 python manage.py createsuperuser
 
-# 6. Run the server
+# 7. Run the server
 python manage.py runserver
 ```
 
@@ -80,15 +85,59 @@ Password: admin12345
 
 > Change this immediately in production.
 
-## Switching to PostgreSQL
+## Run it locally
 
-1. Create the database:
-   ```sql
-   CREATE DATABASE oweru_tech;
-   ```
-2. Uncomment the PostgreSQL block in `oweru_tech_solutions/settings.py`
-3. Update `USER` / `PASSWORD`
-4. Run `python manage.py migrate`
+The original development machine needs no configuration: the defaults in
+`settings.py` match a local PostgreSQL database called `oweru_tech`. The two
+options below are for a fresh clone on a different machine.
+
+### Option A - SQLite, no database server (fastest for reviewers)
+
+```bash
+copy .env.example .env
+# open .env and uncomment this line:
+#   DB_ENGINE=sqlite
+
+python manage.py migrate
+python manage.py seed_data
+python manage.py runserver
+```
+
+The database becomes a single git-ignored `db.sqlite3` file in the project
+root, so every developer has their own and no data is shared.
+
+### Option B - your own PostgreSQL
+
+Create an empty database:
+
+```sql
+CREATE DATABASE oweru_tech;
+```
+
+Then set the values in `.env`, or as real environment variables (which always
+take priority over the file):
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `DB_ENGINE` | `postgresql` | `postgresql` or `sqlite` |
+| `DB_NAME` | `oweru_tech` | database name |
+| `DB_USER` | `postgres` | database user |
+| `DB_PASSWORD` | `123` | database password |
+| `DB_HOST` | `localhost` | database host |
+| `DB_PORT` | `5432` | database port |
+| `DATABASE_URL` | - | full connection URL; overrides the `DB_*` values |
+| `DJANGO_SECRET_KEY` | dev-only key | session, CSRF and password-reset signing |
+
+`DJANGO_SECRET_KEY` must be a real, private value in production. Generate one
+with:
+
+```bash
+python -c "import secrets; print(secrets.token_urlsafe(50))"
+```
+
+`.env` is git-ignored, contains secrets, and is loaded automatically by
+`oweru_tech_solutions/settings.py`. Real environment variables always win, so
+the same code runs unchanged on a server, in CI or on a laptop.
 
 ## Notifications
 
